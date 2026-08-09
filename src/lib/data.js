@@ -7,9 +7,8 @@ export function freshEx(name, muscle, rest, sets, history = [], note = '') {
   return { name, muscle, rest, sets: clonedSets, startW, history: history.map((h) => ({ ...h })), note };
 }
 
-// Ein frischer Download hat noch keine eigenen Trainingspläne — der Nutzer
-// legt entweder einen neuen Plan an, importiert sein eigenes Log oder lädt
-// den mitgelieferten Beispielplan (siehe exampleLog.js).
+// A fresh install has no programs yet — the user creates one, imports
+// their own log, or loads the bundled example plan (see exampleLog.js).
 export function defaultPrograms() {
   return [];
 }

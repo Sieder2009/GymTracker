@@ -27,7 +27,7 @@
     const v = +prInputs[key];
     if (!v) return;
     bigLifts.update((all) => ({ ...all, [key]: { ...all[key], pr: v } }));
-    toast('PR gespeichert 🏆');
+    toast('PR gespeichert');
   }
 
   function addEntry(key) {
@@ -40,7 +40,7 @@
       [key]: { ...all[key], history: [...all[key].history, { l: label, v }] },
     }));
     entryInputs[key] = '';
-    toast('Eingetragen ✅');
+    toast('Eingetragen');
   }
 </script>
 

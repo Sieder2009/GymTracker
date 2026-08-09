@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/constants.dart';
+import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
@@ -86,7 +87,7 @@ class _SetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
-    final weightLabel = weight > 0 ? '${fmt1(weight)} kg' : 'BW';
+    final weightLabel = weight > 0 ? '${fmt1(weight)} kg' : AppLocalizations.of(context)!.labelBodyweightAbbr;
 
     return Row(
       children: [

@@ -3,6 +3,7 @@ import 'package:ironpeak_mobile/models/big_lift.dart';
 import 'package:ironpeak_mobile/models/day.dart';
 import 'package:ironpeak_mobile/models/exercise.dart';
 import 'package:ironpeak_mobile/models/exercise_set.dart';
+import 'package:ironpeak_mobile/models/gym_photo.dart';
 import 'package:ironpeak_mobile/models/history_entry.dart';
 import 'package:ironpeak_mobile/models/program.dart';
 import 'package:ironpeak_mobile/models/train_state.dart';
@@ -102,5 +103,12 @@ void main() {
     expect(decoded.byKey('deadlift').history.single.v, 150);
     expect(decoded.squat.pr, 0);
     expect(decoded.squat.prDate, isNull);
+  });
+
+  test('GymPhoto JSON round-trip', () {
+    final photo = GymPhoto(id: '12345.jpg', date: '2026-08-07');
+    final decoded = GymPhoto.fromJson(photo.toJson());
+    expect(decoded.id, '12345.jpg');
+    expect(decoded.date, '2026-08-07');
   });
 }

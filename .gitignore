@@ -1,6 +1,54 @@
-node_modules
-dist
-release
-.DS_Store
+# Ironpeak Fitness — web app (SvelteKit/Vite) + Electron desktop build.
+# The Flutter mobile app under mobile/ has its own .gitignore for
+# Dart/Android/iOS/Windows-specific artifacts.
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+dist-electron/
+release/
+out/
+build/
+
+# Vite
+.vite/
+*.timestamp-*.mjs
+
+# Environment — .local variants only; a plain .env with no secrets is fine
+# to commit (see mobile/.env for that pattern), but any *.local override is
+# meant to stay on this machine.
+.env.local
+.env.*.local
 *.local
-.claude
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+
+# Coverage / test output
+coverage/
+.nyc_output/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Claude Code
+.claude/

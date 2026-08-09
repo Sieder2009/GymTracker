@@ -1,16 +1,21 @@
 class BigLiftPoint {
-  BigLiftPoint({required this.l, required this.v, this.date});
+  BigLiftPoint({required this.l, required this.v, this.isoDate});
 
   String l; // unpadded 'D.M' date label (today's day.month at time of entry)
   double v;
-  String? date; // ISO 'YYYY-MM-DD' — nullable so older/imported points still decode
 
-  Map<String, dynamic> toJson() => {'l': l, 'v': v, 'date': date};
+  /// 'YYYY-MM-DD' — added alongside [l] so analytics can compute real
+  /// date-windowed trends (e.g. "last 30 days") without re-parsing the
+  /// display-only, year-less [l] label. Null for entries logged before
+  /// this field existed.
+  String? isoDate;
+
+  Map<String, dynamic> toJson() => {'l': l, 'v': v, 'isoDate': isoDate};
 
   factory BigLiftPoint.fromJson(Map<String, dynamic> json) => BigLiftPoint(
         l: json['l'] as String,
         v: (json['v'] as num).toDouble(),
-        date: json['date'] as String?,
+        isoDate: json['isoDate'] as String?,
       );
 }
 

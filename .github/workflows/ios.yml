@@ -1,0 +1,101 @@
+name: Build iOS App
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch: {} # lets us test a fix on demand without cutting a release tag
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # ios/ isn't committed (nothing here has ever been built locally) —
+      # generated fresh each run against whatever Flutter version CI
+      # installs, matching how android.yml generates android/.
+      - run: flutter create --org com.ironpeak --platforms=ios .
+
+      # flutter create also (re-)adds its default counter-app template
+      # test, which references a `MyApp` class that doesn't exist in this
+      # project (ours is `IronpeakApp`) — remove it, our own test/ files
+      # stay (matches the same fix already in android.yml). It also drops
+      # a stray README.md at the project root — remove that too.
+      - run: rm -f test/widget_test.dart README.md
+
+      # flutter create's default Podfile only has the platform line
+      # commented out (implicit iOS 13.0), but the `health` plugin needs
+      # 14.0+ — CocoaPods fails resolution otherwise ("could not find
+      # compatible versions for pod health"). 15.0 gives headroom over the
+      # other plugins too. Verified locally: this is the one line needed
+      # to get `pod install` + the build past this specific failure.
+      - run: sed -i '' "s/# platform :ios, '13.0'/platform :ios, '15.0'/" ios/Podfile
+
+      # `flutter create` doesn't know about HealthKit — without these two
+      # keys, iOS crashes the app the instant it asks for Health
+      # permission ("attempted to access privacy-sensitive data without a
+      # usage description"), regardless of code signing.
+      - run: |
+          /usr/libexec/PlistBuddy -c "Add :NSHealthShareUsageDescription string 'Ironpeak Fitness liest dein Körpergewicht und deine Schritte, um sie in der App anzuzeigen und deine Fortschritts-Charts zu befüllen.'" ios/Runner/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSHealthUpdateUsageDescription string 'Ironpeak Fitness schreibt abgeschlossene Workouts in die Health-App, damit sie neben deiner übrigen Aktivität erscheinen.'" ios/Runner/Info.plist
+
+      # Same story for the HealthKit *capability* itself: an entitlements
+      # file plus a build setting pointing the Runner target at it (the
+      # RunnerTests target doesn't need it, hence anchoring on the exact
+      # app bundle id and not its `.RunnerTests` variant). This only takes
+      # effect once the build is actually signed with a provisioning
+      # profile that has HealthKit enabled — see the signing note below —
+      # but wiring it up now means that's the only step left once this
+      # repo gets its own Apple Developer signing.
+      - run: |
+          plutil -create xml1 ios/Runner/Runner.entitlements
+          /usr/libexec/PlistBuddy -c "Add :com.apple.developer.healthkit bool true" ios/Runner/Runner.entitlements
+          /usr/libexec/PlistBuddy -c "Add :com.apple.developer.healthkit.access array" ios/Runner/Runner.entitlements
+          sed -i '' '/PRODUCT_BUNDLE_IDENTIFIER = com\.ironpeak\.ironpeakMobile;$/a\
+          				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+          ' ios/Runner.xcodeproj/project.pbxproj
+
+      - run: flutter pub get
+
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - run: flutter test
+
+      # No Apple Developer certificate/provisioning profile is configured
+      # in this repo, so this can only produce an UNSIGNED build — enough
+      # to prove the app compiles correctly for iOS on every push, but not
+      # something that installs on a real device as-is. Turning this into
+      # an installable/App-Store-ready .ipa needs your own Apple Developer
+      # Program membership: add its signing certificate + provisioning
+      # profile as repo secrets, then switch this step to
+      # `flutter build ipa --export-options-plist=...`.
+      - run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned .ipa
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ironpeak-fitness-ios-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ironpeak-fitness-ios-unsigned
+          path: mobile/build/ios/iphoneos/ironpeak-fitness-ios-unsigned.ipa
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mobile/build/ios/iphoneos/ironpeak-fitness-ios-unsigned.ipa
+          generate_release_notes: true

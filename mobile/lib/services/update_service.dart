@@ -1,23 +1,48 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../config/app_config.dart';
 import '../data/app_version.dart';
 
-const String _kReleasesLatestUrl =
-    'https://api.github.com/repos/Sieder2009/GymTraker/releases/latest';
+/// Why a check produced no actionable result — kept as a typed reason
+/// rather than a baked-in string so the UI can localize it (see
+/// [SettingsScreen]'s `_updateErrorMessage`).
+enum UpdateCheckError { none, noReleaseYet, badResponse, networkFailure, noVersionInResponse }
+
+class ReleaseAsset {
+  const ReleaseAsset({required this.name, required this.downloadUrl});
+  final String name;
+  final String downloadUrl;
+}
 
 class UpdateCheckResult {
   const UpdateCheckResult({
     required this.hasUpdate,
     this.latestVersion,
     this.releaseUrl,
-    this.error,
+    this.assets = const [],
+    this.error = UpdateCheckError.none,
   });
 
   final bool hasUpdate;
   final String? latestVersion;
   final String? releaseUrl;
-  final String? error;
+  final List<ReleaseAsset> assets;
+  final UpdateCheckError error;
+
+  /// The asset matching the OS this build is running on — "windows" in the
+  /// filename on Windows, `.apk` on Android, `.ipa` on iOS — null when
+  /// nothing published yet matches (or on a platform with no CI build, e.g.
+  /// desktop Linux/macOS).
+  ReleaseAsset? get assetForThisPlatform {
+    for (final asset in assets) {
+      final name = asset.name.toLowerCase();
+      if (Platform.isWindows && name.contains('windows')) return asset;
+      if (Platform.isAndroid && name.endsWith('.apk')) return asset;
+      if (Platform.isIOS && name.endsWith('.ipa')) return asset;
+    }
+    return null;
+  }
 }
 
 /// Checks GitHub's "latest release" API against [kAppVersion]. Only finds
@@ -29,23 +54,17 @@ class UpdateService {
     final client = HttpClient();
     try {
       final request = await client
-          .getUrl(Uri.parse(_kReleasesLatestUrl))
+          .getUrl(Uri.parse(AppConfig.latestReleaseApiUrl))
           .timeout(const Duration(seconds: 10));
       request.headers.set(HttpHeaders.acceptHeader, 'application/vnd.github+json');
       request.headers.set(HttpHeaders.userAgentHeader, 'ironpeak-fitness-app');
       final response = await request.close().timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 404) {
-        return const UpdateCheckResult(
-          hasUpdate: false,
-          error: 'Es gibt noch keine veröffentlichte Version zum Vergleichen.',
-        );
+        return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.noReleaseYet);
       }
       if (response.statusCode != 200) {
-        return UpdateCheckResult(
-          hasUpdate: false,
-          error: 'GitHub antwortete mit Status ${response.statusCode}.',
-        );
+        return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.badResponse);
       }
 
       final body = await response.transform(utf8.decoder).join();
@@ -53,21 +72,25 @@ class UpdateService {
       final tag = (json['tag_name'] as String?) ?? '';
       final releaseUrl = json['html_url'] as String?;
       final latest = tag.startsWith('v') ? tag.substring(1) : tag;
+      final assets = (json['assets'] as List? ?? [])
+          .map((a) => ReleaseAsset(
+                name: a['name'] as String,
+                downloadUrl: a['browser_download_url'] as String,
+              ))
+          .toList();
 
       if (latest.isEmpty) {
-        return const UpdateCheckResult(hasUpdate: false, error: 'Antwort enthielt keine Versionsnummer.');
+        return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.noVersionInResponse);
       }
 
       return UpdateCheckResult(
         hasUpdate: _isNewer(latest, kAppVersion),
         latestVersion: latest,
         releaseUrl: releaseUrl,
+        assets: assets,
       );
     } catch (_) {
-      return const UpdateCheckResult(
-        hasUpdate: false,
-        error: 'Verbindung zu GitHub fehlgeschlagen. Hast du Internet?',
-      );
+      return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.networkFailure);
     } finally {
       client.close();
     }

@@ -2,15 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/constants.dart';
+import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../models/history_entry.dart';
+import '../models/muscle_group.dart';
 import '../services/log_parser.dart';
 import '../state/toast_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
+import '../widgets/detailed_body_diagram.dart';
+import '../widgets/exercise_analytics_section.dart';
 import '../widgets/weight_ruler.dart';
 
 String _formatRep(Object v) => v is int ? '$v' : v.toString().toUpperCase();
+
+/// [Exercise.muscleActivation] is keyed by [MuscleGroup.name] (set via
+/// [showMuscleActivationEditor] on a user-authored custom exercise) --
+/// [DetailedBodyDiagram] wants the enum itself, so unknown/stale keys
+/// (e.g. from a future app version) are simply dropped rather than crash.
+Map<MuscleGroup, double> _parsedMuscleActivation(Exercise ex) {
+  final byName = {for (final m in MuscleGroup.values) m.name: m};
+  return {
+    for (final entry in ex.muscleActivation.entries)
+      if (byName[entry.key] case final m?) m: entry.value,
+  };
+}
 
 /// Single-exercise editor: drag-ruler weight picker, per-set reps, rename,
 /// "Verlauf einfügen" paste-in, and reversed (most-recent-first) history.
@@ -33,7 +49,8 @@ class ExerciseDetailScreen extends StatefulWidget {
   final int startIdx;
   final void Function(int idx, double weight, List<Object> reps) onSave;
   final void Function(int idx, String newName)? onRename;
-  final void Function(int idx, double weight, List<HistoryEntry> history)? onImportHistory;
+  final void Function(int idx, double weight, List<HistoryEntry> history)?
+      onImportHistory;
 
   @override
   State<ExerciseDetailScreen> createState() => _ExerciseDetailScreenState();
@@ -64,7 +81,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     final lastSetWeight = ex.sets.isNotEmpty ? ex.sets.last.w : 0.0;
     _idx = i;
     _weight = lastSetWeight > 0 ? lastSetWeight : ex.startW;
-    _repsControllers = List.generate(ex.sets.length, (_) => TextEditingController());
+    _repsControllers =
+        List.generate(ex.sets.length, (_) => TextEditingController());
     _renaming = false;
     _historyPasteOpen = false;
     _historyPasteController.clear();
@@ -93,12 +111,14 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     setState(() => _renaming = false);
   }
 
-  bool get _hasRepsEntered => _repsControllers.any((c) => c.text.trim().isNotEmpty);
+  bool get _hasRepsEntered =>
+      _repsControllers.any((c) => c.text.trim().isNotEmpty);
 
   void _importHistoryPaste() {
+    final t = AppLocalizations.of(context)!;
     final block = parseExerciseBlock(_historyPasteController.text);
     if (block.history.isEmpty) {
-      context.read<ToastProvider>().show('Keine Sätze im eingefügten Text erkannt');
+      context.read<ToastProvider>().show(t.emptyNoSetsRecognized);
       return;
     }
     widget.onImportHistory?.call(_idx, block.weight, block.history);
@@ -107,29 +127,34 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       _historyPasteOpen = false;
       _historyPasteController.clear();
     });
-    context.read<ToastProvider>().show('Verlauf übernommen ✅');
+    context.read<ToastProvider>().show(t.toastHistoryImported);
   }
 
   Future<void> _openWeightKeyboardEntry() async {
-    final controller = TextEditingController(text: _weight > 0 ? fmt1(_weight) : '');
+    final t = AppLocalizations.of(context)!;
+    final controller =
+        TextEditingController(text: _weight > 0 ? fmt1(_weight) : '');
     final result = await showDialog<double>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Gewicht eingeben'),
+        title: Text(t.titleEnterWeight),
         content: TextField(
           controller: controller,
           autofocus: true,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: const InputDecoration(suffixText: 'kg'),
-          // Komma und Punkt sollen beide als Dezimaltrennzeichen funktionieren.
-          onSubmitted: (v) => Navigator.of(ctx).pop(double.tryParse(v.replaceAll(',', '.'))),
+          // Both comma and period should work as the decimal separator.
+          onSubmitted: (v) =>
+              Navigator.of(ctx).pop(double.tryParse(v.replaceAll(',', '.'))),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Abbrechen')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(t.actionCancel)),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx)
                 .pop(double.tryParse(controller.text.replaceAll(',', '.'))),
-            child: const Text('Übernehmen'),
+            child: Text(t.actionApply),
           ),
         ],
       ),
@@ -165,9 +190,11 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
+    final t = AppLocalizations.of(context)!;
     final ex = _ex;
     final isLastExercise = _idx == widget.exercises.length - 1;
-    final canShowHistoryPaste = widget.onImportHistory != null && !_hasRepsEntered;
+    final canShowHistoryPaste =
+        widget.onImportHistory != null && !_hasRepsEntered;
     // Chronological order, oldest first — history entries are already
     // appended in that order, so no reversal needed.
     final history = ex.history;
@@ -187,7 +214,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(child: Text(ex.name, overflow: TextOverflow.ellipsis)),
+                  Flexible(
+                      child: Text(ex.name, overflow: TextOverflow.ellipsis)),
                   if (widget.onRename != null)
                     IconButton(
                       icon: const Icon(Icons.edit, size: 18),
@@ -196,7 +224,10 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 ],
               ),
         actions: _renaming
-            ? [IconButton(icon: const Icon(Icons.check), onPressed: _confirmRename)]
+            ? [
+                IconButton(
+                    icon: const Icon(Icons.check), onPressed: _confirmRename)
+              ]
             : null,
       ),
       body: SafeArea(
@@ -208,7 +239,23 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
                   ex.note,
-                  style: TextStyle(color: colors.accent, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: colors.accent, fontWeight: FontWeight.w600),
+                ),
+              ),
+            // Only custom exercises carry their own activation map (picked
+            // exercises show this in the "Übungen" library instead, keyed
+            // off the shared database) -- an empty map just means nobody
+            // has configured one for this exercise yet, not an error.
+            if (ex.muscleActivation.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Center(
+                  child: DetailedBodyDiagram(
+                    activation: _parsedMuscleActivation(ex),
+                    size: 150,
+                    enableZoom: true,
+                  ),
                 ),
               ),
             Center(
@@ -216,19 +263,21 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 borderRadius: BorderRadius.circular(AppRadii.sm),
                 onTap: _openWeightKeyboardEntry,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: Text(
-                    _weight > 0 ? '${fmt1(_weight)} kg' : 'BW',
+                    _weight > 0 ? '${fmt1(_weight)} kg' : t.labelBodyweightAbbr,
                     style: Theme.of(context).textTheme.headlineLarge,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 4),
-            WeightRuler(value: _weight, onChanged: (v) => setState(() => _weight = v)),
+            WeightRuler(
+                value: _weight, onChanged: (v) => setState(() => _weight = v)),
             Center(
               child: Text(
-                'Ziehen zum Anpassen, oder auf die Zahl tippen zum Eintippen',
+                t.infoDragToChange,
                 style: TextStyle(color: colors.mut, fontSize: 11.5),
               ),
             ),
@@ -238,12 +287,15 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    SizedBox(width: 28, child: Text('${i + 1}', style: TextStyle(color: colors.mut))),
+                    SizedBox(
+                        width: 28,
+                        child: Text('${i + 1}',
+                            style: TextStyle(color: colors.mut))),
                     Expanded(
                       child: TextField(
                         controller: _repsControllers[i],
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(hintText: 'Wdh.'),
+                        decoration: InputDecoration(hintText: t.hintReps),
                       ),
                     ),
                     IconButton(
@@ -253,31 +305,33 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                   ],
                 ),
               ),
-            TextButton(onPressed: _addSetRow, child: const Text('+ Satz')),
+            TextButton(onPressed: _addSetRow, child: Text(t.actionAddSet)),
             const SizedBox(height: 12),
             if (canShowHistoryPaste) ...[
               if (!_historyPasteOpen)
                 TextButton(
                   onPressed: () => setState(() => _historyPasteOpen = true),
-                  child: const Text('+ Verlauf einfügen'),
+                  child: Text(t.actionAddHistoryPaste),
                 )
               else ...[
                 TextField(
                   controller: _historyPasteController,
                   maxLines: 4,
-                  decoration: const InputDecoration(hintText: 'Log-Text für diese Übung einfügen …'),
+                  decoration:
+                      InputDecoration(hintText: t.hintExerciseHistoryPaste),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     TextButton(
-                      onPressed: () => setState(() => _historyPasteOpen = false),
-                      child: const Text('Abbrechen'),
+                      onPressed: () =>
+                          setState(() => _historyPasteOpen = false),
+                      child: Text(t.actionCancel),
                     ),
                     const Spacer(),
                     ElevatedButton(
                       onPressed: _importHistoryPaste,
-                      child: const Text('Übernehmen'),
+                      child: Text(t.actionApply),
                     ),
                   ],
                 ),
@@ -288,12 +342,16 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _save,
-                child: Text(isLastExercise ? 'Speichern' : 'Speichern & weiter'),
+                child:
+                    Text(isLastExercise ? t.actionSave : t.actionSaveAndNext),
               ),
             ),
             const SizedBox(height: 28),
+            ExerciseAnalyticsSection(exercise: ex),
             if (history.isNotEmpty) ...[
-              Text('VERLAUF', style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 24),
+              Text(t.headerHistory,
+                  style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 8),
               SizedBox(
                 height: 78,
@@ -305,13 +363,13 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                     entry: history[i],
                     isLatest: i == history.length - 1,
                     colors: colors,
+                    t: t,
                   ),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'X = weniger Gewicht verwendet · M = mehr Gewicht verwendet · '
-                '✓ = erledigt, ohne Wiederholungszahl',
+                t.infoHistoryLegend,
                 style: TextStyle(color: colors.mut, fontSize: 11),
               ),
             ],
@@ -326,11 +384,16 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
 /// on the left, newest (highlighted) on the right, weight as the leading
 /// (top-left) label per entry.
 class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.entry, required this.isLatest, required this.colors});
+  const _HistoryCard(
+      {required this.entry,
+      required this.isLatest,
+      required this.colors,
+      required this.t});
 
   final HistoryEntry entry;
   final bool isLatest;
   final AppColors colors;
+  final AppLocalizations t;
 
   @override
   Widget build(BuildContext context) {
@@ -339,7 +402,9 @@ class _HistoryCard extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: colors.card,
-        border: Border(left: BorderSide(color: isLatest ? colors.green : colors.line, width: 3)),
+        border: Border(
+            left: BorderSide(
+                color: isLatest ? colors.green : colors.line, width: 3)),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -349,20 +414,26 @@ class _HistoryCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                entry.weight > 0 ? '${fmt1(entry.weight)} kg' : 'BW',
+                entry.weight > 0
+                    ? '${fmt1(entry.weight)} kg'
+                    : t.labelBodyweightAbbr,
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               if (isLatest) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
                     color: colors.green.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(AppRadii.xs),
                   ),
                   child: Text(
-                    'Aktuell',
-                    style: TextStyle(color: colors.green, fontSize: 9, fontWeight: FontWeight.w700),
+                    t.labelCurrent,
+                    style: TextStyle(
+                        color: colors.green,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ],

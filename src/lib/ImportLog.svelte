@@ -3,13 +3,14 @@
   import { parseLog, toWeekdayPlan, toDailyExercises } from './logParser.js';
   import { todayIndexForProgram, fmt1 } from './data.js';
   import { toast } from './toast.js';
+  import Icon from './Icon.svelte';
 
   export let open = false;
-  export let initialText = ''; // prefills + auto-analyzes, e.g. for the bundled example plan
+  export let initialText = '';
   export let initialName = 'Importierter Plan';
 
   let rawText = '';
-  let parsed = null; // { days, dailyExercises, pr, warnings }
+  let parsed = null;
   let planName = 'Importierter Plan';
   let fileInput;
 
@@ -31,7 +32,7 @@
   }
 
   function analyze() {
-    if (!rawText.trim()) { toast('Bitte zuerst Text einfügen oder eine Datei wählen 📄'); return; }
+    if (!rawText.trim()) { toast('Bitte zuerst Text einfügen oder eine Datei wählen'); return; }
     parsed = parseLog(rawText);
   }
 
@@ -61,7 +62,7 @@
       });
     }
 
-    toast('Log importiert ✅');
+    toast('Log importiert');
     open = false;
     rawText = '';
     parsed = null;
@@ -71,7 +72,7 @@
 {#if open}
 <div class="overlay open">
   <div class="ov-top">
-    <button class="iconbtn" on:click={() => (open = false)}>✕</button>
+    <button class="iconbtn" on:click={() => (open = false)}><Icon name="close" /></button>
     <div style="font-family:'Sora';font-weight:700;font-size:15px">Log importieren</div>
     <span style="width:40px"></span>
   </div>
@@ -80,7 +81,7 @@
     {#if !parsed}
       <div class="card">
         <div class="eyebrow">Log-Datei (.txt) oder Text</div>
-        <button class="cta ghost" style="margin-top:8px" on:click={() => fileInput.click()}>📄 Datei auswählen</button>
+        <button class="cta ghost" style="margin-top:8px" on:click={() => fileInput.click()}><Icon name="file" size={16} />Datei auswählen</button>
         <input type="file" accept=".txt" bind:this={fileInput} on:change={onFile} style="display:none">
         <textarea class="pe-input import-textarea" rows="8" placeholder="…oder Log-Text hier einfügen" bind:value={rawText}></textarea>
         <p class="radar-hint" style="text-align:left;margin-top:10px">
@@ -150,7 +151,3 @@
   </div>
 </div>
 {/if}
-
-<style>
-  .import-textarea{ width:100%; resize:vertical; font-family:'Sora',monospace; font-size:12.5px; line-height:1.5; }
-</style>

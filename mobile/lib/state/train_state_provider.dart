@@ -35,4 +35,11 @@ class TrainStateProvider extends ChangeNotifier {
     _persist();
     notifyListeners();
   }
+
+  /// No plan selected — used after deleting the last remaining plan.
+  void clear() {
+    _state = TrainState();
+    _persist();
+    notifyListeners();
+  }
 }

@@ -3,12 +3,13 @@
   import { fmt1 } from './data.js';
   import { parseExerciseBlock } from './logParser.js';
   import { toast } from './toast.js';
+  import Icon from './Icon.svelte';
 
   export let exercises = [];
   export let startIdx = 0;
-  export let onSave; // (exIdx, weight, reps[]) => void
-  export let onRename = null; // (exIdx, newName) => void
-  export let onImportHistory = null; // (exIdx, weight, history[]) => void
+  export let onSave;
+  export let onRename = null;
+  export let onImportHistory = null;
 
   const dispatch = createEventDispatcher();
   const SWIPE_THRESHOLD = 55; // px
@@ -91,7 +92,7 @@
     if (weight > 0) weightInput = weight;
     historyPasteText = '';
     historyPasteOpen = false;
-    toast('Verlauf übernommen ✅');
+    toast('Verlauf übernommen');
   }
 
   $: ex = exercises[idx];
@@ -124,16 +125,16 @@
   on:pointercancel={onSwipeEnd}
 >
   <div class="ov-top">
-    <button class="iconbtn" on:click={() => dispatch('close')}>✕</button>
+    <button class="iconbtn" on:click={() => dispatch('close')}><Icon name="close" /></button>
     {#if renaming}
       <input class="pe-input small" style="max-width:200px" bind:value={renameValue} on:keydown={(e) => e.key === 'Enter' && confirmRename()}>
     {:else}
       <div style="font-family:'Sora';font-weight:700;font-size:15px">{ex.name}</div>
     {/if}
     {#if renaming}
-      <button class="iconbtn" on:click={confirmRename}>✓</button>
+      <button class="iconbtn" on:click={confirmRename}><Icon name="check" /></button>
     {:else}
-      <button class="iconbtn" on:click={startRename}>✏️</button>
+      <button class="iconbtn" on:click={startRename}><Icon name="pencil" size={15} /></button>
     {/if}
   </div>
   {#if exercises.length > 1}
@@ -156,7 +157,7 @@
         <div class="plain-set">
           <span class="plain-idx">{i + 1}</span>
           <input class="pe-input small" type="number" min="0" value={r} on:input={(e) => (repsInputs[i] = e.currentTarget.value)} placeholder="Wdh.">
-          <button class="pe-remove" on:click={() => removeSetRow(i)}>✕</button>
+          <button class="pe-remove" on:click={() => removeSetRow(i)}><Icon name="close" size={14} /></button>
         </div>
       {/each}
       <button class="cta ghost" style="margin-top:10px" on:click={addSetRow}>+ Satz</button>

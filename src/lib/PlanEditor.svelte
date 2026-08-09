@@ -2,6 +2,7 @@
   import { programs, trainState } from './stores.js';
   import { WEEKDAYS, freshEx, todayIndexForProgram } from './data.js';
   import { toast } from './toast.js';
+  import Icon from './Icon.svelte';
 
   export let open = false;
 
@@ -14,7 +15,7 @@
   }
   let draft = blankDraft();
 
-  $: if (open) draft = blankDraft(); // reset each time it's (re)opened
+  $: if (open) draft = blankDraft();
 
   function setMode(mode) {
     draft.mode = mode;
@@ -41,7 +42,7 @@
 
   function save() {
     const name = draft.name.trim();
-    if (!name) { toast('Bitte einen Namen vergeben ✏️'); return; }
+    if (!name) { toast('Bitte einen Namen vergeben'); return; }
     const days = draft.days.map(d => ({
       label: d.label,
       rest: draft.mode === 'weekday' ? !!d.rest : false,
@@ -57,16 +58,16 @@
     programs.update(all => [...all, newPlan]);
     trainState.set({ activePlanId: id, viewedDayIdx: todayIndexForProgram(newPlan) });
     open = false;
-    toast('Trainingsplan gespeichert ✅');
+    toast('Trainingsplan gespeichert');
   }
 </script>
 
 {#if open}
 <div class="overlay open">
   <div class="ov-top">
-    <button class="iconbtn" on:click={close}>✕</button>
+    <button class="iconbtn" on:click={close}><Icon name="close" /></button>
     <div style="font-family:'Sora';font-weight:700;font-size:15px">Neuer Trainingsplan</div>
-    <button class="iconbtn" on:click={save}>✓</button>
+    <button class="iconbtn" on:click={save}><Icon name="check" /></button>
   </div>
   <div class="pe-scroll">
     <div class="card">
@@ -88,7 +89,7 @@
             <label class="pe-resttoggle"><input type="checkbox" bind:checked={d.rest}> Ruhetag</label>
           {:else}
             <input class="pe-input small" style="margin-top:0" bind:value={d.label}>
-            <button class="pe-remove" on:click={() => removeDay(di)}>✕</button>
+            <button class="pe-remove" on:click={() => removeDay(di)}><Icon name="close" size={14} /></button>
           {/if}
         </div>
         {#if !(draft.mode === 'weekday' && d.rest)}
@@ -99,7 +100,7 @@
                 <input class="pe-input small" type="number" placeholder="Sätze" bind:value={ex.sets}>
                 <input class="pe-input small" placeholder="Wdh." bind:value={ex.reps}>
                 <input class="pe-input small" type="number" placeholder="kg" bind:value={ex.weight}>
-                <button class="pe-remove" on:click={() => removeExercise(di, ei)}>✕</button>
+                <button class="pe-remove" on:click={() => removeExercise(di, ei)}><Icon name="close" size={14} /></button>
               </div>
             {:else}
               <div class="pe-empty">Noch keine Übung</div>

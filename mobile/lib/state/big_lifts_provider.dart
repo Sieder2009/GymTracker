@@ -33,10 +33,26 @@ class BigLiftsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Bumps `pr` *and* `prDate` together, but only when [value] actually
+  /// beats the current PR — unlike [savePr] (a manual-entry field that
+  /// deliberately never auto-dates), this is the auto-detected path: the
+  /// guided workout calls it after logging a set, so a bench/deadlift/squat
+  /// PR set mid-session shows up here with a real date, not just silently
+  /// overwriting whatever was there before.
+  void bumpPrIfHigher(String key, double value, String date) {
+    if (value <= 0) return;
+    final lift = _lifts.byKey(key);
+    if (value <= lift.pr) return;
+    lift.pr = value;
+    lift.prDate = date;
+    _persist();
+    notifyListeners();
+  }
+
   void addEntry(String key, double value) {
     if (value <= 0) return;
     _lifts.byKey(key).history.add(
-          BigLiftPoint(l: todayShortLabel(), v: value, date: todayIso()),
+          BigLiftPoint(l: todayShortLabel(), v: value, isoDate: todayIso()),
         );
     _persist();
     notifyListeners();

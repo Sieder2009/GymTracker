@@ -1,5 +1,12 @@
 import 'package:intl/intl.dart';
 
+/// German day names, matching the "1. Wochentag".."7. Wochentag" headers
+/// the hand-typed log format uses (see `services/log_parser.dart`). These
+/// stay German regardless of the UI language, same as the log format
+/// itself: a plan's `Day.label` is persisted data, produced either here
+/// (new weekday-mode plan) or by the log parser, not re-derived from the
+/// active locale at render time. [kWeekdaysShort] below is index-based
+/// display-only (the day-pill row), so THAT one is localized normally.
 const List<String> kWeekdays = [
   'Montag',
   'Dienstag',

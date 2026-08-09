@@ -11,9 +11,11 @@ class Exercise {
     double? startW,
     List<HistoryEntry>? history,
     this.note = '',
+    Map<String, double>? muscleActivation,
   })  : done = done ?? [],
         history = history ?? [],
-        startW = startW ?? _maxWeight(sets);
+        startW = startW ?? _maxWeight(sets),
+        muscleActivation = muscleActivation ?? const {};
 
   String name;
   String muscle;
@@ -24,6 +26,12 @@ class Exercise {
   List<HistoryEntry> history;
   String note;
 
+  /// [MuscleGroup.name] -> activation intensity 0-100, set via
+  /// [MuscleActivationEditor] on a user-authored custom exercise. Empty
+  /// (never null) when the user hasn't configured it — a broad, missing
+  /// detail, not a zero.
+  Map<String, double> muscleActivation;
+
   /// Pendant to the original `freshEx(name, muscle, rest, sets, history, note)`
   /// — deep-clones `sets` and derives `startW` from their max weight.
   factory Exercise.fresh(
@@ -33,6 +41,7 @@ class Exercise {
     List<ExerciseSet> sets, {
     List<HistoryEntry>? history,
     String note = '',
+    Map<String, double>? muscleActivation,
   }) {
     return Exercise(
       name: name,
@@ -41,6 +50,7 @@ class Exercise {
       sets: sets.map((s) => s.clone()).toList(),
       history: history ?? [],
       note: note,
+      muscleActivation: muscleActivation,
     );
   }
 
@@ -61,6 +71,7 @@ class Exercise {
         'startW': startW,
         'history': history.map((h) => h.toJson()).toList(),
         'note': note,
+        'muscleActivation': muscleActivation,
       };
 
   factory Exercise.fromJson(Map<String, dynamic> json) => Exercise(
@@ -76,5 +87,7 @@ class Exercise {
             .map((h) => HistoryEntry.fromJson(h as Map<String, dynamic>))
             .toList(),
         note: json['note'] as String? ?? '',
+        muscleActivation: (json['muscleActivation'] as Map<String, dynamic>? ?? {})
+            .map((k, v) => MapEntry(k, (v as num).toDouble())),
       );
 }

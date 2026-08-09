@@ -1,0 +1,453 @@
+{
+  "@@locale": "en",
+  "tabTraining": "Training",
+  "tabStrength": "Strength",
+  "tabProgress": "Progress",
+  "actionSave": "Save",
+  "actionSaveAndNext": "Save & next",
+  "actionCancel": "Cancel",
+  "actionApply": "Apply",
+  "actionBack": "Back",
+  "actionLightMode": "Light Mode",
+  "actionDarkMode": "Dark Mode",
+  "actionAnalyze": "Analyze",
+  "actionAddExercise": "+ Add exercise",
+  "actionAddDayOrRoutine": "+ Add day/routine",
+  "actionAddSet": "+ Add set",
+  "actionAddHistoryPaste": "+ Paste history",
+  "actionAddEntry": "+ Add entry",
+  "actionNewPlan": "+ New plan",
+  "actionImportLog": "Import log",
+  "actionLoadExample": "Load example plan",
+  "actionSavePlan": "Save plan",
+  "infoImportCreatesNewPlan": "Creates a new plan — your existing plans stay untouched.",
+  "infoImportSummary": "{days} days · {exercises} exercises detected",
+  "actionStartWorkout": "Start workout",
+  "actionFinishWorkout": "Finish workout",
+  "actionCompleteSet": "Complete set",
+  "actionSkipRest": "Skip →",
+  "titleNewPlan": "New plan",
+  "titleImportLog": "Import log",
+  "titlePlanPicker": "Choose a training plan",
+  "headerEveryTrainingDay": "EVERY TRAINING DAY",
+  "headerTodaysDay": "TODAY'S DAY",
+  "headerDays": "DAYS",
+  "headerHistory": "HISTORY",
+  "headerRpe": "RPE",
+  "headerDetectedPrs": "Detected PRs",
+  "labelPlanName": "Plan name",
+  "labelDesignation": "Label",
+  "hintExercise": "Exercise",
+  "hintSets": "Sets",
+  "hintReps": "Reps",
+  "hintWeightKg": "kg",
+  "hintWeightTodayKg": "kg today",
+  "labelPrKg": "PR (kg)",
+  "hintLogPaste": "Paste log text here …",
+  "hintExampleFormat": "Example:",
+  "hintExerciseHistoryPaste": "Paste this exercise's log text here …",
+  "modeWeekday": "Weekday",
+  "modeRotation": "Rotation",
+  "labelRestDay": "Rest day",
+  "emptyNoPlan": "No training plan yet.",
+  "emptyNoPlanShort": "No training plan yet.",
+  "emptyRestDay": "Rest day — nothing planned today.",
+  "emptyNoWeightedExercises": "No weighted exercises logged yet.",
+  "emptyNoEntries": "No entries yet — log your current value below.",
+  "emptyNoSetsRecognized": "No sets recognized in the pasted text",
+  "infoImportLogHelp": "Paste your handwritten training log — days in the format \"1. Wochentag\", exercises and weights are detected automatically.",
+  "infoDragToChange": "Drag to adjust, or tap the number to type it in",
+  "titleEnterWeight": "Enter weight",
+  "infoHistoryLegend": "X = less weight used · M = more weight used · ✓ = done, no rep count",
+  "toastNameRequired": "Please enter a name",
+  "toastPlanSaved": "Training plan saved",
+  "toastLogImported": "Log imported",
+  "toastLogRequired": "Please paste a log first.",
+  "toastHistoryImported": "History imported",
+  "toastWorkoutFinished": "Workout finished",
+  "labelEntry": "Entry",
+  "labelCurrent": "Current",
+  "labelBodyweightAbbr": "BW",
+  "labelDeadlift": "Deadlift",
+  "labelBenchPress": "Bench Press",
+  "labelSquat": "Squat",
+  "labelKraftBalance": "Strength balance",
+  "radarHint": "Deadlift, Bench Press and Squat, relative to your strongest of the three in the current plan.",
+  "labelStartToNow": "START → NOW",
+  "daySubtitleRest": "{day} · Rest day",
+  "@daySubtitleRest": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "daySubtitleWorkouts": "{day} · {count} workouts",
+  "@daySubtitleWorkouts": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exerciseSetProgress": "Exercise {exIdx}/{exTotal} · Set {setIdx}/{setTotal}",
+  "@exerciseSetProgress": {
+    "placeholders": {
+      "exIdx": {
+        "type": "int"
+      },
+      "exTotal": {
+        "type": "int"
+      },
+      "setIdx": {
+        "type": "int"
+      },
+      "setTotal": {
+        "type": "int"
+      }
+    }
+  },
+  "targetReps": "Target: {reps} reps",
+  "@targetReps": {
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      }
+    }
+  },
+  "secondsPause": "seconds rest",
+  "weightRange": "{start} kg → {now} kg",
+  "@weightRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "now": {
+        "type": "String"
+      }
+    }
+  },
+  "prValue": "PR {value} kg",
+  "@prValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "dayNumber": "Day {num}",
+  "@dayNumber": {
+    "placeholders": {
+      "num": {
+        "type": "int"
+      }
+    }
+  },
+  "planSubtitleWeekday": "Weekday plan",
+  "exampleLogPlanName": "Example plan",
+  "actionAllPlans": "All plans",
+  "weekdayMonShort": "Mon",
+  "weekdayTueShort": "Tue",
+  "weekdayWedShort": "Wed",
+  "weekdayThuShort": "Thu",
+  "weekdayFriShort": "Fri",
+  "weekdaySatShort": "Sat",
+  "weekdaySunShort": "Sun",
+  "labelBodyweightTitle": "Bodyweight",
+  "actionDelete": "Delete",
+  "titleBackup": "Backup & Restore",
+  "backupExportHint": "Copy your data to save it somewhere safe, or to move it to another device.",
+  "actionCopyToClipboard": "Copy to clipboard",
+  "toastCopiedToClipboard": "Copied to clipboard",
+  "backupImportHint": "Paste a previously exported backup below to restore it.",
+  "hintBackupPaste": "Paste backup text here …",
+  "actionRestore": "Restore",
+  "restoreConfirmTitle": "Restore backup?",
+  "restoreConfirmBody": "This overwrites all plans, history and settings currently on this device. This can't be undone.",
+  "toastRestoreDone": "Restored — please restart the app to see your data.",
+  "toastRestoreInvalid": "This doesn't look like a valid backup.",
+  "labelPowerliftingScore": "Powerlifting Score",
+  "labelTotal": "Total",
+  "labelDotsScore": "DOTS score",
+  "dotsFormulaFor": "DOTS formula for:",
+  "emptyNeedAllThreeLifts": "Log a PR for Bench, Deadlift and Squat to see your Total & DOTS score.",
+  "emptyNeedBodyweight": "Log your bodyweight to see your DOTS score.",
+  "title1rmCalculator": "1RM Calculator",
+  "actionCalculate": "Calculate",
+  "estimated1rmResult": "Estimated 1RM: {value} kg",
+  "@estimated1rmResult": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "hintRepsPerformed": "Reps performed",
+  "titleCalendar": "Training Calendar",
+  "calendarMonthSummary": "{count} workouts · {hours} h",
+  "@calendarMonthSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyNoSessionsThisDay": "No workout logged this day.",
+  "labelMinutesShort": "{minutes} min",
+  "@labelMinutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarPrevMonth": "Previous month",
+  "calendarNextMonth": "Next month",
+  "greetingMorning": "Good morning",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "labelNextWorkout": "NEXT WORKOUT",
+  "exerciseCountEstimate": "{count} exercises · ~{minutes} min",
+  "@exerciseCountEstimate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "labelQuickStats": "QUICK STATS",
+  "labelWorkouts": "Workouts",
+  "labelVolume": "Volume",
+  "labelPRs": "PRs",
+  "labelStrength": "Strength",
+  "labelThisWeek": "THIS WEEK",
+  "labelRecentPrs": "RECENT PRs",
+  "titleYourProgress": "YOUR PROGRESS",
+  "progressMessageImproving": "You're getting stronger.",
+  "progressMessageNoData": "Start logging to see your progress.",
+  "progressMessageSteady": "Keep it up.",
+  "labelConsistency": "Consistency",
+  "labelBestImprovement": "BEST IMPROVEMENT",
+  "insufficientDataShort": "Not enough data yet",
+  "unitDays": "{days} days",
+  "@unitDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "labelPlateauDetected": "PLATEAU DETECTED",
+  "plateauBody": "Little measurable change in {lift} over the last {days} days.",
+  "@plateauBody": {
+    "placeholders": {
+      "lift": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "titleGallery": "Gallery",
+  "actionChooseFromGallery": "Choose from gallery",
+  "actionTakePhoto": "Take photo",
+  "emptyGalleryNoPhotos": "No photos yet — add your first progress pic.",
+  "actionAddPhoto": "+ Add photo",
+  "deletePhotoTitle": "Delete photo?",
+  "deletePhotoBody": "This photo will be permanently deleted.",
+  "titleHealthSync": "Health data",
+  "actionConnectHealth": "Connect",
+  "labelStepsToday": "Steps today",
+  "actionSyncWeightFromHealth": "Import from Health",
+  "toastWeightSynced": "Bodyweight imported from Health",
+  "toastNoHealthWeight": "No weight entry found in Health",
+  "titleExercisePicker": "Choose exercise",
+  "hintSearchExercise": "Search exercise…",
+  "actionPickFromList": "Pick from list",
+  "categoryChest": "Chest",
+  "categoryBack": "Back",
+  "categoryShoulders": "Shoulders",
+  "categoryLegs": "Legs",
+  "categoryArms": "Arms",
+  "categoryCore": "Core",
+  "categoryCardio": "Cardio",
+  "emptyExerciseSearch": "No exercises found.",
+  "actionWatchTutorial": "Watch tutorial",
+  "tabExercises": "Exercises",
+  "categoryAll": "All",
+  "deletePlanTitle": "Delete plan?",
+  "deletePlanBody": "\"{name}\" and its whole logged history will be permanently deleted. This can't be undone.",
+  "@deletePlanBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLanguage": "Language",
+  "languageSystem": "System default",
+  "tabAnalyticsOverview": "Overview",
+  "tabAnalyticsStrength": "Strength",
+  "tabAnalyticsVolume": "Volume",
+  "tabAnalyticsConsistency": "Consistency",
+  "chartTitleWeeklyVolume": "Weekly Volume",
+  "chartEmptyVolume": "Log workouts to see your weekly volume.",
+  "chartTitleWorkoutsPerWeek": "Workouts per Week",
+  "chartEmptyConsistency": "Log workouts to see your consistency.",
+  "labelCurrentStreak": "Current streak",
+  "labelBestStreak": "Best streak",
+  "labelWorkoutsThisMonth": "This month",
+  "titleAnalytics": "Analytics",
+  "labelTrend30Days": "30-DAY TREND",
+  "labelEstOneRepMax": "Est. 1RM",
+  "chartTitleWeightProgress": "Weight Progress",
+  "chartEmptyExercise": "Log this exercise on 2+ different days to see a trend.",
+  "labelLast8Weeks": "Last 8 weeks",
+  "titleSettings": "Settings",
+  "headerAppVersion": "APP VERSION",
+  "labelInstalledVersion": "Installed: {version}",
+  "@labelInstalledVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "labelUpdateAvailable": "New version available: {version}",
+  "@labelUpdateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "labelUpToDate": "You have the latest version.",
+  "actionCheckForUpdates": "Check for updates",
+  "actionChecking": "Checking…",
+  "actionDownloadUpdate": "Download",
+  "actionInstallUpdate": "Install",
+  "labelDownloadingUpdate": "Downloading update… {percent}%",
+  "@labelDownloadingUpdate": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "labelUpdateReady": "Update ready to install",
+  "updateErrorNoRelease": "No published release to compare against yet.",
+  "updateErrorBadResponse": "GitHub responded with an error.",
+  "updateErrorNetwork": "Couldn't reach GitHub. Check your connection.",
+  "updateErrorNoVersion": "The response didn't include a version number.",
+  "headerAppearance": "APPEARANCE",
+  "labelPrimaryColor": "Primary color",
+  "labelDarkMode": "Dark Mode",
+  "labelSecondaryColor": "Secondary color",
+  "actionResetColors": "Reset",
+  "headerReminders": "REMINDERS",
+  "labelDailyReminder": "Daily workout reminder",
+  "labelReminderTime": "Reminder time",
+  "reminderNotSupported": "Reminders aren't available on this device.",
+  "notificationTitle": "Ironpeak Fitness",
+  "notificationBody": "Time to train.",
+  "headerGeneral": "GENERAL",
+  "titleMuscleEditor": "Muscle activation",
+  "actionFront": "Front",
+  "labelIntensity": "Intensity",
+  "hintTapMuscle": "Tap a muscle to set how much it's worked",
+  "actionConfigureMuscles": "Configure muscles",
+  "emptyNoMusclesSelected": "No muscles selected yet",
+  "muscleChest": "Chest",
+  "muscleAbs": "Abs",
+  "muscleObliques": "Obliques",
+  "muscleFrontDelts": "Front delts",
+  "muscleSideDelts": "Side delts",
+  "muscleBiceps": "Biceps",
+  "muscleForearms": "Forearms",
+  "muscleQuads": "Quads",
+  "muscleCalves": "Calves",
+  "muscleUpperBack": "Upper back",
+  "muscleLowerBack": "Lower back",
+  "muscleLats": "Lats",
+  "muscleTraps": "Traps",
+  "muscleRearDelts": "Rear delts",
+  "muscleTriceps": "Triceps",
+  "muscleGlutes": "Glutes",
+  "muscleHamstrings": "Hamstrings",
+  "headerHelp": "HELP",
+  "actionEmail": "Email",
+  "actionCall": "Call",
+  "titleEnterLiftPr": "{lift} PR entry",
+  "@titleEnterLiftPr": {
+    "placeholders": {
+      "lift": {
+        "type": "String"
+      }
+    }
+  },
+  "actionReorderExercises": "Reorder",
+  "titleReorderExercises": "Exercise Order",
+  "hintReorderExercises": "Drag to reorder the exercises still ahead of you",
+  "toastNewPr": "🏆 New PR on {exercise}: {weight} kg × {reps}",
+  "@toastNewPr": {
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "labelCompletedExercises": "Completed",
+  "labelCurrentExerciseInSession": "In progress",
+  "labelUpcomingExercises": "Coming up",
+  "actionLoadPplExample": "Load PPL example",
+  "examplePplPlanName": "Push/Pull/Legs",
+  "toastPplPlanLoaded": "PPL plan added",
+  "tabAnalyticsAchievements": "Achievements",
+  "achievementPathConsistency": "Training streak",
+  "achievementPathTotalWorkouts": "Total workouts",
+  "achievementPathTotalVolume": "Total volume",
+  "achievementPathPrCount": "Personal records",
+  "achievementProgressToNext": "{remaining} to go until the next tier",
+  "@achievementProgressToNext": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "achievementAllTiersUnlocked": "All tiers unlocked",
+  "toastAchievementUnlocked": "🎖 New tier: {path}",
+  "@toastAchievementUnlocked": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "titleMuscleFilter": "Filter by muscle",
+  "hintMuscleFilterOrManual": "Tap a body part, or pick a category manually below",
+  "actionCreateCustomExercise": "+ Create custom exercise",
+  "labelCategory": "Category",
+  "toastCustomExerciseSaved": "Exercise saved",
+  "labelCustomExercise": "Custom exercise",
+  "actionSaveToFiles": "Save/share as file",
+  "actionImportFromFile": "Choose file",
+  "backupFileHint": "Save the exported file to e.g. iCloud Drive or Google Drive to import it on another device later — there's no server of ours involved, the file only goes wherever you choose to put it.",
+  "toastFileImported": "File loaded"
+}

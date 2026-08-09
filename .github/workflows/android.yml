@@ -2,10 +2,9 @@ name: Build Android APK
 
 on:
   push:
-    branches:
-      - master
     tags:
       - 'v*.*.*'
+  workflow_dispatch: {} # lets us test a fix on demand without cutting a release tag
 
 permissions:
   contents: write
@@ -23,15 +22,9 @@ jobs:
         with:
           channel: stable
 
-      # android/ isn't committed (nothing here has ever been built locally) —
-      # generated fresh each run against whatever Flutter version CI installs.
-      - run: flutter create --org com.ironpeak --platforms=android .
-
-      # flutter create also (re-)adds its default counter-app template test,
-      # which references a `MyApp` class that doesn't exist in this project
-      # (ours is `IronpeakApp`) — remove it, our own test/ files stay.
-      - run: rm -f test/widget_test.dart
-
+      # android/ IS committed now (unlike before) — Health Connect needs
+      # persistent permissions in AndroidManifest.xml and a minSdk bump,
+      # which a fresh `flutter create` on every run would silently wipe.
       - run: flutter pub get
 
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings

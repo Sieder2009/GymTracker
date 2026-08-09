@@ -1,0 +1,2680 @@
+{
+  "version": 4,
+  "exercises": [
+    {
+      "id": "bench_press",
+      "name": "Bankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "incline_bench_press",
+      "name": "Schrägbankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "decline_bench_press",
+      "name": "Negativbankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "close_grip_bench_press",
+      "name": "Bankdrücken (eng)",
+      "category": "chest"
+    },
+    {
+      "id": "wide_grip_bench_press",
+      "name": "Bankdrücken (weit)",
+      "category": "chest"
+    },
+    {
+      "id": "dumbbell_bench_press",
+      "name": "Kurzhantel-Bankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "incline_dumbbell_press",
+      "name": "Kurzhantel-Schrägbankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "decline_dumbbell_press",
+      "name": "Kurzhantel-Negativbankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "smith_machine_bench_press",
+      "name": "Bankdrücken (Multipresse)",
+      "category": "chest"
+    },
+    {
+      "id": "floor_press",
+      "name": "Floor Press",
+      "category": "chest"
+    },
+    {
+      "id": "chest_fly",
+      "name": "Fliegende (Kurzhantel)",
+      "category": "chest"
+    },
+    {
+      "id": "incline_chest_fly",
+      "name": "Schräge Fliegende",
+      "category": "chest"
+    },
+    {
+      "id": "cable_fly",
+      "name": "Kabelzug-Fliegende",
+      "category": "chest"
+    },
+    {
+      "id": "low_cable_fly",
+      "name": "Kabelzug-Fliegende (tief)",
+      "category": "chest"
+    },
+    {
+      "id": "pec_deck",
+      "name": "Butterfly-Maschine",
+      "category": "chest"
+    },
+    {
+      "id": "chest_press_machine",
+      "name": "Brustpresse-Maschine",
+      "category": "chest"
+    },
+    {
+      "id": "dips",
+      "name": "Dips",
+      "category": "chest"
+    },
+    {
+      "id": "weighted_dips",
+      "name": "Dips (Zusatzgewicht)",
+      "category": "chest"
+    },
+    {
+      "id": "push_ups",
+      "name": "Liegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "incline_push_ups",
+      "name": "Liegestütze (erhöht)",
+      "category": "chest"
+    },
+    {
+      "id": "decline_push_ups",
+      "name": "Liegestütze (Füße erhöht)",
+      "category": "chest"
+    },
+    {
+      "id": "pullover",
+      "name": "Überzüge (Pullover)",
+      "category": "chest"
+    },
+    {
+      "id": "svend_press",
+      "name": "Svend Press",
+      "category": "chest"
+    },
+    {
+      "id": "cable_crossover",
+      "name": "Kabelzug-Crossover",
+      "category": "chest"
+    },
+    {
+      "id": "low_cable_crossover",
+      "name": "Kabelzug-Crossover (tief)",
+      "category": "chest"
+    },
+    {
+      "id": "high_cable_crossover",
+      "name": "Kabelzug-Crossover (hoch)",
+      "category": "chest"
+    },
+    {
+      "id": "single_arm_cable_fly",
+      "name": "Fliegende am Kabelzug (einarmig)",
+      "category": "chest"
+    },
+    {
+      "id": "single_arm_cable_chest_press",
+      "name": "Brustdrücken am Kabelzug (einarmig)",
+      "category": "chest"
+    },
+    {
+      "id": "neutral_grip_dumbbell_press",
+      "name": "Kurzhantel-Bankdrücken (neutraler Griff)",
+      "category": "chest"
+    },
+    {
+      "id": "one_arm_dumbbell_bench_press",
+      "name": "Kurzhantel-Bankdrücken (einarmig)",
+      "category": "chest"
+    },
+    {
+      "id": "guillotine_bench_press",
+      "name": "Guillotine-Bankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "spoto_press",
+      "name": "Spoto Press",
+      "category": "chest"
+    },
+    {
+      "id": "larsen_press",
+      "name": "Larsen Press",
+      "category": "chest"
+    },
+    {
+      "id": "board_press",
+      "name": "Board Press",
+      "category": "chest"
+    },
+    {
+      "id": "bench_press_with_chains",
+      "name": "Bankdrücken (Ketten)",
+      "category": "chest"
+    },
+    {
+      "id": "bench_press_with_bands",
+      "name": "Bankdrücken (Bänder)",
+      "category": "chest"
+    },
+    {
+      "id": "reverse_band_bench_press",
+      "name": "Reverse-Band-Bankdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "push_up_wide",
+      "name": "Liegestütze (breit)",
+      "category": "chest"
+    },
+    {
+      "id": "archer_push_up",
+      "name": "Archer Push-ups",
+      "category": "chest"
+    },
+    {
+      "id": "hindu_push_up",
+      "name": "Hindu Push-ups",
+      "category": "chest"
+    },
+    {
+      "id": "clap_push_up",
+      "name": "Liegestütze (mit Klatschen)",
+      "category": "chest"
+    },
+    {
+      "id": "plyo_push_up",
+      "name": "Plyo-Liegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "pseudo_planche_push_up",
+      "name": "Pseudo Planche Push-ups",
+      "category": "chest"
+    },
+    {
+      "id": "medicine_ball_push_up",
+      "name": "Medizinball-Liegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "suspended_push_up",
+      "name": "Liegestütze (Schlingentrainer)",
+      "category": "chest"
+    },
+    {
+      "id": "weighted_push_up",
+      "name": "Liegestütze (Zusatzgewicht)",
+      "category": "chest"
+    },
+    {
+      "id": "plate_squeeze_press",
+      "name": "Hantelscheiben-Press (Squeeze Press)",
+      "category": "chest"
+    },
+    {
+      "id": "dumbbell_floor_fly",
+      "name": "Fliegende (Boden, Kurzhantel)",
+      "category": "chest"
+    },
+    {
+      "id": "incline_cable_fly",
+      "name": "Schräge Kabelzug-Fliegende",
+      "category": "chest"
+    },
+    {
+      "id": "decline_cable_fly",
+      "name": "Negative Kabelzug-Fliegende",
+      "category": "chest"
+    },
+    {
+      "id": "isometric_chest_squeeze",
+      "name": "Isometrisches Brustdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "landmine_chest_press",
+      "name": "Landmine-Brustdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "incline_smith_machine_bench_press",
+      "name": "Schrägbankdrücken (Multipresse)",
+      "category": "chest"
+    },
+    {
+      "id": "decline_smith_machine_bench_press",
+      "name": "Negativbankdrücken (Multipresse)",
+      "category": "chest"
+    },
+    {
+      "id": "resistance_band_chest_press",
+      "name": "Brustdrücken (Widerstandsband)",
+      "category": "chest"
+    },
+    {
+      "id": "close_grip_incline_bench_press",
+      "name": "Schrägbankdrücken (eng)",
+      "category": "chest"
+    },
+    {
+      "id": "cable_iron_cross",
+      "name": "Iron Cross am Kabelzug",
+      "category": "chest"
+    },
+    {
+      "id": "explosive_bench_press",
+      "name": "Bankdrücken (explosiv)",
+      "category": "chest"
+    },
+    {
+      "id": "cable_chest_press_standing",
+      "name": "Brustdrücken am Kabelzug (stehend)",
+      "category": "chest"
+    },
+    {
+      "id": "incline_dumbbell_fly_twist",
+      "name": "Schräge Kurzhantel-Fliegende (mit Drehung)",
+      "category": "chest"
+    },
+    {
+      "id": "deficit_push_up",
+      "name": "Liegestütze (Deficit)",
+      "category": "chest"
+    },
+    {
+      "id": "single_leg_push_up",
+      "name": "Liegestütze (einbeinig)",
+      "category": "chest"
+    },
+    {
+      "id": "wall_push_up",
+      "name": "Wandliegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "knee_push_up",
+      "name": "Liegestütze (Knie)",
+      "category": "chest"
+    },
+    {
+      "id": "dumbbell_around_the_world",
+      "name": "Around the World (Kurzhantel)",
+      "category": "chest"
+    },
+    {
+      "id": "reverse_grip_bench_press",
+      "name": "Bankdrücken (Untergriff)",
+      "category": "chest"
+    },
+    {
+      "id": "deadlift",
+      "name": "Kreuzheben",
+      "category": "back"
+    },
+    {
+      "id": "sumo_deadlift",
+      "name": "Sumo-Kreuzheben",
+      "category": "back"
+    },
+    {
+      "id": "romanian_deadlift",
+      "name": "Rumänisches Kreuzheben",
+      "category": "back"
+    },
+    {
+      "id": "stiff_leg_deadlift",
+      "name": "Kreuzheben (gestreckte Beine)",
+      "category": "back"
+    },
+    {
+      "id": "deficit_deadlift",
+      "name": "Deficit-Kreuzheben",
+      "category": "back"
+    },
+    {
+      "id": "rack_pull",
+      "name": "Rack Pull",
+      "category": "back"
+    },
+    {
+      "id": "trap_bar_deadlift",
+      "name": "Kreuzheben (Trap Bar)",
+      "category": "back"
+    },
+    {
+      "id": "pull_ups",
+      "name": "Klimmzüge",
+      "category": "back"
+    },
+    {
+      "id": "chin_ups",
+      "name": "Klimmzüge (Untergriff)",
+      "category": "back"
+    },
+    {
+      "id": "weighted_pull_ups",
+      "name": "Klimmzüge (Zusatzgewicht)",
+      "category": "back"
+    },
+    {
+      "id": "assisted_pull_ups",
+      "name": "Klimmzüge (unterstützt)",
+      "category": "back"
+    },
+    {
+      "id": "lat_pulldown",
+      "name": "Latzug",
+      "category": "back"
+    },
+    {
+      "id": "close_grip_lat_pulldown",
+      "name": "Latzug (eng)",
+      "category": "back"
+    },
+    {
+      "id": "wide_grip_lat_pulldown",
+      "name": "Latzug (weit)",
+      "category": "back"
+    },
+    {
+      "id": "single_arm_lat_pulldown",
+      "name": "Latzug (einarmig)",
+      "category": "back"
+    },
+    {
+      "id": "barbell_row",
+      "name": "Langhantelrudern",
+      "category": "back"
+    },
+    {
+      "id": "pendlay_row",
+      "name": "Pendlay Row",
+      "category": "back"
+    },
+    {
+      "id": "dumbbell_row",
+      "name": "Kurzhantelrudern (einarmig)",
+      "category": "back"
+    },
+    {
+      "id": "chest_supported_row",
+      "name": "Rudern (Brust gestützt)",
+      "category": "back"
+    },
+    {
+      "id": "seated_cable_row",
+      "name": "Rudern am Kabelzug (sitzend)",
+      "category": "back"
+    },
+    {
+      "id": "one_arm_cable_row",
+      "name": "Kabelzugrudern (einarmig)",
+      "category": "back"
+    },
+    {
+      "id": "t_bar_row",
+      "name": "T-Bar-Rudern",
+      "category": "back"
+    },
+    {
+      "id": "machine_row",
+      "name": "Rudern an der Maschine",
+      "category": "back"
+    },
+    {
+      "id": "inverted_row",
+      "name": "Inverted Row",
+      "category": "back"
+    },
+    {
+      "id": "face_pull",
+      "name": "Face Pull",
+      "category": "back"
+    },
+    {
+      "id": "straight_arm_pulldown",
+      "name": "Latzug (gestreckte Arme)",
+      "category": "back"
+    },
+    {
+      "id": "hyperextension",
+      "name": "Hyperextensions",
+      "category": "back"
+    },
+    {
+      "id": "good_morning",
+      "name": "Good Mornings",
+      "category": "back"
+    },
+    {
+      "id": "shrugs",
+      "name": "Shrugs",
+      "category": "back"
+    },
+    {
+      "id": "dumbbell_shrugs",
+      "name": "Shrugs (Kurzhantel)",
+      "category": "back"
+    },
+    {
+      "id": "back_extension_machine",
+      "name": "Rückenstrecker-Maschine",
+      "category": "back"
+    },
+    {
+      "id": "jefferson_deadlift",
+      "name": "Jefferson Deadlift",
+      "category": "back"
+    },
+    {
+      "id": "snatch_grip_deadlift",
+      "name": "Kreuzheben (Snatch-Griff)",
+      "category": "back"
+    },
+    {
+      "id": "deadlift_with_bands",
+      "name": "Kreuzheben (Bänder)",
+      "category": "back"
+    },
+    {
+      "id": "deadlift_with_chains",
+      "name": "Kreuzheben (Ketten)",
+      "category": "back"
+    },
+    {
+      "id": "block_pull",
+      "name": "Block Pull",
+      "category": "back"
+    },
+    {
+      "id": "banded_good_morning",
+      "name": "Good Mornings (Band)",
+      "category": "back"
+    },
+    {
+      "id": "seated_good_morning",
+      "name": "Good Mornings (sitzend)",
+      "category": "back"
+    },
+    {
+      "id": "wide_grip_pull_ups",
+      "name": "Klimmzüge (weiter Griff)",
+      "category": "back"
+    },
+    {
+      "id": "neutral_grip_pull_ups",
+      "name": "Klimmzüge (neutraler Griff)",
+      "category": "back"
+    },
+    {
+      "id": "l_sit_pull_ups",
+      "name": "L-Sit Klimmzüge",
+      "category": "back"
+    },
+    {
+      "id": "archer_pull_ups",
+      "name": "Archer Klimmzüge",
+      "category": "back"
+    },
+    {
+      "id": "muscle_up",
+      "name": "Muscle-Up",
+      "category": "back"
+    },
+    {
+      "id": "kipping_pull_ups",
+      "name": "Kipping Klimmzüge",
+      "category": "back"
+    },
+    {
+      "id": "scapular_pull_ups",
+      "name": "Scapula Pull-ups",
+      "category": "back"
+    },
+    {
+      "id": "towel_pull_ups",
+      "name": "Klimmzüge (Handtuch)",
+      "category": "back"
+    },
+    {
+      "id": "behind_neck_pulldown",
+      "name": "Latzug (hinter dem Nacken)",
+      "category": "back"
+    },
+    {
+      "id": "v_bar_pulldown",
+      "name": "Latzug (V-Griff)",
+      "category": "back"
+    },
+    {
+      "id": "underhand_lat_pulldown",
+      "name": "Latzug (Untergriff)",
+      "category": "back"
+    },
+    {
+      "id": "kneeling_lat_pulldown",
+      "name": "Latzug (kniend)",
+      "category": "back"
+    },
+    {
+      "id": "meadows_row",
+      "name": "Meadows Row",
+      "category": "back"
+    },
+    {
+      "id": "yates_row",
+      "name": "Yates Row",
+      "category": "back"
+    },
+    {
+      "id": "seal_row",
+      "name": "Seal Row",
+      "category": "back"
+    },
+    {
+      "id": "landmine_row",
+      "name": "Landmine Rudern",
+      "category": "back"
+    },
+    {
+      "id": "kroc_row",
+      "name": "Kroc Row",
+      "category": "back"
+    },
+    {
+      "id": "renegade_row",
+      "name": "Renegade Row",
+      "category": "back"
+    },
+    {
+      "id": "cable_row_wide_grip",
+      "name": "Kabelzugrudern (weiter Griff)",
+      "category": "back"
+    },
+    {
+      "id": "cable_row_close_grip",
+      "name": "Kabelzugrudern (enger Griff)",
+      "category": "back"
+    },
+    {
+      "id": "gorilla_row",
+      "name": "Gorilla Row",
+      "category": "back"
+    },
+    {
+      "id": "suspension_row",
+      "name": "Rudern (Schlingentrainer)",
+      "category": "back"
+    },
+    {
+      "id": "cambered_bar_row",
+      "name": "Rudern (Cambered Bar)",
+      "category": "back"
+    },
+    {
+      "id": "smith_machine_row",
+      "name": "Rudern (Multipresse)",
+      "category": "back"
+    },
+    {
+      "id": "rack_pull_with_bands",
+      "name": "Rack Pull (Bänder)",
+      "category": "back"
+    },
+    {
+      "id": "barbell_shrug_behind_back",
+      "name": "Shrugs (hinter dem Rücken)",
+      "category": "back"
+    },
+    {
+      "id": "cable_shrug",
+      "name": "Shrugs am Kabelzug",
+      "category": "back"
+    },
+    {
+      "id": "smith_machine_shrug",
+      "name": "Shrugs (Multipresse)",
+      "category": "back"
+    },
+    {
+      "id": "farmers_walk",
+      "name": "Farmer's Walk",
+      "category": "back"
+    },
+    {
+      "id": "suitcase_carry",
+      "name": "Suitcase Carry",
+      "category": "back"
+    },
+    {
+      "id": "reverse_hyperextension",
+      "name": "Reverse Hyperextension",
+      "category": "back"
+    },
+    {
+      "id": "rope_climb",
+      "name": "Klettertau (Rope Climb)",
+      "category": "back"
+    },
+    {
+      "id": "sled_row",
+      "name": "Sled-Rudern",
+      "category": "back"
+    },
+    {
+      "id": "band_assisted_pull_ups",
+      "name": "Klimmzüge (Band-unterstützt)",
+      "category": "back"
+    },
+    {
+      "id": "one_arm_pull_up",
+      "name": "Einarmiger Klimmzug",
+      "category": "back"
+    },
+    {
+      "id": "sternum_chin_ups",
+      "name": "Sternum Chin-ups",
+      "category": "back"
+    },
+    {
+      "id": "resistance_band_row",
+      "name": "Rudern (Widerstandsband)",
+      "category": "back"
+    },
+    {
+      "id": "resistance_band_pulldown",
+      "name": "Latzug (Widerstandsband)",
+      "category": "back"
+    },
+    {
+      "id": "ring_rows",
+      "name": "Ring Rows",
+      "category": "back"
+    },
+    {
+      "id": "weighted_hyperextension",
+      "name": "Hyperextensions (Zusatzgewicht)",
+      "category": "back"
+    },
+    {
+      "id": "single_arm_landmine_row",
+      "name": "Landmine Rudern (einarmig)",
+      "category": "back"
+    },
+    {
+      "id": "cable_high_row",
+      "name": "Hohes Rudern am Kabelzug",
+      "category": "back"
+    },
+    {
+      "id": "barbell_pullover",
+      "name": "Überzüge (Langhantel)",
+      "category": "back"
+    },
+    {
+      "id": "axle_deadlift",
+      "name": "Axle Deadlift",
+      "category": "back"
+    },
+    {
+      "id": "scapular_retraction_band",
+      "name": "Schulterblatt-Retraktion (Band)",
+      "category": "back"
+    },
+    {
+      "id": "yoke_walk",
+      "name": "Yoke Walk",
+      "category": "back"
+    },
+    {
+      "id": "superman",
+      "name": "Superman",
+      "category": "back"
+    },
+    {
+      "id": "overhead_press",
+      "name": "Schulterdrücken (Langhantel)",
+      "category": "shoulders"
+    },
+    {
+      "id": "dumbbell_shoulder_press",
+      "name": "Schulterdrücken (Kurzhantel)",
+      "category": "shoulders"
+    },
+    {
+      "id": "seated_shoulder_press",
+      "name": "Schulterdrücken (sitzend)",
+      "category": "shoulders"
+    },
+    {
+      "id": "machine_shoulder_press",
+      "name": "Schulterdrücken (Maschine)",
+      "category": "shoulders"
+    },
+    {
+      "id": "arnold_press",
+      "name": "Arnold Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "push_press",
+      "name": "Push Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "behind_neck_press",
+      "name": "Nackendrücken",
+      "category": "shoulders"
+    },
+    {
+      "id": "lateral_raise",
+      "name": "Seitheben",
+      "category": "shoulders"
+    },
+    {
+      "id": "cable_lateral_raise",
+      "name": "Seitheben am Kabelzug",
+      "category": "shoulders"
+    },
+    {
+      "id": "leaning_lateral_raise",
+      "name": "Seitheben (geneigt)",
+      "category": "shoulders"
+    },
+    {
+      "id": "front_raise",
+      "name": "Frontheben",
+      "category": "shoulders"
+    },
+    {
+      "id": "plate_front_raise",
+      "name": "Frontheben (Hantelscheibe)",
+      "category": "shoulders"
+    },
+    {
+      "id": "rear_delt_fly",
+      "name": "Reverse Butterfly (hintere Schulter)",
+      "category": "shoulders"
+    },
+    {
+      "id": "cable_rear_delt_fly",
+      "name": "Reverse Fly am Kabelzug",
+      "category": "shoulders"
+    },
+    {
+      "id": "upright_row",
+      "name": "Aufrechtes Rudern",
+      "category": "shoulders"
+    },
+    {
+      "id": "cuban_press",
+      "name": "Cuban Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "landmine_press",
+      "name": "Landmine Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "z_press",
+      "name": "Z Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "bradford_press",
+      "name": "Bradford Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "viking_press",
+      "name": "Viking Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "single_arm_dumbbell_press",
+      "name": "Kurzhantel-Schulterdrücken (einarmig)",
+      "category": "shoulders"
+    },
+    {
+      "id": "kettlebell_press",
+      "name": "Kettlebell-Schulterdrücken",
+      "category": "shoulders"
+    },
+    {
+      "id": "bottoms_up_kettlebell_press",
+      "name": "Bottoms-Up Kettlebell Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "lying_lateral_raise",
+      "name": "Seitheben (liegend)",
+      "category": "shoulders"
+    },
+    {
+      "id": "y_raise",
+      "name": "Y-Raise",
+      "category": "shoulders"
+    },
+    {
+      "id": "scaption",
+      "name": "Scaption",
+      "category": "shoulders"
+    },
+    {
+      "id": "reverse_pec_deck",
+      "name": "Reverse Butterfly (Maschine)",
+      "category": "shoulders"
+    },
+    {
+      "id": "band_pull_apart",
+      "name": "Band Pull-Apart",
+      "category": "shoulders"
+    },
+    {
+      "id": "external_rotation",
+      "name": "Außenrotation (Kurzhantel)",
+      "category": "shoulders"
+    },
+    {
+      "id": "external_rotation_cable",
+      "name": "Außenrotation am Kabelzug",
+      "category": "shoulders"
+    },
+    {
+      "id": "internal_rotation_cable",
+      "name": "Innenrotation am Kabelzug",
+      "category": "shoulders"
+    },
+    {
+      "id": "barbell_front_raise",
+      "name": "Frontheben (Langhantel)",
+      "category": "shoulders"
+    },
+    {
+      "id": "incline_rear_delt_raise",
+      "name": "Reverse Fliegende (Schrägbank)",
+      "category": "shoulders"
+    },
+    {
+      "id": "machine_lateral_raise",
+      "name": "Seitheben (Maschine)",
+      "category": "shoulders"
+    },
+    {
+      "id": "handstand_push_up",
+      "name": "Handstand-Liegestütz",
+      "category": "shoulders"
+    },
+    {
+      "id": "pike_push_up",
+      "name": "Pike Push-up",
+      "category": "shoulders"
+    },
+    {
+      "id": "wall_walk",
+      "name": "Wall Walk",
+      "category": "shoulders"
+    },
+    {
+      "id": "clean_and_press",
+      "name": "Clean and Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "thruster",
+      "name": "Thruster",
+      "category": "shoulders"
+    },
+    {
+      "id": "snatch",
+      "name": "Reißen (Snatch)",
+      "category": "shoulders"
+    },
+    {
+      "id": "power_snatch",
+      "name": "Power Snatch",
+      "category": "shoulders"
+    },
+    {
+      "id": "push_jerk",
+      "name": "Push Jerk",
+      "category": "shoulders"
+    },
+    {
+      "id": "split_jerk",
+      "name": "Split Jerk",
+      "category": "shoulders"
+    },
+    {
+      "id": "clean_and_jerk",
+      "name": "Umsetzen und Stoßen (Clean and Jerk)",
+      "category": "shoulders"
+    },
+    {
+      "id": "hang_clean",
+      "name": "Hang Clean",
+      "category": "shoulders"
+    },
+    {
+      "id": "power_clean",
+      "name": "Power Clean",
+      "category": "shoulders"
+    },
+    {
+      "id": "clean_pull",
+      "name": "Clean Pull",
+      "category": "shoulders"
+    },
+    {
+      "id": "barbell_high_pull",
+      "name": "High Pull (Langhantel)",
+      "category": "shoulders"
+    },
+    {
+      "id": "dumbbell_high_pull",
+      "name": "High Pull (Kurzhantel)",
+      "category": "shoulders"
+    },
+    {
+      "id": "push_press_behind_neck",
+      "name": "Push Press (hinter dem Nacken)",
+      "category": "shoulders"
+    },
+    {
+      "id": "dumbbell_snatch",
+      "name": "Kurzhantel-Snatch (einarmig)",
+      "category": "shoulders"
+    },
+    {
+      "id": "kettlebell_snatch",
+      "name": "Kettlebell Snatch",
+      "category": "shoulders"
+    },
+    {
+      "id": "smith_machine_shoulder_press",
+      "name": "Schulterdrücken (Multipresse)",
+      "category": "shoulders"
+    },
+    {
+      "id": "resistance_band_lateral_raise",
+      "name": "Seitheben (Widerstandsband)",
+      "category": "shoulders"
+    },
+    {
+      "id": "devils_press",
+      "name": "Devil's Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "kettlebell_thruster",
+      "name": "Kettlebell Thruster",
+      "category": "shoulders"
+    },
+    {
+      "id": "cable_y_raise",
+      "name": "Y-Raise am Kabelzug",
+      "category": "shoulders"
+    },
+    {
+      "id": "bus_driver",
+      "name": "Bus Drivers",
+      "category": "shoulders"
+    },
+    {
+      "id": "egyptian_lateral_raise",
+      "name": "Egyptian Lateral Raise",
+      "category": "shoulders"
+    },
+    {
+      "id": "seated_dumbbell_lateral_raise",
+      "name": "Seitheben (sitzend)",
+      "category": "shoulders"
+    },
+    {
+      "id": "single_arm_cable_lateral_raise",
+      "name": "Seitheben am Kabelzug (einarmig)",
+      "category": "shoulders"
+    },
+    {
+      "id": "behind_the_back_cable_lateral_raise",
+      "name": "Seitheben am Kabelzug (hinter dem Rücken)",
+      "category": "shoulders"
+    },
+    {
+      "id": "shoulder_dislocates",
+      "name": "Schulterdislokationen (Stab)",
+      "category": "shoulders"
+    },
+    {
+      "id": "wall_slide",
+      "name": "Wall Slides",
+      "category": "shoulders"
+    },
+    {
+      "id": "ytwl_raise",
+      "name": "YTWL-Übung",
+      "category": "shoulders"
+    },
+    {
+      "id": "trap_3_raise",
+      "name": "Trap-3-Raise",
+      "category": "shoulders"
+    },
+    {
+      "id": "squats",
+      "name": "Squats",
+      "category": "legs"
+    },
+    {
+      "id": "front_squat",
+      "name": "Front Squats",
+      "category": "legs"
+    },
+    {
+      "id": "box_squat",
+      "name": "Box Squats",
+      "category": "legs"
+    },
+    {
+      "id": "pause_squat",
+      "name": "Pause Squats",
+      "category": "legs"
+    },
+    {
+      "id": "bulgarian_split_squat",
+      "name": "Bulgarian Split Squats",
+      "category": "legs"
+    },
+    {
+      "id": "goblet_squat",
+      "name": "Goblet Squat",
+      "category": "legs"
+    },
+    {
+      "id": "hack_squat",
+      "name": "Hack Squat",
+      "category": "legs"
+    },
+    {
+      "id": "smith_machine_squat",
+      "name": "Squats (Multipresse)",
+      "category": "legs"
+    },
+    {
+      "id": "leg_press",
+      "name": "Beinpresse",
+      "category": "legs"
+    },
+    {
+      "id": "single_leg_press",
+      "name": "Beinpresse (einbeinig)",
+      "category": "legs"
+    },
+    {
+      "id": "lunges",
+      "name": "Ausfallschritte",
+      "category": "legs"
+    },
+    {
+      "id": "walking_lunges",
+      "name": "Ausfallschritte (gehend)",
+      "category": "legs"
+    },
+    {
+      "id": "reverse_lunges",
+      "name": "Ausfallschritte (rückwärts)",
+      "category": "legs"
+    },
+    {
+      "id": "step_ups",
+      "name": "Step-ups",
+      "category": "legs"
+    },
+    {
+      "id": "leg_extension",
+      "name": "Beinstrecker",
+      "category": "legs"
+    },
+    {
+      "id": "leg_curl",
+      "name": "Beinbeuger (liegend)",
+      "category": "legs"
+    },
+    {
+      "id": "seated_leg_curl",
+      "name": "Beinbeuger (sitzend)",
+      "category": "legs"
+    },
+    {
+      "id": "nordic_curl",
+      "name": "Nordic Curl",
+      "category": "legs"
+    },
+    {
+      "id": "hip_thrust",
+      "name": "Hip Thrust",
+      "category": "legs"
+    },
+    {
+      "id": "glute_bridge",
+      "name": "Glute Bridge",
+      "category": "legs"
+    },
+    {
+      "id": "cable_kickback",
+      "name": "Kabelzug-Kickback",
+      "category": "legs"
+    },
+    {
+      "id": "hip_abduction",
+      "name": "Abduktoren-Maschine",
+      "category": "legs"
+    },
+    {
+      "id": "hip_adduction",
+      "name": "Adduktoren-Maschine",
+      "category": "legs"
+    },
+    {
+      "id": "calf_raise",
+      "name": "Wadenheben (stehend)",
+      "category": "legs"
+    },
+    {
+      "id": "seated_calf_raise",
+      "name": "Wadenheben (sitzend)",
+      "category": "legs"
+    },
+    {
+      "id": "leg_press_calf_raise",
+      "name": "Wadenheben (Beinpresse)",
+      "category": "legs"
+    },
+    {
+      "id": "donkey_calf_raise",
+      "name": "Donkey Calf Raises",
+      "category": "legs"
+    },
+    {
+      "id": "sissy_squat",
+      "name": "Sissy Squat",
+      "category": "legs"
+    },
+    {
+      "id": "zercher_squat",
+      "name": "Zercher Squats",
+      "category": "legs"
+    },
+    {
+      "id": "overhead_squat",
+      "name": "Overhead Squat",
+      "category": "legs"
+    },
+    {
+      "id": "safety_bar_squat",
+      "name": "Safety-Bar Squats",
+      "category": "legs"
+    },
+    {
+      "id": "banded_squat",
+      "name": "Squats (Band)",
+      "category": "legs"
+    },
+    {
+      "id": "chain_squat",
+      "name": "Squats (Ketten)",
+      "category": "legs"
+    },
+    {
+      "id": "sumo_squat",
+      "name": "Sumo Squats",
+      "category": "legs"
+    },
+    {
+      "id": "cyclist_squat",
+      "name": "Cyclist Squats",
+      "category": "legs"
+    },
+    {
+      "id": "spanish_squat",
+      "name": "Spanish Squats",
+      "category": "legs"
+    },
+    {
+      "id": "wall_sit",
+      "name": "Wandsitzen (Wall Sit)",
+      "category": "legs"
+    },
+    {
+      "id": "pistol_squat",
+      "name": "Pistol Squat",
+      "category": "legs"
+    },
+    {
+      "id": "shrimp_squat",
+      "name": "Shrimp Squat",
+      "category": "legs"
+    },
+    {
+      "id": "cossack_squat",
+      "name": "Cossack Squats",
+      "category": "legs"
+    },
+    {
+      "id": "curtsy_lunge",
+      "name": "Curtsy Lunges",
+      "category": "legs"
+    },
+    {
+      "id": "lateral_lunge",
+      "name": "Seitliche Ausfallschritte",
+      "category": "legs"
+    },
+    {
+      "id": "step_up_lateral",
+      "name": "Seitliche Step-ups",
+      "category": "legs"
+    },
+    {
+      "id": "vertical_leg_press",
+      "name": "Beinpresse (vertikal)",
+      "category": "legs"
+    },
+    {
+      "id": "narrow_stance_leg_press",
+      "name": "Beinpresse (enger Stand)",
+      "category": "legs"
+    },
+    {
+      "id": "wide_stance_leg_press",
+      "name": "Beinpresse (weiter Stand)",
+      "category": "legs"
+    },
+    {
+      "id": "belt_squat",
+      "name": "Belt Squat",
+      "category": "legs"
+    },
+    {
+      "id": "sled_push",
+      "name": "Sled Push",
+      "category": "legs"
+    },
+    {
+      "id": "sled_pull",
+      "name": "Sled Pull (Rückwärts)",
+      "category": "legs"
+    },
+    {
+      "id": "prowler_sprint",
+      "name": "Prowler Sprint",
+      "category": "legs"
+    },
+    {
+      "id": "glute_ham_raise",
+      "name": "Glute Ham Raise (GHR)",
+      "category": "legs"
+    },
+    {
+      "id": "reverse_nordic_curl",
+      "name": "Reverse Nordic Curl",
+      "category": "legs"
+    },
+    {
+      "id": "single_leg_deadlift",
+      "name": "Einbeiniges Kreuzheben (Kurzhantel)",
+      "category": "legs"
+    },
+    {
+      "id": "single_leg_romanian_deadlift",
+      "name": "Einbeiniges Rumänisches Kreuzheben",
+      "category": "legs"
+    },
+    {
+      "id": "kettlebell_swing",
+      "name": "Kettlebell Swing",
+      "category": "legs"
+    },
+    {
+      "id": "single_leg_hip_thrust",
+      "name": "Hip Thrust (einbeinig)",
+      "category": "legs"
+    },
+    {
+      "id": "frog_pump",
+      "name": "Frog Pumps",
+      "category": "legs"
+    },
+    {
+      "id": "banded_hip_thrust",
+      "name": "Hip Thrust (Band)",
+      "category": "legs"
+    },
+    {
+      "id": "cable_pull_through",
+      "name": "Kabelzug Pull-Through",
+      "category": "legs"
+    },
+    {
+      "id": "standing_hip_abduction_cable",
+      "name": "Hüftabduktion am Kabelzug",
+      "category": "legs"
+    },
+    {
+      "id": "standing_hip_adduction_cable",
+      "name": "Hüftadduktion am Kabelzug",
+      "category": "legs"
+    },
+    {
+      "id": "monster_walk",
+      "name": "Monster Walk (Band)",
+      "category": "legs"
+    },
+    {
+      "id": "lateral_band_walk",
+      "name": "Seitliches Gehen mit Band",
+      "category": "legs"
+    },
+    {
+      "id": "clamshells",
+      "name": "Clamshells",
+      "category": "legs"
+    },
+    {
+      "id": "copenhagen_plank",
+      "name": "Copenhagen Plank",
+      "category": "legs"
+    },
+    {
+      "id": "smith_machine_calf_raise",
+      "name": "Wadenheben (Multipresse)",
+      "category": "legs"
+    },
+    {
+      "id": "single_leg_calf_raise",
+      "name": "Wadenheben (einbeinig)",
+      "category": "legs"
+    },
+    {
+      "id": "tibialis_raise",
+      "name": "Tibialis-Heben",
+      "category": "legs"
+    },
+    {
+      "id": "jump_squat",
+      "name": "Jump Squats",
+      "category": "legs"
+    },
+    {
+      "id": "box_jump",
+      "name": "Box Jump",
+      "category": "legs"
+    },
+    {
+      "id": "broad_jump",
+      "name": "Weitsprung (Standing Long Jump)",
+      "category": "legs"
+    },
+    {
+      "id": "depth_jump",
+      "name": "Depth Jump",
+      "category": "legs"
+    },
+    {
+      "id": "sled_drag",
+      "name": "Sled Drag (Rückwärts)",
+      "category": "legs"
+    },
+    {
+      "id": "resistance_band_leg_curl",
+      "name": "Beinbeuger (Band)",
+      "category": "legs"
+    },
+    {
+      "id": "skater_squat",
+      "name": "Skater Squat",
+      "category": "legs"
+    },
+    {
+      "id": "adductor_side_plank",
+      "name": "Adduktoren Side Plank",
+      "category": "legs"
+    },
+    {
+      "id": "hip_circles",
+      "name": "Hüftkreisen",
+      "category": "legs"
+    },
+    {
+      "id": "lateral_step_down",
+      "name": "Seitliches Step-Down",
+      "category": "legs"
+    },
+    {
+      "id": "bodyweight_squat",
+      "name": "Kniebeuge (Körpergewicht)",
+      "category": "legs"
+    },
+    {
+      "id": "jump_lunge",
+      "name": "Ausfallschritt-Sprünge",
+      "category": "legs"
+    },
+    {
+      "id": "leg_press_toe_press",
+      "name": "Wadenpressen (Beinpresse)",
+      "category": "legs"
+    },
+    {
+      "id": "barbell_curl",
+      "name": "Langhantel-Bizepscurls",
+      "category": "arms"
+    },
+    {
+      "id": "ez_bar_curl",
+      "name": "SZ-Stangen-Bizepscurls",
+      "category": "arms"
+    },
+    {
+      "id": "dumbbell_curl",
+      "name": "Kurzhantel-Bizepscurls",
+      "category": "arms"
+    },
+    {
+      "id": "alternating_dumbbell_curl",
+      "name": "Bizepscurls (wechselnd)",
+      "category": "arms"
+    },
+    {
+      "id": "hammer_curl",
+      "name": "Hammercurls",
+      "category": "arms"
+    },
+    {
+      "id": "preacher_curl",
+      "name": "Scottcurls",
+      "category": "arms"
+    },
+    {
+      "id": "concentration_curl",
+      "name": "Konzentrationscurls",
+      "category": "arms"
+    },
+    {
+      "id": "cable_curl",
+      "name": "Bizepscurls am Kabelzug",
+      "category": "arms"
+    },
+    {
+      "id": "spider_curl",
+      "name": "Spider Curls",
+      "category": "arms"
+    },
+    {
+      "id": "drag_curl",
+      "name": "Drag Curls",
+      "category": "arms"
+    },
+    {
+      "id": "reverse_curl",
+      "name": "Reverse Curls",
+      "category": "arms"
+    },
+    {
+      "id": "triceps_pushdown",
+      "name": "Trizepsdrücken am Kabel",
+      "category": "arms"
+    },
+    {
+      "id": "rope_pushdown",
+      "name": "Trizepsdrücken (Seil)",
+      "category": "arms"
+    },
+    {
+      "id": "overhead_triceps_extension",
+      "name": "Trizeps-Überkopfdrücken",
+      "category": "arms"
+    },
+    {
+      "id": "skull_crushers",
+      "name": "French Press",
+      "category": "arms"
+    },
+    {
+      "id": "close_grip_bench_triceps",
+      "name": "Enges Bankdrücken (Trizeps)",
+      "category": "arms"
+    },
+    {
+      "id": "close_grip_push_up",
+      "name": "Enger Liegestütz",
+      "category": "arms"
+    },
+    {
+      "id": "triceps_dip_machine",
+      "name": "Trizepsdips (Maschine)",
+      "category": "arms"
+    },
+    {
+      "id": "wrist_curl",
+      "name": "Handgelenkscurls",
+      "category": "arms"
+    },
+    {
+      "id": "reverse_wrist_curl",
+      "name": "Handgelenkscurls (Reverse)",
+      "category": "arms"
+    },
+    {
+      "id": "forearm_training",
+      "name": "Unterarmtraining",
+      "category": "arms"
+    },
+    {
+      "id": "incline_dumbbell_curl",
+      "name": "Schrägbank-Curls (Kurzhantel)",
+      "category": "arms"
+    },
+    {
+      "id": "zottman_curl",
+      "name": "Zottman Curl",
+      "category": "arms"
+    },
+    {
+      "id": "cross_body_hammer_curl",
+      "name": "Cross-Body Hammer Curls",
+      "category": "arms"
+    },
+    {
+      "id": "cable_hammer_curl",
+      "name": "Hammercurls am Kabelzug (Seil)",
+      "category": "arms"
+    },
+    {
+      "id": "bayesian_cable_curl",
+      "name": "Bayesian Cable Curl",
+      "category": "arms"
+    },
+    {
+      "id": "waiter_curl",
+      "name": "Waiter Curl",
+      "category": "arms"
+    },
+    {
+      "id": "preacher_curl_machine",
+      "name": "Scottcurls (Maschine)",
+      "category": "arms"
+    },
+    {
+      "id": "behind_the_back_cable_curl",
+      "name": "Curls am Kabelzug (hinter dem Rücken)",
+      "category": "arms"
+    },
+    {
+      "id": "lying_cable_curl",
+      "name": "Curls am Kabelzug (liegend)",
+      "category": "arms"
+    },
+    {
+      "id": "twenty_one_curls",
+      "name": "21er Curls",
+      "category": "arms"
+    },
+    {
+      "id": "wide_grip_barbell_curl",
+      "name": "Langhantel-Curls (weiter Griff)",
+      "category": "arms"
+    },
+    {
+      "id": "close_grip_ez_bar_curl",
+      "name": "SZ-Stangen-Curls (eng)",
+      "category": "arms"
+    },
+    {
+      "id": "tricep_kickback",
+      "name": "Trizeps-Kickback (Kurzhantel)",
+      "category": "arms"
+    },
+    {
+      "id": "overhead_cable_triceps_extension",
+      "name": "Trizeps-Überkopfstrecken am Kabel",
+      "category": "arms"
+    },
+    {
+      "id": "single_arm_overhead_triceps_extension",
+      "name": "Trizeps-Überkopfstrecken (einarmig)",
+      "category": "arms"
+    },
+    {
+      "id": "jm_press",
+      "name": "JM Press",
+      "category": "arms"
+    },
+    {
+      "id": "tate_press",
+      "name": "Tate Press",
+      "category": "arms"
+    },
+    {
+      "id": "triceps_dip_bench",
+      "name": "Trizepsdips (Bank)",
+      "category": "arms"
+    },
+    {
+      "id": "single_arm_triceps_pushdown",
+      "name": "Trizepsdrücken am Kabel (einarmig)",
+      "category": "arms"
+    },
+    {
+      "id": "plate_pinch",
+      "name": "Plate Pinch (Scheiben-Kniff)",
+      "category": "arms"
+    },
+    {
+      "id": "wrist_roller",
+      "name": "Wrist Roller",
+      "category": "arms"
+    },
+    {
+      "id": "behind_back_wrist_curl",
+      "name": "Handgelenkscurls (hinter dem Rücken)",
+      "category": "arms"
+    },
+    {
+      "id": "finger_curls",
+      "name": "Fingercurls",
+      "category": "arms"
+    },
+    {
+      "id": "dead_hang",
+      "name": "Dead Hang",
+      "category": "arms"
+    },
+    {
+      "id": "resistance_band_curl",
+      "name": "Bizepscurls (Band)",
+      "category": "arms"
+    },
+    {
+      "id": "resistance_band_triceps_extension",
+      "name": "Trizepsdrücken (Band)",
+      "category": "arms"
+    },
+    {
+      "id": "seated_dumbbell_curl",
+      "name": "Kurzhantel-Curls (sitzend)",
+      "category": "arms"
+    },
+    {
+      "id": "kettlebell_curl",
+      "name": "Kettlebell-Curls",
+      "category": "arms"
+    },
+    {
+      "id": "single_arm_dumbbell_preacher_curl",
+      "name": "Scottcurls (einarmig, Kurzhantel)",
+      "category": "arms"
+    },
+    {
+      "id": "incline_skull_crusher",
+      "name": "French Press (Schrägbank)",
+      "category": "arms"
+    },
+    {
+      "id": "hercules_hold",
+      "name": "Hercules Hold",
+      "category": "arms"
+    },
+    {
+      "id": "thick_bar_curl",
+      "name": "Curls (Fat Gripz)",
+      "category": "arms"
+    },
+    {
+      "id": "plank",
+      "name": "Plank",
+      "category": "core"
+    },
+    {
+      "id": "side_plank",
+      "name": "Side Plank",
+      "category": "core"
+    },
+    {
+      "id": "crunches",
+      "name": "Crunches",
+      "category": "core"
+    },
+    {
+      "id": "bicycle_crunches",
+      "name": "Fahrrad-Crunches",
+      "category": "core"
+    },
+    {
+      "id": "cable_crunch",
+      "name": "Cable Crunch",
+      "category": "core"
+    },
+    {
+      "id": "sit_ups",
+      "name": "Sit-ups",
+      "category": "core"
+    },
+    {
+      "id": "leg_raise",
+      "name": "Beinheben",
+      "category": "core"
+    },
+    {
+      "id": "hanging_leg_raise",
+      "name": "Hängendes Beinheben",
+      "category": "core"
+    },
+    {
+      "id": "hanging_knee_raise",
+      "name": "Hängendes Knieheben",
+      "category": "core"
+    },
+    {
+      "id": "russian_twist",
+      "name": "Russian Twist",
+      "category": "core"
+    },
+    {
+      "id": "ab_wheel",
+      "name": "Ab Wheel Rollout",
+      "category": "core"
+    },
+    {
+      "id": "mountain_climbers",
+      "name": "Mountain Climbers",
+      "category": "core"
+    },
+    {
+      "id": "flutter_kicks",
+      "name": "Flutter Kicks",
+      "category": "core"
+    },
+    {
+      "id": "dead_bug",
+      "name": "Dead Bug",
+      "category": "core"
+    },
+    {
+      "id": "pallof_press",
+      "name": "Pallof Press",
+      "category": "core"
+    },
+    {
+      "id": "woodchopper",
+      "name": "Woodchopper (Kabelzug)",
+      "category": "core"
+    },
+    {
+      "id": "reverse_crunch",
+      "name": "Reverse Crunch",
+      "category": "core"
+    },
+    {
+      "id": "weighted_crunch",
+      "name": "Crunches (Zusatzgewicht)",
+      "category": "core"
+    },
+    {
+      "id": "decline_sit_up",
+      "name": "Sit-ups (Negativbank)",
+      "category": "core"
+    },
+    {
+      "id": "v_ups",
+      "name": "V-Ups",
+      "category": "core"
+    },
+    {
+      "id": "toe_touches",
+      "name": "Toe Touches",
+      "category": "core"
+    },
+    {
+      "id": "hollow_body_hold",
+      "name": "Hollow Body Hold",
+      "category": "core"
+    },
+    {
+      "id": "bird_dog",
+      "name": "Bird Dog",
+      "category": "core"
+    },
+    {
+      "id": "side_bend",
+      "name": "Seitbeugen (Kurzhantel)",
+      "category": "core"
+    },
+    {
+      "id": "cable_side_bend",
+      "name": "Seitbeugen am Kabelzug",
+      "category": "core"
+    },
+    {
+      "id": "landmine_rotation",
+      "name": "Landmine Rotation (180s)",
+      "category": "core"
+    },
+    {
+      "id": "medicine_ball_slam",
+      "name": "Medizinball Slam",
+      "category": "core"
+    },
+    {
+      "id": "medicine_ball_rotational_throw",
+      "name": "Medizinball Rotationswurf",
+      "category": "core"
+    },
+    {
+      "id": "hanging_windshield_wipers",
+      "name": "Hängende Scheibenwischer",
+      "category": "core"
+    },
+    {
+      "id": "l_sit",
+      "name": "L-Sit",
+      "category": "core"
+    },
+    {
+      "id": "toes_to_bar",
+      "name": "Toes to Bar",
+      "category": "core"
+    },
+    {
+      "id": "captains_chair_raise",
+      "name": "Knieheben (Captain's Chair)",
+      "category": "core"
+    },
+    {
+      "id": "stability_ball_rollout",
+      "name": "Rollout (Gymnastikball)",
+      "category": "core"
+    },
+    {
+      "id": "stir_the_pot",
+      "name": "Stir the Pot",
+      "category": "core"
+    },
+    {
+      "id": "plank_shoulder_tap",
+      "name": "Plank mit Schulterklopfen",
+      "category": "core"
+    },
+    {
+      "id": "sledgehammer_swing",
+      "name": "Vorschlaghammer-Schwünge",
+      "category": "core"
+    },
+    {
+      "id": "turkish_get_up",
+      "name": "Turkish Get-Up",
+      "category": "core"
+    },
+    {
+      "id": "jackknife_situp",
+      "name": "Jackknife Sit-ups",
+      "category": "core"
+    },
+    {
+      "id": "scissor_kicks",
+      "name": "Scherenkicks",
+      "category": "core"
+    },
+    {
+      "id": "side_crunch",
+      "name": "Seitliche Crunches",
+      "category": "core"
+    },
+    {
+      "id": "weighted_plank",
+      "name": "Plank (Zusatzgewicht)",
+      "category": "core"
+    },
+    {
+      "id": "stability_ball_pike",
+      "name": "Pike (Gymnastikball)",
+      "category": "core"
+    },
+    {
+      "id": "cocoons",
+      "name": "Cocoons",
+      "category": "core"
+    },
+    {
+      "id": "dragon_flag",
+      "name": "Dragon Flag",
+      "category": "core"
+    },
+    {
+      "id": "hanging_knee_to_elbow",
+      "name": "Hängendes Knie-zu-Ellbogen",
+      "category": "core"
+    },
+    {
+      "id": "standing_cable_crunch",
+      "name": "Stehende Kabelzug-Crunches",
+      "category": "core"
+    },
+    {
+      "id": "kneeling_cable_crunch",
+      "name": "Kabel-Crunches (kniend)",
+      "category": "core"
+    },
+    {
+      "id": "bosu_ball_crunch",
+      "name": "Crunches (Bosu-Ball)",
+      "category": "core"
+    },
+    {
+      "id": "seated_knee_tuck",
+      "name": "Knieheben (sitzend)",
+      "category": "core"
+    },
+    {
+      "id": "bear_crawl",
+      "name": "Bear Crawl",
+      "category": "core"
+    },
+    {
+      "id": "plank_jacks",
+      "name": "Plank Jacks",
+      "category": "core"
+    },
+    {
+      "id": "side_plank_rotation",
+      "name": "Side Plank mit Rotation",
+      "category": "core"
+    },
+    {
+      "id": "running",
+      "name": "Laufen",
+      "category": "cardio"
+    },
+    {
+      "id": "treadmill",
+      "name": "Laufband",
+      "category": "cardio"
+    },
+    {
+      "id": "rowing_machine",
+      "name": "Rudergerät",
+      "category": "cardio"
+    },
+    {
+      "id": "cycling",
+      "name": "Radfahren",
+      "category": "cardio"
+    },
+    {
+      "id": "stationary_bike",
+      "name": "Fahrradergometer",
+      "category": "cardio"
+    },
+    {
+      "id": "jump_rope",
+      "name": "Seilspringen",
+      "category": "cardio"
+    },
+    {
+      "id": "stair_climber",
+      "name": "Stairmaster",
+      "category": "cardio"
+    },
+    {
+      "id": "elliptical",
+      "name": "Crosstrainer",
+      "category": "cardio"
+    },
+    {
+      "id": "battle_ropes",
+      "name": "Battle Ropes",
+      "category": "cardio"
+    },
+    {
+      "id": "burpees",
+      "name": "Burpees",
+      "category": "cardio"
+    },
+    {
+      "id": "swimming",
+      "name": "Schwimmen",
+      "category": "cardio"
+    },
+    {
+      "id": "sprints",
+      "name": "Sprints",
+      "category": "cardio"
+    },
+    {
+      "id": "hiit",
+      "name": "HIIT-Intervalltraining",
+      "category": "cardio"
+    },
+    {
+      "id": "shadow_boxing",
+      "name": "Schattenboxen",
+      "category": "cardio"
+    },
+    {
+      "id": "heavy_bag_boxing",
+      "name": "Boxsack-Training",
+      "category": "cardio"
+    },
+    {
+      "id": "assault_bike",
+      "name": "Assault Bike",
+      "category": "cardio"
+    },
+    {
+      "id": "ski_erg",
+      "name": "SkiErg",
+      "category": "cardio"
+    },
+    {
+      "id": "incline_treadmill_walk",
+      "name": "Steigungslaufen (Laufband)",
+      "category": "cardio"
+    },
+    {
+      "id": "hiking",
+      "name": "Wandern",
+      "category": "cardio"
+    },
+    {
+      "id": "stair_sprints",
+      "name": "Treppensprints",
+      "category": "cardio"
+    },
+    {
+      "id": "jacobs_ladder",
+      "name": "Jacob's Ladder",
+      "category": "cardio"
+    },
+    {
+      "id": "versaclimber",
+      "name": "VersaClimber",
+      "category": "cardio"
+    },
+    {
+      "id": "tire_flip",
+      "name": "Reifenwenden (Tire Flip)",
+      "category": "cardio"
+    },
+    {
+      "id": "jumping_jacks",
+      "name": "Hampelmann (Jumping Jacks)",
+      "category": "cardio"
+    },
+    {
+      "id": "high_knees",
+      "name": "High Knees",
+      "category": "cardio"
+    },
+    {
+      "id": "dancing",
+      "name": "Tanzen",
+      "category": "cardio"
+    },
+    {
+      "id": "inline_skating",
+      "name": "Inlineskaten",
+      "category": "cardio"
+    },
+    {
+      "id": "cross_country_skiing",
+      "name": "Skilanglauf",
+      "category": "cardio"
+    },
+    {
+      "id": "walking",
+      "name": "Gehen (Spazieren)",
+      "category": "cardio"
+    },
+    {
+      "id": "nordic_walking",
+      "name": "Nordic Walking",
+      "category": "cardio"
+    },
+    {
+      "id": "water_aerobics",
+      "name": "Wassergymnastik (Aqua-Fitness)",
+      "category": "cardio"
+    },
+    {
+      "id": "agility_ladder",
+      "name": "Koordinationsleiter (Agility Ladder)",
+      "category": "cardio"
+    },
+    {
+      "id": "spin_class",
+      "name": "Spinning",
+      "category": "cardio"
+    },
+    {
+      "id": "sandbag_carry",
+      "name": "Sandbag Carry",
+      "category": "cardio"
+    },
+    {
+      "id": "rucking",
+      "name": "Rucking (Marschieren mit Gewicht)",
+      "category": "cardio"
+    },
+    {
+      "id": "zumba",
+      "name": "Zumba",
+      "category": "cardio"
+    },
+    {
+      "id": "kickboxing",
+      "name": "Kickboxen",
+      "category": "cardio"
+    },
+    {
+      "id": "atlas_stones",
+      "name": "Atlas Stones",
+      "category": "cardio"
+    },
+    {
+      "id": "kettlebell_floor_press",
+      "name": "Kettlebell Floor Press",
+      "category": "chest"
+    },
+    {
+      "id": "trx_chest_press",
+      "name": "TRX Brustdrücken",
+      "category": "chest"
+    },
+    {
+      "id": "diamond_push_up",
+      "name": "Diamant-Liegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "spiderman_push_up",
+      "name": "Spiderman-Liegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "one_arm_push_up",
+      "name": "Einarmige Liegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "machine_incline_press",
+      "name": "Schrägbankdrücken-Maschine",
+      "category": "chest"
+    },
+    {
+      "id": "hex_press",
+      "name": "Hex Press",
+      "category": "chest"
+    },
+    {
+      "id": "guillotine_press",
+      "name": "Guillotine Press",
+      "category": "chest"
+    },
+    {
+      "id": "cross_body_cable_fly",
+      "name": "Kabelzug-Fliegende (Cross-Over)",
+      "category": "chest"
+    },
+    {
+      "id": "resistance_band_fly",
+      "name": "Fliegende mit Widerstandsband",
+      "category": "chest"
+    },
+    {
+      "id": "medicine_ball_chest_pass",
+      "name": "Medizinball-Brustwurf",
+      "category": "chest"
+    },
+    {
+      "id": "banded_push_up",
+      "name": "Liegestütze mit Band",
+      "category": "chest"
+    },
+    {
+      "id": "iso_lateral_chest_press_machine",
+      "name": "Iso-Lateral-Brustpresse",
+      "category": "chest"
+    },
+    {
+      "id": "ring_push_up",
+      "name": "Ring-Liegestütze",
+      "category": "chest"
+    },
+    {
+      "id": "ring_dip",
+      "name": "Ring-Dips",
+      "category": "chest"
+    },
+    {
+      "id": "assisted_dip_machine",
+      "name": "Dip-Maschine (unterstützt)",
+      "category": "chest"
+    },
+    {
+      "id": "kettlebell_clean",
+      "name": "Kettlebell Clean",
+      "category": "back"
+    },
+    {
+      "id": "kettlebell_high_pull",
+      "name": "Kettlebell High Pull",
+      "category": "back"
+    },
+    {
+      "id": "single_arm_kettlebell_row",
+      "name": "Kettlebell-Rudern (einarmig)",
+      "category": "back"
+    },
+    {
+      "id": "atlas_stone_lift",
+      "name": "Atlas Stone Lift",
+      "category": "back"
+    },
+    {
+      "id": "trx_row",
+      "name": "TRX Rudern",
+      "category": "back"
+    },
+    {
+      "id": "batwing_row",
+      "name": "Batwing Row",
+      "category": "back"
+    },
+    {
+      "id": "cable_pullover",
+      "name": "Kabelzug-Überzüge",
+      "category": "back"
+    },
+    {
+      "id": "zercher_deadlift",
+      "name": "Zercher-Kreuzheben",
+      "category": "back"
+    },
+    {
+      "id": "commando_pull_up",
+      "name": "Commando-Klimmzug",
+      "category": "back"
+    },
+    {
+      "id": "typewriter_pull_up",
+      "name": "Typewriter-Klimmzug",
+      "category": "back"
+    },
+    {
+      "id": "negative_pull_up",
+      "name": "Negative Klimmzüge",
+      "category": "back"
+    },
+    {
+      "id": "ring_row",
+      "name": "Ring Rudern",
+      "category": "back"
+    },
+    {
+      "id": "ring_pull_up",
+      "name": "Ringe-Klimmzug",
+      "category": "back"
+    },
+    {
+      "id": "front_lever",
+      "name": "Front Lever",
+      "category": "back"
+    },
+    {
+      "id": "tuck_front_lever",
+      "name": "Tuck Front Lever",
+      "category": "back"
+    },
+    {
+      "id": "back_lever",
+      "name": "Back Lever",
+      "category": "back"
+    },
+    {
+      "id": "skin_the_cat",
+      "name": "Skin the Cat",
+      "category": "back"
+    },
+    {
+      "id": "snatch_pull",
+      "name": "Snatch Pull",
+      "category": "back"
+    },
+    {
+      "id": "towel_pull_up",
+      "name": "Handtuch-Klimmzug",
+      "category": "back"
+    },
+    {
+      "id": "iso_lateral_row_machine",
+      "name": "Iso-Lateral-Rudermaschine",
+      "category": "back"
+    },
+    {
+      "id": "log_press",
+      "name": "Log Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "axle_press",
+      "name": "Axle Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "kettlebell_push_press",
+      "name": "Kettlebell Push Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "single_arm_landmine_press",
+      "name": "Landmine-Drücken (einarmig)",
+      "category": "shoulders"
+    },
+    {
+      "id": "band_front_raise",
+      "name": "Frontheben mit Widerstandsband",
+      "category": "shoulders"
+    },
+    {
+      "id": "lu_raise",
+      "name": "Lu Raise",
+      "category": "shoulders"
+    },
+    {
+      "id": "w_raise",
+      "name": "W-Raise",
+      "category": "shoulders"
+    },
+    {
+      "id": "scarecrow",
+      "name": "Scarecrow",
+      "category": "shoulders"
+    },
+    {
+      "id": "plate_raise_360",
+      "name": "360-Grad-Hantelscheiben-Raise",
+      "category": "shoulders"
+    },
+    {
+      "id": "trx_y_fly",
+      "name": "TRX Y-Fly",
+      "category": "shoulders"
+    },
+    {
+      "id": "incline_rear_delt_row",
+      "name": "Reverse-Rudern (Schrägbank)",
+      "category": "shoulders"
+    },
+    {
+      "id": "kettlebell_arnold_press",
+      "name": "Kettlebell Arnold Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "band_shoulder_press",
+      "name": "Schulterdrücken mit Widerstandsband",
+      "category": "shoulders"
+    },
+    {
+      "id": "cable_shoulder_press",
+      "name": "Schulterdrücken am Kabelzug",
+      "category": "shoulders"
+    },
+    {
+      "id": "powell_raise",
+      "name": "Powell Raise",
+      "category": "shoulders"
+    },
+    {
+      "id": "javelin_press",
+      "name": "Javelin Press",
+      "category": "shoulders"
+    },
+    {
+      "id": "tuck_jump",
+      "name": "Tuck Jump",
+      "category": "legs"
+    },
+    {
+      "id": "lateral_bound",
+      "name": "Lateral Bound",
+      "category": "legs"
+    },
+    {
+      "id": "kettlebell_front_squat",
+      "name": "Kettlebell-Frontkniebeuge",
+      "category": "legs"
+    },
+    {
+      "id": "landmine_squat",
+      "name": "Landmine-Kniebeuge",
+      "category": "legs"
+    },
+    {
+      "id": "deficit_reverse_lunge",
+      "name": "Ausfallschritt im Defizit (rückwärts)",
+      "category": "legs"
+    },
+    {
+      "id": "band_lateral_walk",
+      "name": "Seitliches Gehen mit Widerstandsband",
+      "category": "legs"
+    },
+    {
+      "id": "banded_clamshell",
+      "name": "Clamshell mit Widerstandsband",
+      "category": "legs"
+    },
+    {
+      "id": "glute_kickback_machine",
+      "name": "Kickback-Maschine",
+      "category": "legs"
+    },
+    {
+      "id": "step_down",
+      "name": "Step-Down (exzentrisch)",
+      "category": "legs"
+    },
+    {
+      "id": "jefferson_curl",
+      "name": "Jefferson Curl",
+      "category": "legs"
+    },
+    {
+      "id": "v_squat_machine",
+      "name": "V-Squat-Maschine",
+      "category": "legs"
+    },
+    {
+      "id": "single_leg_glute_bridge",
+      "name": "Einbeiniger Glute Bridge",
+      "category": "legs"
+    },
+    {
+      "id": "standing_hamstring_curl_machine",
+      "name": "Beinbeuger (stehend)",
+      "category": "legs"
+    },
+    {
+      "id": "kettlebell_lunge",
+      "name": "Kettlebell-Ausfallschritt",
+      "category": "legs"
+    },
+    {
+      "id": "smith_machine_lunge",
+      "name": "Ausfallschritte (Multipresse)",
+      "category": "legs"
+    },
+    {
+      "id": "pogo_jump",
+      "name": "Pogo Jumps",
+      "category": "legs"
+    },
+    {
+      "id": "kettlebell_step_up",
+      "name": "Kettlebell Step-up",
+      "category": "legs"
+    },
+    {
+      "id": "band_bicep_curl",
+      "name": "Bizepscurls mit Widerstandsband",
+      "category": "arms"
+    },
+    {
+      "id": "bench_dip",
+      "name": "Bankdips",
+      "category": "arms"
+    },
+    {
+      "id": "kettlebell_overhead_triceps_extension",
+      "name": "Kettlebell Trizeps-Überkopfdrücken",
+      "category": "arms"
+    },
+    {
+      "id": "grip_trainer",
+      "name": "Grip-Trainer",
+      "category": "arms"
+    },
+    {
+      "id": "preacher_hammer_curl",
+      "name": "Scott-Hammercurls",
+      "category": "arms"
+    },
+    {
+      "id": "single_arm_dumbbell_overhead_extension",
+      "name": "Kurzhantel-Trizeps-Überkopfdrücken (einarmig)",
+      "category": "arms"
+    },
+    {
+      "id": "overhead_cable_curl",
+      "name": "Kabelzug-Bizepscurls (Überkopf)",
+      "category": "arms"
+    },
+    {
+      "id": "machine_bicep_curl",
+      "name": "Bizeps-Curl-Maschine",
+      "category": "arms"
+    },
+    {
+      "id": "machine_tricep_extension",
+      "name": "Trizeps-Maschine",
+      "category": "arms"
+    },
+    {
+      "id": "band_hammer_curl",
+      "name": "Hammercurls mit Widerstandsband",
+      "category": "arms"
+    },
+    {
+      "id": "windshield_wiper",
+      "name": "Windshield Wipers",
+      "category": "core"
+    },
+    {
+      "id": "medicine_ball_russian_twist",
+      "name": "Medizinball Russian Twist",
+      "category": "core"
+    },
+    {
+      "id": "trx_pike",
+      "name": "TRX Pike",
+      "category": "core"
+    },
+    {
+      "id": "trx_mountain_climber",
+      "name": "TRX Mountain Climber",
+      "category": "core"
+    },
+    {
+      "id": "trx_body_saw",
+      "name": "TRX Body Saw",
+      "category": "core"
+    },
+    {
+      "id": "sit_up_weighted",
+      "name": "Sit-ups (Zusatzgewicht)",
+      "category": "core"
+    },
+    {
+      "id": "plank_up_down",
+      "name": "Plank Up-Down",
+      "category": "core"
+    },
+    {
+      "id": "captains_chair_leg_raise",
+      "name": "Captain's Chair Beinheben",
+      "category": "core"
+    },
+    {
+      "id": "swiss_ball_crunch",
+      "name": "Crunches auf dem Gymnastikball",
+      "category": "core"
+    },
+    {
+      "id": "kettlebell_windmill",
+      "name": "Kettlebell Windmill",
+      "category": "core"
+    },
+    {
+      "id": "kettlebell_halo",
+      "name": "Kettlebell Halo",
+      "category": "core"
+    },
+    {
+      "id": "shuttle_run",
+      "name": "Shuttle Run",
+      "category": "cardio"
+    },
+    {
+      "id": "arc_trainer",
+      "name": "Arc Trainer",
+      "category": "cardio"
+    },
+    {
+      "id": "recumbent_bike",
+      "name": "Liegerad-Ergometer",
+      "category": "cardio"
+    },
+    {
+      "id": "wall_ball",
+      "name": "Wall Ball",
+      "category": "cardio"
+    }
+  ]
+}

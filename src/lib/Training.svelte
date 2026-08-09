@@ -7,6 +7,7 @@
   import ImportLog from './ImportLog.svelte';
   import ExerciseDetail from './ExerciseDetail.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
+  import Icon from './Icon.svelte';
 
   let showAllPlans = false;
   let planPromptOpen = false;
@@ -18,8 +19,8 @@
   let edStartIdx = 0;
   let edSource = 'day'; // 'day' | 'daily'
 
-  // one-time cleanup: older imports (before the "====" divider parsing fix)
-  // could have left a decorative, fully empty exercise entry behind
+  // Older imports (before the "====" divider parsing fix) could have left a
+  // decorative, fully empty exercise entry behind — filter those out once.
   function isEmptyDivider(ex) {
     return /^[=\-_*.\s]*$/.test(ex.name || '')
       && ex.sets.every(s => s.w === 0)
@@ -126,8 +127,8 @@
   <div class="card" style="text-align:center;padding:32px 20px">
     <p class="plain-rest" style="margin-bottom:16px">Noch kein Trainingsplan angelegt.</p>
     <button class="cta" on:click={openNewPlan}>+ Neuer Plan</button>
-    <button class="cta ghost" style="margin-top:10px" on:click={openImport}>📄 Log importieren</button>
-    <button class="cta ghost" style="margin-top:10px" on:click={openExample}>⭐ Beispielplan laden</button>
+    <button class="cta ghost" style="margin-top:10px" on:click={openImport}><Icon name="file" size={16} />Log importieren</button>
+    <button class="cta ghost" style="margin-top:10px" on:click={openExample}><Icon name="star" size={16} />Beispielplan laden</button>
   </div>
 {:else if day.rest}
   <p class="plain-rest">Heute ist Ruhetag.<br>Kein Training eingetragen.</p>
@@ -172,7 +173,7 @@
     <div class="ov-top">
       <span style="width:40px"></span>
       <div style="font-family:'Sora';font-weight:700;font-size:15px">Trainingsplan wählen</div>
-      <button class="iconbtn" on:click={() => (planPromptOpen = false)}>✕</button>
+      <button class="iconbtn" on:click={() => (planPromptOpen = false)}><Icon name="close" /></button>
     </div>
     <div class="pe-scroll">
       <p class="radar-hint" style="text-align:left;margin-bottom:12px">Welchen Trainingsplan möchtest du heute nutzen?</p>
@@ -186,7 +187,7 @@
           on:keydown={(e) => selectPlanKey(p.id, e)}
         >
           <span>{p.name}</span>
-          {#if p.id === $trainState.activePlanId}<span>✓</span>{/if}
+          {#if p.id === $trainState.activePlanId}<Icon name="check" size={16} />{/if}
         </div>
       {/each}
     </div>
@@ -196,7 +197,7 @@
 {#if showAllPlans}
   <div class="overlay open">
     <div class="ov-top">
-      <button class="iconbtn" on:click={() => (showAllPlans = false)}>✕</button>
+      <button class="iconbtn" on:click={() => (showAllPlans = false)}><Icon name="close" /></button>
       <div style="font-family:'Sora';font-weight:700;font-size:15px">Alle Trainingspläne</div>
       <span style="width:40px"></span>
     </div>
@@ -211,12 +212,12 @@
           on:keydown={(e) => selectPlanKey(p.id, e)}
         >
           <span>{p.name}</span>
-          {#if p.id === $trainState.activePlanId}<span>✓</span>{/if}
+          {#if p.id === $trainState.activePlanId}<Icon name="check" size={16} />{/if}
         </div>
       {/each}
       <button class="cta ghost" style="margin-top:14px" on:click={openNewPlan}>+ Neuer Plan</button>
-      <button class="cta ghost" style="margin-top:10px" on:click={openImport}>📄 Log importieren</button>
-      <button class="cta ghost" style="margin-top:10px" on:click={openExample}>⭐ Beispielplan laden</button>
+      <button class="cta ghost" style="margin-top:10px" on:click={openImport}><Icon name="file" size={16} />Log importieren</button>
+      <button class="cta ghost" style="margin-top:10px" on:click={openExample}><Icon name="star" size={16} />Beispielplan laden</button>
     </div>
   </div>
 {/if}

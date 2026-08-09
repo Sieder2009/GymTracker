@@ -1,14 +1,31 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'l10n/app_localizations.dart';
+import 'services/exercise_database_service.dart';
+import 'services/health_service.dart';
+import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'state/active_screen_provider.dart';
 import 'state/appearance_provider.dart';
+import 'state/athlete_settings_provider.dart';
 import 'state/big_lifts_provider.dart';
+import 'state/body_weight_provider.dart';
+import 'state/custom_exercises_provider.dart';
+import 'state/exercise_database_provider.dart';
+import 'state/gym_photos_provider.dart';
+import 'state/health_provider.dart';
+import 'state/locale_provider.dart';
 import 'state/programs_provider.dart';
+import 'state/reminder_provider.dart';
 import 'state/theme_provider.dart';
 import 'state/toast_provider.dart';
 import 'state/train_state_provider.dart';
+import 'state/update_provider.dart';
+import 'state/workout_history_provider.dart';
 import 'theme/app_theme.dart';
 import 'widgets/app_shell.dart';
 
@@ -16,24 +33,41 @@ import 'widgets/app_shell.dart';
 /// every pushed overlay route stays a descendant of this provider tree, so
 /// it can read/watch the same app-wide state as the 3 tab screens.
 class IronpeakApp extends StatelessWidget {
-  const IronpeakApp({super.key, required this.storage});
+  const IronpeakApp(
+      {super.key, required this.storage, required this.photosDir});
 
   final StorageService storage;
+  final Directory photosDir;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<StorageService>.value(value: storage),
         ChangeNotifierProvider(create: (_) => ThemeProvider(storage)),
+        ChangeNotifierProvider(create: (_) => LocaleProvider(storage)),
         ChangeNotifierProvider(create: (_) => ProgramsProvider(storage)),
         ChangeNotifierProvider(create: (_) => TrainStateProvider(storage)),
         ChangeNotifierProvider(create: (_) => BigLiftsProvider(storage)),
+        ChangeNotifierProvider(create: (_) => BodyWeightProvider(storage)),
+        ChangeNotifierProvider(create: (_) => AthleteSettingsProvider(storage)),
+        ChangeNotifierProvider(create: (_) => WorkoutHistoryProvider(storage)),
+        ChangeNotifierProvider(
+            create: (_) => GymPhotosProvider(storage, photosDir)),
+        ChangeNotifierProvider(create: (_) => HealthProvider(HealthService())),
+        ChangeNotifierProvider(
+            create: (_) =>
+                ExerciseDatabaseProvider(storage, ExerciseDatabaseService())),
+        ChangeNotifierProvider(create: (_) => CustomExercisesProvider(storage)),
         ChangeNotifierProvider(create: (_) => ActiveScreenProvider()),
         ChangeNotifierProvider(create: (_) => ToastProvider()),
         ChangeNotifierProvider(create: (_) => AppearanceProvider(storage)),
+        ChangeNotifierProvider(create: (_) => UpdateProvider()),
+        ChangeNotifierProvider(
+            create: (_) => ReminderProvider(storage, NotificationService())),
       ],
-      child: Consumer2<ThemeProvider, AppearanceProvider>(
-        builder: (context, theme, appearance, _) {
+      child: Consumer3<ThemeProvider, AppearanceProvider, LocaleProvider>(
+        builder: (context, theme, appearance, localeProvider, _) {
           return MaterialApp(
             title: 'Ironpeak Fitness',
             debugShowCheckedModeBanner: false,
@@ -46,6 +80,14 @@ class IronpeakApp extends StatelessWidget {
               secondaryOverride: appearance.secondary,
             ),
             themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
+            locale: localeProvider.locale,
+            supportedLocales: kSupportedLocales.map(Locale.new),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: const AppShell(),
           );
         },

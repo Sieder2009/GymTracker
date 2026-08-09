@@ -1,0 +1,370 @@
+/* CSS */
+:root {
+    --primary-color: #0f0;
+    --secondary-color: rgba(0, 25, 0, 0.7);
+    --background-color: rgba(0, 10, 0, 0.2);
+    --text-color: #0f0;
+    --highlight-color: rgba(0, 255, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #000;
+    color: var(--text-color);
+    line-height: 1.5;
+    background-image: 
+        linear-gradient(rgba(0, 20, 0, 0.3), rgba(0, 0, 0, 0.7));
+}
+
+header {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: var(--primary-color);
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+    position: relative;
+    z-index: 1;
+}
+
+.main-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+.terminal-container {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--primary-color);
+    background-color: rgba(0, 30, 0, 0.5);
+}
+
+.terminal-header h2 {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.terminal-controls {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.control {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid var(--primary-color);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.control:hover {
+    transform: scale(1.1);
+}
+
+.control.close { background-color: #f00; }
+.control.minimize { background-color: #ff0; }
+.control.maximize { background-color: var(--primary-color); }
+
+.terminal-body {
+    padding: 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+}
+
+.command-line {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.prompt {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.command {
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+}
+
+.workout-section {
+    margin-bottom: 2rem;
+    border-bottom: 1px dashed rgba(0, 255, 0, 0.3);
+    padding-bottom: 1.5rem;
+}
+
+.workout-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.workout-section h3 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.exercise {
+    margin-bottom: 1.5rem;
+    background-color: rgba(0, 20, 0, 0.2);
+    padding: 1rem;
+    border-left: 3px solid var(--primary-color);
+    border-radius: 0 4px 4px 0;
+}
+
+.exercise h4 {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.tag {
+    font-size: 0.8rem;
+    background-color: var(--highlight-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    color: var(--primary-color);
+}
+
+.set-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+}
+
+.set {
+    padding: 0.5rem;
+    background-color: var(--background-color);
+    border: 1px solid rgba(0, 255, 0, 0.1);
+    border-radius: 3px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.set:hover {
+    background-color: rgba(0, 30, 0, 0.3);
+    border-color: rgba(0, 255, 0, 0.3);
+}
+
+.highlight {
+    color: var(--primary-color);
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--primary-color);
+    background-color: rgba(0, 255, 0, 0.1) !important;
+}
+
+.note {
+    grid-column: 1 / -1;
+    font-style: italic;
+    color: #8f8;
+    padding: 0.5rem;
+    background-color: rgba(0, 30, 0, 0.3);
+    border-left: 3px solid #8f8;
+}
+
+.terminal-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--primary-color);
+    text-align: center;
+    background-color: rgba(0, 30, 0, 0.5);
+    font-size: 0.9rem;
+}
+
+footer {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: var(--primary-color);
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid var(--primary-color);
+    font-size: 0.9rem;
+}
+
+.nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.nav-links a:hover {
+    text-shadow: 0 0 10px var(--primary-color);
+    color: #8f8;
+}
+
+.matrix-effect {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.blink {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 10, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 0, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 0, 0.7);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .set-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    header, footer {
+        padding: 1rem;
+    }
+    
+    .terminal-body {
+        padding: 1rem;
+    }
+    
+    .exercise {
+        padding: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .set-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .terminal-header {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: flex-start;
+    }
+    
+    .terminal-controls {
+        align-self: flex-end;
+    }
+}
+/* Füge dies zum CSS hinzu */
+.summary {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: rgba(0, 20, 0, 0.2);
+    border: 1px solid rgba(0, 255, 0, 0.1);
+    border-radius: 4px;
+}
+
+.summary p {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+}
+
+.summary-stats span {
+    padding: 0.3rem 0.5rem;
+    background-color: rgba(0, 30, 0, 0.3);
+    border-radius: 3px;
+    font-size: 0.9rem;
+    color: #8f8;
+}
+
+/* Spezielle Highlight-Stile für PRs */
+.highlight[data-pr="true"] {
+    animation: pulse 2s infinite;
+    border-color: var(--primary-color);
+}
+
+/* Verbesserte Note-Stile */
+.note {
+    grid-column: 1 / -1;
+    font-style: italic;
+    color: #8f8;
+    padding: 0.5rem;
+    background-color: rgba(0, 30, 0, 0.3);
+    border-left: 3px solid #8f8;
+    margin-top: 0.5rem;
+}
+
+/* Media Queries für mobile Anpassungen */
+@media (max-width: 768px) {
+    .summary-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .exercise h4 {
+        font-size: 1rem;
+    }
+}

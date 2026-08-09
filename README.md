@@ -18,6 +18,11 @@ kostenlos von GitHub gehostet, du musst nichts selbst betreiben. Nur der
 App-Code liegt dort; deine Trainingsdaten bleiben ausschließlich im
 `localStorage` deines Handy-Browsers.
 
+> Der Link leitet automatisch weiter zu
+> **https://monster.sieder.plattnericus.dev/GymTraker/** (eigene Domain) —
+> das ist beabsichtigt, beide Adressen zeigen auf dieselbe, kostenlos über
+> GitHub Pages gehostete App.
+
 1. Im Handy-Browser öffnen: **https://sieder2009.github.io/GymTraker/**
 2. **iOS (Safari):** Teilen-Symbol → "Zum Home-Bildschirm".
    **Android (Chrome):** Menü (⋮) → "App installieren" bzw. "Zum
@@ -30,6 +35,18 @@ Jeder Push auf `master` veröffentlicht automatisch die neueste Version über
 GitHub Actions — siehe `.github/workflows/pages.yml`. Damit das läuft, muss
 in den Repo-Einstellungen unter **Settings → Pages → Source** einmalig
 **"GitHub Actions"** ausgewählt werden.
+
+## Sieder Hub (Spiele, Links, Zugang zur App)
+
+Unter **https://sieder2009.github.io/GymTraker/home/** liegt der "Sieder
+Hub" — ein kleines Portal (statisches HTML/CSS/JS in `public/home/`, wird bei
+jedem Build automatisch mit veröffentlicht) mit durchgängiger Navigation
+zwischen allen Unterseiten: Spiele (3 Gewinnt, 4 Gewinnt, Blackjack),
+persönliche Infos, Social-Media-Links und ein **Trainingsplan-Archiv**
+(`public/home/archiv/`, 6 alte, handgeschriebene Trainingspläne v2.0–v7.0 im
+originalen grünen Terminal-Look) — sowie einer prominenten Karte, die direkt
+zur GymTraker-App führt. Komplett eigenständig von der Svelte-App, teilt sich
+nur das Repo und den Deploy.
 
 ## Windows-Desktop-App herunterladen
 
@@ -121,6 +138,7 @@ electron/
 public/
   manifest.json        Web-App-Manifest (Handy-Installation)
   icon.svg, icon-*.png Icons fürs Manifest / Home-Bildschirm
+  home/                Sieder Hub: Spiele, Infos, Medien, Link zur App
 scripts/
   gen-icons.mjs        Erzeugt die icon-*.png aus icon.svg (bei Bedarf erneut ausführen)
 src/

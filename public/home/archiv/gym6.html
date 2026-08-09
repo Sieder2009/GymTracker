@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYM_TERMINAL | POWERLIFTING_PROGRAMM</title>
+    <link rel="stylesheet" href="CSS/gym6.css">
+</head>
+<body>
+    <div class="matrix-effect" id="matrix"></div>
+    
+    <header>
+        <h1>// GYM_TERMINAL v7.0 [POWERLIFTING_PROTOKOLL]</h1>
+    </header>
+    
+    <main class="main-content">
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <h2>> POWERLIFTING_WOCHE_1 // <span id="current-date"></span></h2>
+                <div class="terminal-controls">
+                    <span class="control close" title="Close"></span>
+                    <span class="control minimize" title="Minimize"></span>
+                    <span class="control maximize" title="Maximize"></span>
+                </div>
+            </div>
+            
+            <div class="terminal-body">
+                <div class="command-line">
+                    <span class="prompt">></span>
+                    <span class="command blink">POWERLIFTING_DATEN_WERDEN_GELADEN...</span>
+                </div>
+                
+                <div class="powerlifting-stats">
+                    <div class="max-stats">
+                        <h3>> 1RM_MAXIMALWERTE:</h3>
+                        <div class="max-grid">
+                            <div class="max-item squat">
+                                <span class="max-label">SQUAT:</span>
+                                <span class="max-value">110 kg</span>
+                                <span class="max-percentage">100%</span>
+                            </div>
+                            <div class="max-item bench">
+                                <span class="max-label">BENCH:</span>
+                                <span class="max-value">77.5 kg</span>
+                                <span class="max-percentage">100%</span>
+                            </div>
+                            <div class="max-item deadlift">
+                                <span class="max-label">DEADLIFT:</span>
+                                <span class="max-value">125 kg</span>
+                                <span class="max-percentage">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="program-structure">
+                        <h3>> TRAININGSSTRUKTUR:</h3>
+                        <div class="structure-grid">
+                            <div class="day-card">
+                                <span class="day-number">TAG 1</span>
+                                <span class="day-focus">Schwer Squat + Bench</span>
+                            </div>
+                            <div class="day-card">
+                                <span class="day-number">TAG 2</span>
+                                <span class="day-focus">Deadlift + Accessory</span>
+                            </div>
+                            <div class="day-card">
+                                <span class="day-number">TAG 3</span>
+                                <span class="day-focus">Volumen Bench + Rücken</span>
+                            </div>
+                            <div class="day-card">
+                                <span class="day-number">TAG 4</span>
+                                <span class="day-focus">Squat Volumen + Posterior</span>
+                            </div>
+                            <div class="day-card">
+                                <span class="day-number">TAG 5</span>
+                                <span class="day-focus">Bench Intensität + Oberkörper Push</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="workout-section">
+                    <h3>> TAG 1: SCHWER_SQUAT + BENCH</h3>
+                    
+                    <div class="exercise">
+                        <h4>> Squat 3×3 @ 77.5kg (70% 1RM)</h4>
+                        <div class="percent-label">PROGRESSIVE_WARMUP:</div>
+                        <div class="set-grid">
+                            <div class="set warmup">77.5kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">80kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">82.5kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">85kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">87.5kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">90kg ×1 // 5.5.5.5.5</div>
+                        </div>
+                        <div class="percent-label">ARBEITSSÄTZE:</div>
+                        <div class="set-grid">
+                            <div class="set">97.5kg ×1 // 3.3.3.3</div>
+                            <div class="set">100kg ×1 // 3.3.3.3</div>
+                            <div class="set">102.5kg ×1 // 3.3.3.3</div>
+                            <div class="set">105kg ×1 // 3.3.3.3</div>
+                            <div class="set">107.5kg ×2 // 3.3.2.(2) 2.1.1</div>
+                            <div class="set failed">110kg ×</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Bench 4×3 @ 55kg (70% 1RM)</h4>
+                        <div class="percent-label">PROGRESSIVE_WARMUP:</div>
+                        <div class="set-grid">
+                            <div class="set warmup">55kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">57.5kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">60kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">62.5kg ×1 // 5.5.5.5.5</div>
+                            <div class="set warmup">65kg ×2 // 5.5.5.5.5 5.5.5.5.5</div>
+                        </div>
+                        <div class="percent-label">ARBEITSSÄTZE:</div>
+                        <div class="set-grid">
+                            <div class="set">70kg ×1 // 3.3.3.3</div>
+                            <div class="set">72.5kg ×1 // 3.3.3.3</div>
+                            <div class="set">75kg ×2 // 3.3.2.2 3.3.3.3</div>
+                            <div class="set failed">77.5kg ×2 // 3.2.(72.5kg 3.3) 3.2.2.1</div>
+                            <div class="set failed">80kg ×</div>
+                            <div class="set failed">82.5kg ×</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Beinpresse 3×10</h4>
+                        <div class="set-grid">
+                            <div class="set">150kg ×1 // 10.10.10</div>
+                            <div class="set">160kg ×2 // 10.7.5 10.10.10</div>
+                            <div class="set">170kg ×1 // 10.7.5</div>
+                            <div class="set">110kg ×1 // 10.10.10</div>
+                            <div class="set">120kg ×1 // 10.10.10</div>
+                            <div class="set">170kg ×1 // 10.10.10</div>
+                            <div class="set highlight">180kg ×3 // 10.6.5 10.10.6 10.9.5</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Belt Squat 3×10</h4>
+                        <div class="set-grid">
+                            <div class="set note">EXERCISE_LOGGED</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Trizepsdrücken 3×12</h4>
+                        <div class="set-grid">
+                            <div class="set">30kg ×1 // 12.12.12</div>
+                            <div class="set">32.5kg ×1 // 12.12.12</div>
+                            <div class="set">35kg ×3 // 10.9.8 12.9.9 12.12.9</div>
+                            <div class="set highlight">37.5kg ×3 // 10.9.8 12.10.9 12.11.10</div>
+                            <div class="set">40kg ×4 // 7.5.4 8.6.5 8.x.x (35 10 30 7 25 5)</div>
+                            <div class="set failed">42.5kg ×</div>
+                            <div class="set failed">45kg ×</div>
+                            <div class="set failed">47.5kg ×</div>
+                            <div class="set failed">50kg ×</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="workout-section">
+                    <h3>> TAG 2: DEADLIFT + ACCESSORY</h3>
+                    
+                    <div class="exercise">
+                        <h4>> Deadlift 3×3 @ 87.5kg (70% 1RM)</h4>
+                        <div class="percent-label">PROGRESSIVE_WARMUP:</div>
+                        <div class="set-grid">
+                            <div class="set warmup">87.5kg ×1 // 5.5.5.5</div>
+                            <div class="set warmup">90kg ×1 // 5.5.5.5</div>
+                            <div class="set warmup">92.5kg ×1 // 5.5.5.5</div>
+                            <div class="set warmup">95kg ×1 // 5.5.5.5</div>
+                            <div class="set warmup">97.5kg ×1 // 5.5.5.5</div>
+                            <div class="set warmup">100kg ×1 // 5.5.5.5</div>
+                        </div>
+                        <div class="percent-label">ARBEITSSÄTZE:</div>
+                        <div class="set-grid">
+                            <div class="set">107.5kg ×1 // 3.3.3.3</div>
+                            <div class="set">110kg ×1 // 3.3.3.3</div>
+                            <div class="set">112.5kg ×1 // 3.3.3.3</div>
+                            <div class="set">115kg ×1 // 3.3.3.3</div>
+                            <div class="set">117.5kg ×1 // 3.3.3</div>
+                            <div class="set highlight">120kg ×1 // 3.3.3</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Pausen-Squat 3×5 @ 65kg (60% 1RM) 2 sec</h4>
+                        <div class="set-grid compact">
+                            <div class="set">65kg ×1 // 5.5.4</div>
+                            <div class="set">67.5kg ×1 // 5.5.5</div>
+                            <div class="set">70kg ×1 // 5.5.5</div>
+                            <div class="set">72.5kg ×1 // 5.5.5</div>
+                            <div class="set">75kg ×1 // 5.5.5</div>
+                            <div class="set">77.5kg ×1 // 5.5.5</div>
+                            <div class="set">80kg ×1 // 5.5.5</div>
+                            <div class="set">82.5kg ×1 // 5.5.5</div>
+                            <div class="set">85kg ×1 // 5.5.5</div>
+                            <div class="set">87.5kg ×1 // 5.5.5</div>
+                            <div class="set highlight">90kg ×1 // 5.5.5</div>
+                            <div class="set highlight">92.5kg ×1 // 5.5.5</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Rumänisches Kreuzheben 3×8</h4>
+                        <div class="set-grid compact">
+                            <div class="set">90kg ×1 // 8.8.8</div>
+                            <div class="set">92.5kg ×1 // 8.8.8</div>
+                            <div class="set">95kg ×1 // 8.8.8</div>
+                            <div class="set">97.5kg ×1 // 8.8.8</div>
+                            <div class="set">100kg ×1 // 8.8.8</div>
+                            <div class="set">102.5kg ×1 // 8.8.8</div>
+                            <div class="set">105kg ×1 // 8.8.8</div>
+                            <div class="set">107.5kg ×1 // 8.8.8</div>
+                            <div class="set">110kg ×1 // 8.8.8</div>
+                            <div class="set">112.5kg ×2 // 8.6.5 8.8.8</div>
+                            <div class="set">115kg ×1 // 5.4.3</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Bauch/Core 3×15</h4>
+                        <div class="set-grid">
+                            <div class="set">Ab Roller ×7 // 11.10.9 12.10.9 0.0.0 14.11.10 18.15.14 10.7.5 11.7.6</div>
+                            <div class="set">Ab Roller ×4</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="workout-section">
+                    <h3>> TAG 3: VOLUMEN_BENCH + RÜCKEN</h3>
+                    
+                    <div class="exercise">
+                        <h4>> Bench 3×6 @ 50kg (65% 1RM)</h4>
+                        <div class="set-grid">
+                            <div class="set">50kg ×1 // 6.6.6.6.6.6</div>
+                            <div class="set">52.5kg ×1 // 6.6.6.6.6.6</div>
+                            <div class="set">55kg ×1 // 6.6.6.6.6.6</div>
+                            <div class="set">57.5kg ×1 // 6.6.6.6.6.6</div>
+                            <div class="set">60kg ×2 // 6.6.6.6.6.6 6.6.6.6.6.6</div>
+                            <div class="set">62.5kg ×1 // 6.6.6.6.6.6</div>
+                            <div class="set">65kg ×1 // 6.6.6.6.6.6</div>
+                            <div class="set failed">67.5kg ×2 // x.x.x.x.x.x 6.6.6.6.6.6</div>
+                            <div class="set">70kg ×1 // 6.6.6</div>
+                            <div class="set">72.5kg ×1 // 6.4.3</div>
+                            <div class="set failed">75kg ×</div>
+                            <div class="set failed">77.5kg ×</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Schrägbank KH-Drücken 3×10</h4>
+                        <div class="set-grid">
+                            <div class="set">24kg ×1 // 10.10.7</div>
+                            <div class="set">26kg ×1 // 10.10.7</div>
+                            <div class="set">28kg ×1 // 9.8.7</div>
+                            <div class="set highlight">30kg ×9 // 4.(28kg 7.6) 5.4.3 6.5.3 7.(28kg 5).5 7.5.4 7.6.x x.x.x 5.4.3 5.3.3</div>
+                            <div class="set failed">32kg ×</div>
+                            <div class="set failed">34kg ×</div>
+                            <div class="set failed">36kg ×</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Klimmzüge 4×AMRAP</h4>
+                        <div class="set-grid">
+                            <div class="set highlight">+15kg ×10 // 6.5.4.3 7.6.5.4 7.6.5.5 x.x.x.x 7.6.5.4 8.6.4.3 9.7.6.5 9.8.7.4 9.8.7.6 10.7.6.5</div>
+                            <div class="set">+17.5kg ×2 // 6.5.4.3 7.6.5.4</div>
+                            <div class="set failed">+20kg ×</div>
+                            <div class="set failed">+22.5kg ×</div>
+                            <div class="set failed">+25kg ×</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Ein-armig Rudern 4×10</h4>
+                        <div class="set-grid">
+                            <div class="set">32kg ×1 // 10.10.9.8</div>
+                            <div class="set">34kg ×2 // 10.10.6.5 10.10.10.7</div>
+                            <div class="set">36kg ×3 // 10.10.9.5</div>
+                            <div class="set">34kg ×2 // 10.9.7.6 10.10.10.10</div>
+                            <div class="set">36kg ×3 // 10.10.10.5 x.x.x.x 10.10.10.10</div>
+                            <div class="set">38kg ×2 // 10.8.5.4 10.10.8.7</div>
+                            <div class="set highlight">40kg ×1 // 10.6.5.4</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="workout-section">
+                    <h3>> TAG 4: SQUAT_VOLUMEN + POSTERIOR</h3>
+                    
+                    <div class="exercise">
+                        <h4>> Squat 3×6 @ 72.5kg (65% 1RM)</h4>
+                        <div class="set-grid">
+                            <div class="set">72.5kg ×1 // 6.6.6.6</div>
+                            <div class="set">75kg ×1 // 6.6.6.6</div>
+                            <div class="set">77.5kg ×1 // 6.6.6.6</div>
+                            <div class="set">80kg ×1 // 6.6.6.6</div>
+                            <div class="set">82.5kg ×1 // 6.6.6.6</div>
+                            <div class="set">85kg ×1 // 6.6.6.6</div>
+                            <div class="set">87.5kg ×1 // 6.6.6.6</div>
+                            <div class="set">90kg ×1 // 6.6.6.6</div>
+                            <div class="set">92.5kg ×1 // 6.6.6.6</div>
+                            <div class="set">95kg ×1 // 6.6.6.6</div>
+                            <div class="set">97.5kg ×1 // 6.6.4</div>
+                            <div class="set failed">100kg ×</div>
+                            <div class="set failed">102.5kg ×</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Defizit-Deadlift 3×5 @ 80kg (65% 1RM)</h4>
+                        <div class="set-grid">
+                            <div class="set">80kg ×1 // 5.5.5</div>
+                            <div class="set">82.5kg ×1 // 5.5.5</div>
+                            <div class="set">85kg ×1 // 5.5.5</div>
+                            <div class="set">87.5kg ×1 // 5.5.5</div>
+                            <div class="set">90kg ×1 // 5.5.5</div>
+                            <div class="set">92.5kg ×1 // 5.5.5</div>
+                            <div class="set">95kg ×1 // 5.5.5</div>
+                            <div class="set">97.5kg ×1 // 5.5.5</div>
+                            <div class="set">100kg ×1 // 5.5.5</div>
+                            <div class="set">102.5kg ×1 // 5.5.5</div>
+                            <div class="set highlight">105kg ×1 // 5.5.5</div>
+                            <div class="set failed">107.5kg ×</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Hip Thrust 3×10</h4>
+                        <div class="set-grid">
+                            <div class="set">100kg ×1 // 10.10.10</div>
+                            <div class="set">110kg ×1 // 10.10.10</div>
+                            <div class="set">120kg ×1 // 10.10.10</div>
+                            <div class="set">130kg ×1 // 10.10.10</div>
+                            <div class="set">140kg ×1 // 10.9.9</div>
+                            <div class="set highlight">150kg ×4 // 6.5.4 7.6.6 8.7.6 10.10.10</div>
+                            <div class="set">160kg ×2 // 7.6.3 10.6.5</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Bauch/Core 3×20</h4>
+                        <div class="set-grid">
+                            <div class="set">Ab Roller ×5 // 16.11.10 17.12.10 20.15.13 9.8.7 10.9.8</div>
+                            <div class="set">Plank ×3</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="workout-section">
+                    <h3>> TAG 5: BENCH_INTENSITÄT + OBERKÖRPER_PUSH</h3>
+                    
+                    <div class="exercise">
+                        <h4>> Bench 3×2 @ 57.5kg</h4>
+                        <div class="set-grid">
+                            <div class="set">57.5kg ×1 // 4.4.4.4.4.4</div>
+                            <div class="set">60kg ×1 // 4.4.4.4.4.4</div>
+                            <div class="set">62.5kg ×1 // 4.4.4.4.4.4</div>
+                            <div class="set">65kg ×3 // 4.4.4.4.4.4 x.x.x.4.4.4 4.4.4.4.4.4</div>
+                            <div class="set">75kg ×1 // 2.2.2</div>
+                            <div class="set highlight">77.5kg ×2 // 2.2.2 2.2.2</div>
+                            <div class="set">80kg ×1 // 2.2.2</div>
+                            <div class="set failed">82.5kg ×1 // 1.(77.5kg 1(70kg 6))</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Overheadpress 4×6 @ 50kg (65% 1RM)</h4>
+                        <div class="set-grid">
+                            <div class="set">42.5kg ×4 // 6.5.4.3 7.6.4.4 5.4.4.3 6.5.4.3</div>
+                            <div class="set">45kg ×2 // 6.4.3.3 6.5.4.3</div>
+                            <div class="set highlight">47.5kg ×5 // 3.2(45kg 4.3) 4.3.3.2 5.4.3.2 3.2.2.1 6.4.3.2</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Dips 3×10</h4>
+                        <div class="set-grid">
+                            <div class="set">+10kg ×3 // 11.10.8 12.11.10 15.12.10</div>
+                            <div class="set">+12.5kg ×2 // 10.7.6 10.10.10</div>
+                            <div class="set">+15kg ×3 // 10.6.5 10.8.7 10.10.10</div>
+                            <div class="set highlight">+17.5kg ×1 // 10.10.10</div>
+                            <div class="set">+20kg ×2 // 6.5.4 8.7.6</div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise">
+                        <h4>> Bizepscurls 3×12</h4>
+                        <div class="set-grid">
+                            <div class="set">18kg ×4 // 7.6.5 10.9.8 11.10.8 12.11.10</div>
+                            <div class="set highlight">20kg ×7 // 5.3.2 7.5.4 8.6.5 8.6.5 9.6.5 9.(22kg 3).6 10.8.6</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="terminal-footer">
+                <div class="program-info">
+                    <p>> PROGRAMM_HINWEISE:</p>
+                    <div class="hint-grid">
+                        <div class="hint">
+                            <span class="hint-icon">⚠️</span>
+                            <span class="hint-text">DELOAD_WOCHEN = Gewicht reduzieren</span>
+                        </div>
+                        <div class="hint">
+                            <span class="hint-icon">📊</span>
+                            <span class="hint-text">TEST = Intensität leicht erhöhen um Fortschritt zu prüfen</span>
+                        </div>
+                        <div class="hint">
+                            <span class="hint-icon">⚡</span>
+                            <span class="hint-text">1-3 Sätze auf 85-90% 1RM</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="blink">>> WOCHE_1_ABGESCHLOSSEN [PROGRESS_TRACKING_AKTIV]</p>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>> SYSTEM_ZEIT: <span id="time"></span> | © 2024 GYM_TERMINAL</p>
+        <div class="nav-links">
+            <a href="index.html">> ARCHIV</a>
+            <a href="../index.html">> SIEDER_HUB</a>
+        </div>
+    </footer>
+
+    <script>
+        // Set current date
+        const now = new Date();
+        document.getElementById('current-date').textContent = now.toLocaleDateString('de-DE');
+        
+        // Matrix effect
+        const canvas = document.createElement('canvas');
+        canvas.className = 'matrix-effect';
+        document.body.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = "01";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px monospace';
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 33);
+        
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('time').textContent = now.toLocaleTimeString('de-DE');
+        }
+        
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Cycle commands
+        const commandText = document.querySelector('.command');
+        const commands = [
+            "POWERLIFTING_PROGRAMM_ANALYSIERT",
+            "1RM_MAXIMALE_LADEN",
+            "PROGRESSIVE_OVERLOAD_TRACKING",
+            "DELOAD_PROTOKOLL_AKTIV",
+            "SYSTEM: POWERLIFTING_MODE"
+        ];
+        
+        let currentCommand = 0;
+        
+        function cycleCommands() {
+            commandText.textContent = commands[currentCommand];
+            currentCommand = (currentCommand + 1) % commands.length;
+        }
+        
+        setInterval(cycleCommands, 2000);
+        
+        // Calculate percentages for max lifts
+        function calculatePercentage(weight, max) {
+            return Math.round((weight / max) * 100);
+        }
+        
+        // Add percentage indicators to sets
+        document.querySelectorAll('.set:not(.warmup):not(.failed)').forEach(set => {
+            const text = set.textContent;
+            const weightMatch = text.match(/(\d+(\.\d+)?)kg/);
+            
+            if (weightMatch) {
+                const weight = parseFloat(weightMatch[1]);
+                let percentage = 0;
+                
+                if (text.includes('Squat') || text.includes('squat')) {
+                    percentage = calculatePercentage(weight, 110);
+                } else if (text.includes('Bench') || text.includes('bench')) {
+                    percentage = calculatePercentage(weight, 77.5);
+                } else if (text.includes('Deadlift') || text.includes('deadlift')) {
+                    percentage = calculatePercentage(weight, 125);
+                }
+                
+                if (percentage > 0) {
+                    const percentageSpan = document.createElement('span');
+                    percentageSpan.className = 'percentage-indicator';
+                    percentageSpan.textContent = ` ${percentage}%`;
+                    percentageSpan.style.fontSize = '0.8em';
+                    percentageSpan.style.color = '#8f8';
+                    percentageSpan.style.marginLeft = '5px';
+                    
+                    set.appendChild(percentageSpan);
+                }
+            }
+        });
+        
+        // Add animation to max values
+        const maxValues = document.querySelectorAll('.max-value');
+        maxValues.forEach(value => {
+            value.style.animation = 'pulse 2s infinite';
+        });
+        
+        // Add animations for successful lifts
+        const successfulLifts = document.querySelectorAll('.highlight');
+        successfulLifts.forEach(lift => {
+            if (!lift.classList.contains('failed')) {
+                lift.style.animation = 'successPulse 3s infinite';
+            }
+        });
+        
+        // Add styles for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            
+            @keyframes successPulse {
+                0% { 
+                    background-color: rgba(0, 255, 0, 0.1);
+                    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.3);
+                }
+                50% { 
+                    background-color: rgba(0, 255, 0, 0.2);
+                    box-shadow: 0 0 10px 5px rgba(0, 255, 0, 0.1);
+                }
+                100% { 
+                    background-color: rgba(0, 255, 0, 0.1);
+                    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.3);
+                }
+            }
+            
+            .warmup {
+                opacity: 0.7;
+                border-style: dashed !important;
+            }
+            
+            .failed {
+                opacity: 0.5;
+                color: #f66;
+                border-color: #f66 !important;
+            }
+            
+            .percent-label {
+                margin: 0.5rem 0;
+                color: #8f8;
+                font-size: 0.9rem;
+                font-weight: bold;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Responsive adjustments
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

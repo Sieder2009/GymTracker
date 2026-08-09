@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Persönliche Infos und Projekte." />
+  <meta name="theme-color" content="#0a0b12" />
+  <title>Sieder Hub // Info</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="blobs" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="index.html">Sieder<span>Hub</span></a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="siteNav">
+        <span></span><span></span><span></span>
+        <span class="sr-only">Menü</span>
+      </button>
+      <nav class="site-nav" id="siteNav">
+        <a href="index.html">Übersicht</a>
+        <a href="spiele.html">Spiele</a>
+        <a href="info.html" class="active">Info</a>
+        <a href="medien.html">Medien</a>
+        <a href="archiv/index.html">Archiv</a>
+        <a href="../index.html" class="nav-cta">GymTraker →</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-title">
+      <h1>Persönliche Infos</h1>
+      <p>Über mich und Links zu weiteren Projekten.</p>
+    </div>
+
+    <div class="card-grid">
+      <a class="card featured" href="../index.html" style="--accent:#f97316">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <h2>GymTraker</h2>
+        <p>Trainingsprotokolle und Kraft-Fortschritt — jetzt als richtige App statt handgetippter Logs.</p>
+        <span class="tag">Live-App</span>
+        <span class="cta">Öffnen →</span>
+      </a>
+
+      <a class="card archive" href="archiv/index.html">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+        </div>
+        <h2>Trainingsplan-Archiv</h2>
+        <p>Die alten, handgeschriebenen Trainingspläne (v2.0–v7.0) — komplett erhalten.</p>
+        <span class="tag">Retro</span>
+        <span class="cta">Durchstöbern →</span>
+      </a>
+
+      <div class="card disabled" aria-disabled="true">
+        <h2>Schule</h2>
+        <p>Schulübungen — noch nicht online.</p>
+        <span class="tag">Bald</span>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div>© 2026 Sieder Hub · <span id="clock"></span></div>
+    <div class="foot-links">
+      <a href="index.html">Übersicht</a>
+      <a href="spiele.html">Spiele</a>
+      <a href="info.html">Info</a>
+      <a href="medien.html">Medien</a>
+      <a href="archiv/index.html">Archiv</a>
+      <a href="../index.html">GymTraker</a>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

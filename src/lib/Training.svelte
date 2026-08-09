@@ -3,10 +3,8 @@
   import { programs, trainState } from './stores.js';
   import { todayIndexForProgram, fmt1, WEEKDAYS_SHORT } from './data.js';
   import { EXAMPLE_LOG } from './exampleLog.js';
-  import { toast } from './toast.js';
   import PlanEditor from './PlanEditor.svelte';
   import ImportLog from './ImportLog.svelte';
-  import WorkoutOverlay from './WorkoutOverlay.svelte';
   import ExerciseDetail from './ExerciseDetail.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
 
@@ -16,7 +14,6 @@
   let ilOpen = false;
   let ilInitialText = '';
   let ilInitialName = 'Importierter Plan';
-  let woOpen = false;
   let edOpen = false;
   let edStartIdx = 0;
   let edSource = 'day'; // 'day' | 'daily'
@@ -67,22 +64,8 @@
     return source === 'daily' ? (p.dailyExercises || (p.dailyExercises = [])) : p.days[dayIdx].exercises;
   }
 
-  function adjustWeight(source, exIdx, setIdx, delta) {
-    programs.update(all => {
-      const p = all.find(p => p.id === $trainState.activePlanId);
-      const ex = exerciseListOf(p, source)[exIdx];
-      ex.sets[setIdx].w = Math.max(0, Math.round((ex.sets[setIdx].w + delta) * 2) / 2);
-      return all;
-    });
-  }
-
-  function toggleSet(source, exIdx, setIdx) {
-    programs.update(all => {
-      const p = all.find(p => p.id === $trainState.activePlanId);
-      const ex = exerciseListOf(p, source)[exIdx];
-      if (!ex.done.includes(setIdx)) ex.done = [...ex.done, setIdx];
-      return all;
-    });
+  function latestWeight(ex) {
+    return ex.sets[ex.sets.length - 1]?.w ?? ex.startW ?? 0;
   }
 
   function openExerciseDetail(source, exIdx) { edSource = source; edStartIdx = exIdx; edOpen = true; }
@@ -110,21 +93,11 @@
       const p = all.find(p => p.id === $trainState.activePlanId);
       const ex = exerciseListOf(p, edSource)[exIdx];
       ex.history = [...(ex.history || []), ...history];
-      if (weight > ex.sets.reduce((m, s) => Math.max(m, s.w), 0)) {
+      if (weight > 0) {
         ex.sets = ex.sets.map(s => ({ ...s, w: weight }));
       }
       return all;
     });
-  }
-
-  function finishWorkout() {
-    programs.update(all => {
-      const p = all.find(p => p.id === $trainState.activePlanId);
-      p.completed = (p.completed || 0) + 1;
-      return all;
-    });
-    woOpen = false;
-    toast('Workout abgeschlossen 💪');
   }
 </script>
 
@@ -132,7 +105,7 @@
   <div>
     <h1>{plan ? plan.name : 'Training'}</h1>
     <div class="sub">
-      {#if plan}{day.rest ? 'Ruhetag' : day.label} · {plan.completed || 0} Workouts{/if}
+      {#if plan}{day.rest ? 'Ruhetag' : day.label}{/if}
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -160,11 +133,21 @@
   <p class="plain-rest">Heute ist Ruhetag.<br>Kein Training eingetragen.</p>
 {:else}
   {#if exercises.length}
-    <button class="cta" style="margin-bottom:14px" on:click={() => (woOpen = true)}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 7v10M18 7v10M2 10v4M22 10v4M6 12h12"/></svg>
-      Workout starten
-    </button>
+    <div class="section-title">Heutiger Tag</div>
   {/if}
+  {#each exercises as ex, exIdx}
+    <div class="plain-ex">
+      <div
+        class="plain-ex-name"
+        role="button"
+        tabindex="0"
+        on:click={() => openExerciseDetail('day', exIdx)}
+        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openExerciseDetail('day', exIdx); } }}
+      >{ex.name}</div>
+      <div class="plain-ex-weight">{latestWeight(ex) > 0 ? fmt1(latestWeight(ex)) + ' kg' : 'BW'}</div>
+      {#if ex.note}<span class="ex-note">{ex.note}</span>{/if}
+    </div>
+  {/each}
 
   {#if dailyExercises.length}
     <div class="section-title">Jeden Trainingstag</div>
@@ -177,46 +160,11 @@
           on:click={() => openExerciseDetail('daily', exIdx)}
           on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openExerciseDetail('daily', exIdx); } }}
         >{ex.name}</div>
+        <div class="plain-ex-weight">{latestWeight(ex) > 0 ? fmt1(latestWeight(ex)) + ' kg' : 'BW'}</div>
         {#if ex.note}<span class="ex-note">{ex.note}</span>{/if}
-        <div class="plain-setlist">
-          {#each ex.sets as s, setIdx}
-            <div class="plain-set">
-              <span class="plain-idx">{setIdx + 1}</span>
-              <button class="plain-step" on:click={() => adjustWeight('daily', exIdx, setIdx, -2.5)}>−</button>
-              <span class="plain-w">{s.w > 0 ? fmt1(s.w) + ' kg' : 'BW'}</span>
-              <button class="plain-step" on:click={() => adjustWeight('daily', exIdx, setIdx, 2.5)}>+</button>
-              <span class="plain-r">× {s.r}</span>
-            </div>
-          {/each}
-        </div>
       </div>
     {/each}
-    <div class="section-title">Heutiger Tag</div>
   {/if}
-
-  {#each exercises as ex, exIdx}
-    <div class="plain-ex">
-      <div
-        class="plain-ex-name"
-        role="button"
-        tabindex="0"
-        on:click={() => openExerciseDetail('day', exIdx)}
-        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openExerciseDetail('day', exIdx); } }}
-      >{ex.name}</div>
-      {#if ex.note}<span class="ex-note">{ex.note}</span>{/if}
-      <div class="plain-setlist">
-        {#each ex.sets as s, setIdx}
-          <div class="plain-set">
-            <span class="plain-idx">{setIdx + 1}</span>
-            <button class="plain-step" on:click={() => adjustWeight('day', exIdx, setIdx, -2.5)}>−</button>
-            <span class="plain-w">{s.w > 0 ? fmt1(s.w) + ' kg' : 'BW'}</span>
-            <button class="plain-step" on:click={() => adjustWeight('day', exIdx, setIdx, 2.5)}>+</button>
-            <span class="plain-r">× {s.r}</span>
-          </div>
-        {/each}
-      </div>
-    </div>
-  {/each}
 {/if}
 
 {#if planPromptOpen}
@@ -271,16 +219,6 @@
       <button class="cta ghost" style="margin-top:10px" on:click={openExample}>⭐ Beispielplan laden</button>
     </div>
   </div>
-{/if}
-
-{#if woOpen && plan}
-  <WorkoutOverlay
-    exercises={exercises}
-    onAdjust={(exIdx, setIdx, delta) => adjustWeight('day', exIdx, setIdx, delta)}
-    onToggle={(exIdx, setIdx) => toggleSet('day', exIdx, setIdx)}
-    on:finish={finishWorkout}
-    on:close={() => (woOpen = false)}
-  />
 {/if}
 
 {#if edOpen && plan}

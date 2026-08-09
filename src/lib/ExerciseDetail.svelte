@@ -1,5 +1,5 @@
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import { fmt1 } from './data.js';
   import { parseExerciseBlock } from './logParser.js';
   import { toast } from './toast.js';
@@ -11,21 +11,20 @@
   export let onImportHistory = null; // (exIdx, weight, history[]) => void
 
   const dispatch = createEventDispatcher();
-
-  const MIN = 0, MAX = 300, STEP = 2.5, PX_PER_TICK = 12; // must match .tick's CSS width+margin-right
+  const SWIPE_THRESHOLD = 55; // px
 
   let idx = startIdx;
   let weightInput = 0;
   let repsInputs = [];
-  let rulerEl;
-  let containerWidth = 320;
-  let dragging = false;
-  let startX = 0;
-  let startValue = 0;
   let renaming = false;
   let renameValue = '';
   let historyPasteOpen = false;
   let historyPasteText = '';
+
+  let swiping = false;
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  let swipeDx = 0;
 
   function loadExercise(i) {
     idx = i;
@@ -36,10 +35,46 @@
     historyPasteOpen = false;
     historyPasteText = '';
   }
+
+  function goPrev() { if (idx > 0) loadExercise(idx - 1); }
+  function goNext() { if (idx < exercises.length - 1) loadExercise(idx + 1); }
+
+  function onKeydown(e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    // don't hijack cursor movement while editing a text/number field
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') goPrev(); else goNext();
+  }
+
   onMount(() => {
     loadExercise(startIdx);
-    containerWidth = rulerEl?.clientWidth || 320;
+    window.addEventListener('keydown', onKeydown);
   });
+  onDestroy(() => window.removeEventListener('keydown', onKeydown));
+
+  function isInteractive(target) {
+    return target.closest?.('input, button, textarea, a');
+  }
+  function onSwipeStart(e) {
+    if (isInteractive(e.target)) return;
+    swiping = true;
+    swipeStartX = e.clientX;
+    swipeStartY = e.clientY;
+    swipeDx = 0;
+  }
+  function onSwipeMove(e) {
+    if (!swiping) return;
+    swipeDx = e.clientX - swipeStartX;
+  }
+  function onSwipeEnd(e) {
+    if (!swiping) return;
+    swiping = false;
+    const dy = e.clientY - swipeStartY;
+    if (Math.abs(swipeDx) > SWIPE_THRESHOLD && Math.abs(swipeDx) > Math.abs(dy)) {
+      if (swipeDx < 0) goNext(); else goPrev();
+    }
+    swipeDx = 0;
+  }
 
   function startRename() { renameValue = ex.name; renaming = true; }
   function confirmRename() {
@@ -62,26 +97,6 @@
   $: ex = exercises[idx];
   $: hasRepsEntered = repsInputs.some((r) => r !== '');
 
-  $: ticks = Array.from({ length: Math.round((MAX - MIN) / STEP) + 1 }, (_, i) => {
-    const v = MIN + i * STEP;
-    return { v, major: v % 20 === 0 };
-  });
-  $: trackX = containerWidth / 2 - ((weightInput - MIN) / STEP) * PX_PER_TICK;
-
-  function onPointerDown(e) {
-    dragging = true;
-    startX = e.clientX;
-    startValue = weightInput;
-    rulerEl.setPointerCapture(e.pointerId);
-  }
-  function onPointerMove(e) {
-    if (!dragging) return;
-    const dx = e.clientX - startX; // drag right -> increase, drag left -> decrease
-    const v = startValue + (dx / PX_PER_TICK) * STEP;
-    weightInput = Math.min(MAX, Math.max(MIN, Math.round(v / STEP) * STEP));
-  }
-  function onPointerUp() { dragging = false; }
-
   function addSetRow() { repsInputs = [...repsInputs, '']; }
   function removeSetRow(i) { repsInputs = repsInputs.filter((_, j) => j !== i); }
 
@@ -101,7 +116,13 @@
 </script>
 
 {#if ex}
-<div class="overlay open">
+<div
+  class="overlay open"
+  on:pointerdown={onSwipeStart}
+  on:pointermove={onSwipeMove}
+  on:pointerup={onSwipeEnd}
+  on:pointercancel={onSwipeEnd}
+>
   <div class="ov-top">
     <button class="iconbtn" on:click={() => dispatch('close')}>✕</button>
     {#if renaming}
@@ -115,6 +136,9 @@
       <button class="iconbtn" on:click={startRename}>✏️</button>
     {/if}
   </div>
+  {#if exercises.length > 1}
+    <div class="muted" style="text-align:center;font-size:11.5px;margin-bottom:4px">Übung {idx + 1} / {exercises.length} · wischen oder ←/→ zum Wechseln</div>
+  {/if}
   {#if ex.note}
     <p class="note-line">{ex.note}</p>
   {/if}
@@ -122,28 +146,10 @@
   <div class="pe-scroll">
     <div class="card" style="text-align:center">
       <div class="eyebrow">Gewicht heute</div>
-      <div class="bigval">{fmt1(weightInput)}<span> kg</span></div>
-
-      <div
-        class="ruler"
-        bind:this={rulerEl}
-        on:pointerdown={onPointerDown}
-        on:pointermove={onPointerMove}
-        on:pointerup={onPointerUp}
-        on:pointercancel={onPointerUp}
-      >
-        <div class="track" style="transform:translateX({trackX}px)">
-          {#each ticks as t}
-            <div class="tick" class:major={t.major}>
-              {#if t.major}<span class="tl">{t.v}</span>{/if}
-            </div>
-          {/each}
-        </div>
-        <div class="needle"></div>
-        <div class="fadeL"></div>
-        <div class="fadeR"></div>
+      <div class="weight-row">
+        <input class="weight-input" type="number" step="0.5" min="0" bind:value={weightInput}>
+        <span class="weight-unit">kg</span>
       </div>
-      <p class="radar-hint" style="margin-top:6px">Zum Ändern nach links oder rechts ziehen</p>
 
       <div class="eyebrow" style="text-align:left;margin-top:20px">Wiederholungen pro Satz</div>
       {#each repsInputs as r, i (i)}

@@ -100,7 +100,9 @@ function makeAccumulator(list, warnings, contextLabel) {
       }
       const w = parseWeight(raw);
       if (/kg/i.test(raw)) current.sawKg = true;
-      if (w > current.weight) current.weight = w;
+      // take the most recently logged weight, not the heaviest — a later
+      // bodyweight-only line (no "kg", w=0) shouldn't erase a known weight
+      if (w > 0) current.weight = w;
       const reps = parseHistoryReps(raw);
       if (reps.length) current.history.push({ weight: w, reps });
     } else {
@@ -208,7 +210,7 @@ export function parseExerciseBlock(text) {
   for (const raw of lines) {
     if (DIVIDER_LINE.test(raw) || !SET_LINE.test(raw)) continue;
     const w = parseWeight(raw);
-    if (w > weight) weight = w;
+    if (w > 0) weight = w;
     const reps = parseHistoryReps(raw);
     if (reps.length) history.push({ weight: w, reps });
   }

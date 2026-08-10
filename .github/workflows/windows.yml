@@ -28,7 +28,21 @@ jobs:
 
       - run: flutter test
 
-      - run: flutter build windows --release
+      # Release builds get their version from the tag that triggered them
+      # (v1.2.3 -> 1.2.3), not pubspec.yaml's version: field -- so cutting a
+      # release is just "push a tag", nothing to hand-edit first. A manual
+      # workflow_dispatch run (no tag) falls back to whatever pubspec.yaml
+      # already has, since that's just a test build. windows-latest ships
+      # Git Bash, so `shell: bash` here works the same as on the other
+      # platforms' workflows instead of needing separate pwsh syntax.
+      - name: Build Windows app
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            flutter build windows --release --build-name="${GITHUB_REF_NAME#v}"
+          else
+            flutter build windows --release
+          fi
+        shell: bash
 
       # Ship the whole Release folder, not just the .exe — it needs its
       # sibling DLLs (flutter_windows.dll, plugin .dlls) and data/ folder

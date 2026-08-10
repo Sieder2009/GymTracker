@@ -31,7 +31,19 @@ jobs:
 
       - run: flutter test
 
-      - run: flutter build apk --release
+      # Release builds get their version from the tag that triggered them
+      # (v1.2.3 -> 1.2.3), not pubspec.yaml's version: field -- so cutting a
+      # release is just "push a tag", nothing to hand-edit first. A manual
+      # workflow_dispatch run (no tag) falls back to whatever pubspec.yaml
+      # already has, since that's just a test build.
+      - name: Build APK
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            flutter build apk --release --build-name="${GITHUB_REF_NAME#v}"
+          else
+            flutter build apk --release
+          fi
+        shell: bash
 
       - uses: actions/upload-artifact@v4
         with:

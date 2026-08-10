@@ -52,7 +52,19 @@ jobs:
       # build needs your own Apple Developer Program membership: add its
       # signing certificate + notarization credentials as repo secrets,
       # then extend this step accordingly.
-      - run: flutter build macos --release
+      # Release builds get their version from the tag that triggered them
+      # (v1.2.3 -> 1.2.3), not pubspec.yaml's version: field -- so cutting a
+      # release is just "push a tag", nothing to hand-edit first. A manual
+      # workflow_dispatch run (no tag) falls back to whatever pubspec.yaml
+      # already has, since that's just a test build.
+      - name: Build macOS app
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            flutter build macos --release --build-name="${GITHUB_REF_NAME#v}"
+          else
+            flutter build macos --release
+          fi
+        shell: bash
 
       # ditto (not plain zip) preserves the .app bundle's resource forks/
       # extended attributes correctly, matching how macOS itself expects

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,10 +22,7 @@ enum UpdateStatus { idle, checking, upToDate, updateAvailable, downloading, down
 /// a package installer is exactly the kind of action a user should confirm.
 class UpdateProvider extends ChangeNotifier {
   UpdateProvider() {
-    if (AppConfig.updateCheckEnabled) {
-      unawaited(checkNow());
-      _timer = Timer.periodic(Duration(hours: AppConfig.updateCheckIntervalHours), (_) => checkNow());
-    }
+    unawaited(_bootstrap());
   }
 
   Timer? _timer;
@@ -33,11 +31,29 @@ class UpdateProvider extends ChangeNotifier {
   double downloadProgress = 0;
   String? downloadedFilePath;
 
+  /// The version actually running right now, read from the platform build's
+  /// own metadata (Info.plist / the Android manifest) at startup -- Flutter
+  /// stamps this from pubspec.yaml's `version:` field at build time, so it
+  /// can never drift out of sync the way a separately hand-maintained
+  /// constant could. Null only for the brief moment before the first read
+  /// resolves.
+  String? installedVersion;
+
+  Future<void> _bootstrap() async {
+    installedVersion = (await PackageInfo.fromPlatform()).version;
+    notifyListeners();
+    if (AppConfig.updateCheckEnabled) {
+      unawaited(checkNow());
+      _timer = Timer.periodic(Duration(hours: AppConfig.updateCheckIntervalHours), (_) => checkNow());
+    }
+  }
+
   Future<void> checkNow() async {
+    installedVersion ??= (await PackageInfo.fromPlatform()).version;
     status = UpdateStatus.checking;
     notifyListeners();
 
-    final r = await UpdateService.checkForUpdate();
+    final r = await UpdateService.checkForUpdate(installedVersion!);
     result = r;
 
     if (r.error != UpdateCheckError.none) {

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../config/app_config.dart';
-import '../data/app_version.dart';
 
 /// Why a check produced no actionable result — kept as a typed reason
 /// rather than a baked-in string so the UI can localize it (see
@@ -45,12 +44,14 @@ class UpdateCheckResult {
   }
 }
 
-/// Checks GitHub's "latest release" API against [kAppVersion]. Only finds
-/// anything once a real version-tagged release exists (the CI workflow only
-/// creates a GitHub Release — not just a build artifact — when triggered by
-/// a `vX.Y.Z` tag push).
+/// Checks GitHub's "latest release" API against the version the caller is
+/// actually running (see [UpdateProvider.installedVersion], read from the
+/// platform build's own metadata rather than a hand-maintained constant).
+/// Only finds anything once a real version-tagged release exists (the CI
+/// workflow only creates a GitHub Release — not just a build artifact —
+/// when triggered by a `vX.Y.Z` tag push).
 class UpdateService {
-  static Future<UpdateCheckResult> checkForUpdate() async {
+  static Future<UpdateCheckResult> checkForUpdate(String localVersion) async {
     final client = HttpClient();
     try {
       final request = await client
@@ -84,7 +85,7 @@ class UpdateService {
       }
 
       return UpdateCheckResult(
-        hasUpdate: _isNewer(latest, kAppVersion),
+        hasUpdate: _isNewer(latest, localVersion),
         latestVersion: latest,
         releaseUrl: releaseUrl,
         assets: assets,

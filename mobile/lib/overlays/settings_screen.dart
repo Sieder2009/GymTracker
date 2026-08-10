@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
-import '../data/app_version.dart';
 import '../l10n/app_localizations.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
@@ -11,6 +10,7 @@ import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
 import '../state/update_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/language_picker_sheet.dart';
 
@@ -78,6 +78,11 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+/// Modeled on iOS Settings' own "Allgemein > Info" row: a plain version
+/// line up top (with a quiet manual-refresh affordance, not a permanent
+/// button demanding attention) and one status area below that cross-fades
+/// between states instead of the layout jumping around as text/buttons
+/// appear and disappear.
 class _UpdateSection extends StatelessWidget {
   const _UpdateSection();
 
@@ -86,6 +91,7 @@ class _UpdateSection extends StatelessWidget {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
     final update = context.watch<UpdateProvider>();
+    final version = update.installedVersion;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,11 +104,36 @@ class _UpdateSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t.labelInstalledVersion(kAppVersion)),
-                const SizedBox(height: 10),
-                _buildStatus(context, t, colors, update),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        version == null ? '…' : t.labelInstalledVersion(version),
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ),
+                    _RefreshButton(
+                      spinning: update.status == UpdateStatus.checking,
+                      onPressed: update.status == UpdateStatus.checking ? null : () => update.checkNow(),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 14),
-                _buildActions(context, t, update),
+                ClipRect(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, anim) => FadeTransition(
+                      opacity: anim,
+                      child: SizeTransition(sizeFactor: anim, axisAlignment: -1, child: child),
+                    ),
+                    child: KeyedSubtree(
+                      key: ValueKey(update.status),
+                      child: _buildStatusBody(context, t, colors, update),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -111,50 +142,146 @@ class _UpdateSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStatus(BuildContext context, AppLocalizations t, AppColors colors, UpdateProvider update) {
+  Widget _buildStatusBody(BuildContext context, AppLocalizations t, AppColors colors, UpdateProvider update) {
     switch (update.status) {
-      case UpdateStatus.updateAvailable:
-      case UpdateStatus.downloading:
-      case UpdateStatus.downloaded:
-        final version = update.result?.latestVersion ?? '';
-        return Text(
-          t.labelUpdateAvailable(version),
-          style: TextStyle(color: colors.green, fontWeight: FontWeight.w700),
-        );
-      case UpdateStatus.upToDate:
-        return Text(t.labelUpToDate, style: TextStyle(color: colors.mut));
-      case UpdateStatus.error:
-        return Text(
-          _updateErrorMessage(t, update.result?.error ?? UpdateCheckError.networkFailure),
-          style: TextStyle(color: colors.mut),
-        );
       case UpdateStatus.idle:
       case UpdateStatus.checking:
-        return const SizedBox.shrink();
+        return _StatusRow(spinner: true, color: colors.mut, text: t.actionChecking);
+      case UpdateStatus.upToDate:
+        return _StatusRow(icon: Icons.check_circle_rounded, color: colors.green, text: t.labelUpToDate);
+      case UpdateStatus.error:
+        return _StatusRow(
+          icon: Icons.info_outline_rounded,
+          color: colors.mut,
+          text: _updateErrorMessage(t, update.result?.error ?? UpdateCheckError.networkFailure),
+        );
+      case UpdateStatus.updateAvailable:
+        // Reached as a steady state (not just a flash before auto-download
+        // kicks in) only when this platform has no matching release asset
+        // (UpdateProvider.checkNow auto-downloads whenever one exists) --
+        // so the button sends the user to the release page instead of
+        // re-checking, which would just land back here.
+        final version = update.result?.latestVersion ?? '';
+        final releaseUrl = update.result?.releaseUrl;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _StatusRow(icon: Icons.arrow_circle_up_rounded, color: colors.accent, text: t.labelUpdateAvailable(version)),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: releaseUrl == null ? null : () => launchUrl(Uri.parse(releaseUrl)),
+                child: Text(t.actionDownloadUpdate),
+              ),
+            ),
+          ],
+        );
+      case UpdateStatus.downloading:
+        final percent = (update.downloadProgress * 100).round();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(t.labelDownloadingUpdate(percent), style: TextStyle(color: colors.mut)),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              child: TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 250),
+                tween: Tween(begin: 0, end: update.downloadProgress),
+                builder: (context, value, _) => LinearProgressIndicator(
+                  value: value,
+                  minHeight: 6,
+                  backgroundColor: colors.card2,
+                  valueColor: AlwaysStoppedAnimation(colors.accent),
+                ),
+              ),
+            ),
+          ],
+        );
+      case UpdateStatus.downloaded:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _StatusRow(icon: Icons.check_circle_rounded, color: colors.green, text: t.labelUpdateReady),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => update.openDownloadedUpdate(),
+                child: Text(t.actionInstallUpdate),
+              ),
+            ),
+          ],
+        );
+    }
+  }
+}
+
+class _StatusRow extends StatelessWidget {
+  const _StatusRow({required this.color, required this.text, this.icon, this.spinner = false});
+
+  final IconData? icon;
+  final bool spinner;
+  final Color color;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (spinner)
+          SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: color))
+        else if (icon != null)
+          Icon(icon, size: 18, color: color),
+        const SizedBox(width: 8),
+        Flexible(child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600))),
+      ],
+    );
+  }
+}
+
+/// Small rotating icon-button rather than a permanent "Nach Updates
+/// suchen" outline button competing for attention on a screen you open
+/// far more often than you manually re-check for an update.
+class _RefreshButton extends StatefulWidget {
+  const _RefreshButton({required this.spinning, required this.onPressed});
+
+  final bool spinning;
+  final VoidCallback? onPressed;
+
+  @override
+  State<_RefreshButton> createState() => _RefreshButtonState();
+}
+
+class _RefreshButtonState extends State<_RefreshButton> with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+
+  @override
+  void didUpdateWidget(covariant _RefreshButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.spinning) {
+      _controller.repeat();
+    } else {
+      _controller.stop();
     }
   }
 
-  Widget _buildActions(BuildContext context, AppLocalizations t, UpdateProvider update) {
-    if (update.status == UpdateStatus.downloading) {
-      return LinearProgressIndicator(value: update.downloadProgress > 0 ? update.downloadProgress : null);
-    }
-    // Wrap, not Row -- with both buttons showing at once (downloaded state)
-    // long translations of either label can exceed the available width;
-    // a Row would overflow instead of dropping to a second line.
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        OutlinedButton(
-          onPressed: update.status == UpdateStatus.checking ? null : () => update.checkNow(),
-          child: Text(update.status == UpdateStatus.checking ? t.actionChecking : t.actionCheckForUpdates),
-        ),
-        if (update.status == UpdateStatus.downloaded)
-          ElevatedButton(
-            onPressed: () => update.openDownloadedUpdate(),
-            child: Text(t.actionInstallUpdate),
-          ),
-      ],
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: widget.onPressed,
+      icon: RotationTransition(turns: _controller, child: const Icon(Icons.refresh_rounded, size: 20)),
     );
   }
 }

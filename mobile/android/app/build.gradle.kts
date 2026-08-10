@@ -6,7 +6,11 @@ plugins {
 
 android {
     namespace = "com.ironpeak.ironpeak_mobile"
-    compileSdk = flutter.compileSdkVersion
+    // Explicit, not flutter.compileSdkVersion -- the installed Flutter
+    // SDK's own default (34) is now older than what a transitive plugin
+    // dependency (flutter_plugin_android_lifecycle, pulled in via
+    // file_picker) requires its consumers to compile against.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

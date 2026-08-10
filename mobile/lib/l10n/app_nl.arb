@@ -247,6 +247,8 @@
   "reminderNotSupported": "Herinneringen zijn niet beschikbaar op dit apparaat.",
   "notificationTitle": "Ironpeak Fitness",
   "notificationBody": "Tijd om te trainen.",
+  "notificationRestOverTitle": "Pauze voorbij!",
+  "notificationRestOverBody": "Tijd voor je volgende set.",
   "headerGeneral": "ALGEMEEN",
   "titleMuscleEditor": "Spieractivatie",
   "actionFront": "Voorkant",

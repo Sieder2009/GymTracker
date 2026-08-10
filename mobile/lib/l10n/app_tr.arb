@@ -247,6 +247,8 @@
   "reminderNotSupported": "Hatırlatıcılar bu cihazda kullanılamıyor.",
   "notificationTitle": "Ironpeak Fitness",
   "notificationBody": "Antrenman zamanı.",
+  "notificationRestOverTitle": "Dinlenme bitti!",
+  "notificationRestOverBody": "Sıradaki set zamanı.",
   "headerGeneral": "GENEL",
   "titleMuscleEditor": "Kas aktivasyonu",
   "actionFront": "Ön",

@@ -247,6 +247,8 @@
   "reminderNotSupported": "Erinnerungen sind auf diesem Gerät nicht verfügbar.",
   "notificationTitle": "Ironpeak Fitness",
   "notificationBody": "Zeit zu trainieren.",
+  "notificationRestOverTitle": "Pause vorbei!",
+  "notificationRestOverBody": "Zeit für den nächsten Satz.",
   "headerGeneral": "ALLGEMEIN",
   "titleMuscleEditor": "Muskelaktivierung",
   "actionFront": "Vorderseite",

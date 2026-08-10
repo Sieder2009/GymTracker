@@ -247,6 +247,8 @@
   "reminderNotSupported": "Напоминания недоступны на этом устройстве.",
   "notificationTitle": "Ironpeak Fitness",
   "notificationBody": "Время тренироваться.",
+  "notificationRestOverTitle": "Отдых окончен!",
+  "notificationRestOverBody": "Пора выполнять следующий подход.",
   "headerGeneral": "ОБЩИЕ",
   "titleMuscleEditor": "Активация мышц",
   "actionFront": "Спереди",

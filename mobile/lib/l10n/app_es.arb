@@ -247,6 +247,8 @@
   "reminderNotSupported": "Los recordatorios no están disponibles en este dispositivo.",
   "notificationTitle": "Ironpeak Fitness",
   "notificationBody": "Hora de entrenar.",
+  "notificationRestOverTitle": "¡Descanso terminado!",
+  "notificationRestOverBody": "Hora de tu próxima serie.",
   "headerGeneral": "GENERAL",
   "titleMuscleEditor": "Activación muscular",
   "actionFront": "Frente",

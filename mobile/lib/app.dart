@@ -43,9 +43,14 @@ class IronpeakApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // One shared instance -- ReminderProvider and the guided workout's rest
+    // timer notification both go through the same plugin, no reason for
+    // each to init its own.
+    final notificationService = NotificationService();
     return MultiProvider(
       providers: [
         Provider<StorageService>.value(value: storage),
+        Provider<NotificationService>.value(value: notificationService),
         ChangeNotifierProvider(create: (_) => ThemeProvider(storage)),
         ChangeNotifierProvider(create: (_) => LocaleProvider(storage)),
         ChangeNotifierProvider(create: (_) => ProgramsProvider(storage)),
@@ -66,7 +71,7 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AppearanceProvider(storage)),
         ChangeNotifierProvider(create: (_) => UpdateProvider(storage)),
         ChangeNotifierProvider(
-            create: (_) => ReminderProvider(storage, NotificationService())),
+            create: (_) => ReminderProvider(storage, notificationService)),
       ],
       child: Consumer3<ThemeProvider, AppearanceProvider, LocaleProvider>(
         builder: (context, theme, appearance, localeProvider, _) {

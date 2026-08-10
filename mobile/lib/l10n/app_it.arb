@@ -247,6 +247,8 @@
   "reminderNotSupported": "I promemoria non sono disponibili su questo dispositivo.",
   "notificationTitle": "Ironpeak Fitness",
   "notificationBody": "È ora di allenarsi.",
+  "notificationRestOverTitle": "Pausa finita!",
+  "notificationRestOverBody": "È ora della prossima serie.",
   "headerGeneral": "GENERALE",
   "titleMuscleEditor": "Attivazione muscolare",
   "actionFront": "Fronte",

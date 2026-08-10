@@ -7,6 +7,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 const int _kWorkoutReminderId = 1001;
+const int _kRestOverId = 1002;
 
 /// Local "time to train" reminder, fired daily at a user-chosen time.
 /// `flutter_local_notifications` has no Windows implementation (see
@@ -94,6 +95,54 @@ class NotificationService {
     await _ensureInitialized();
     try {
       await _plugin.cancel(_kWorkoutReminderId);
+    } catch (_) {
+      // fail-soft
+    }
+  }
+
+  /// One-shot "rest is over" ping for the guided workout's rest timer --
+  /// the timer itself is wall-clock-based and keeps counting accurately
+  /// even backgrounded, but without this the only way to notice it
+  /// finished while the phone is in a pocket is to unlock and look.
+  /// [delay] is scheduled fresh each time a rest period starts, so it
+  /// always reflects that exercise's actual rest length.
+  Future<void> scheduleRestOver(Duration delay, {required String title, required String body}) async {
+    if (!isSupportedPlatform) return;
+    await _ensureInitialized();
+    try {
+      await _plugin.zonedSchedule(
+        _kRestOverId,
+        title,
+        body,
+        tz.TZDateTime.now(tz.local).add(delay),
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'rest_over',
+            'Rest Timer',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(),
+          macOS: DarwinNotificationDetails(),
+          linux: LinuxNotificationDetails(),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (_) {
+      // fail-soft
+    }
+  }
+
+  /// Cancels a pending "rest is over" notification -- called whenever rest
+  /// ends any way other than the scheduled delay actually elapsing (user
+  /// skips it, advances early, or leaves the workout entirely), so a stale
+  /// ping can't fire later for a rest period that's already moved on.
+  Future<void> cancelRestOver() async {
+    if (!isSupportedPlatform) return;
+    await _ensureInitialized();
+    try {
+      await _plugin.cancel(_kRestOverId);
     } catch (_) {
       // fail-soft
     }

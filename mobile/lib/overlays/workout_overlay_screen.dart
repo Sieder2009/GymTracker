@@ -9,6 +9,7 @@ import '../data/constants.dart';
 import '../data/lift_categories.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
+import '../services/notification_service.dart';
 import '../state/big_lifts_provider.dart';
 import '../state/health_provider.dart';
 import '../state/programs_provider.dart';
@@ -131,6 +132,10 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
+    // Force-closing mid-rest (back gesture, session-overview navigation
+    // away, ...) shouldn't leave a "rest over" ping scheduled for a
+    // workout the user already left.
+    if (_resting) unawaited(context.read<NotificationService>().cancelRestOver());
     super.dispose();
   }
 
@@ -274,6 +279,26 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
       _restEndsAt = DateTime.now().add(Duration(seconds: restSeconds));
       _rpe = null;
     });
+    unawaited(_scheduleRestOverNotification(restSeconds));
+  }
+
+  /// The rest countdown itself is wall-clock-based and stays accurate
+  /// backgrounded (see the class doc comment), but that's silent -- without
+  /// a system notification, noticing rest ended while the phone's locked
+  /// in a pocket means unlocking and checking. requestPermission() is
+  /// idempotent (an already-granted or already-denied answer resolves
+  /// immediately, no repeat prompt), so it's simplest to just ask fresh
+  /// each time rather than track "have we asked" state of our own.
+  Future<void> _scheduleRestOverNotification(int restSeconds) async {
+    if (!mounted) return;
+    final t = AppLocalizations.of(context)!;
+    final notifications = context.read<NotificationService>();
+    await notifications.requestPermission();
+    await notifications.scheduleRestOver(
+      Duration(seconds: restSeconds),
+      title: t.notificationRestOverTitle,
+      body: t.notificationRestOverBody,
+    );
   }
 
   void _advance(List<Exercise> exercises) {
@@ -288,6 +313,12 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
         _setIdx = 0;
       }
     });
+    // Covers both "rest actually elapsed" (harmless no-op cancel, it
+    // already fired) and "skipped/advanced early" (the whole reason this
+    // matters -- without it, a stale notification for a rest period
+    // that's already over would fire later on whatever exercise the user
+    // has since moved on to).
+    unawaited(context.read<NotificationService>().cancelRestOver());
   }
 
   Future<void> _openSessionOverview() async {

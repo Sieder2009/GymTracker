@@ -138,19 +138,22 @@ class _UpdateSection extends StatelessWidget {
     if (update.status == UpdateStatus.downloading) {
       return LinearProgressIndicator(value: update.downloadProgress > 0 ? update.downloadProgress : null);
     }
-    return Row(
+    // Wrap, not Row -- with both buttons showing at once (downloaded state)
+    // long translations of either label can exceed the available width;
+    // a Row would overflow instead of dropping to a second line.
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
       children: [
         OutlinedButton(
           onPressed: update.status == UpdateStatus.checking ? null : () => update.checkNow(),
           child: Text(update.status == UpdateStatus.checking ? t.actionChecking : t.actionCheckForUpdates),
         ),
-        if (update.status == UpdateStatus.downloaded) ...[
-          const SizedBox(width: 10),
+        if (update.status == UpdateStatus.downloaded)
           ElevatedButton(
             onPressed: () => update.openDownloadedUpdate(),
             child: Text(t.actionInstallUpdate),
           ),
-        ],
       ],
     );
   }

@@ -70,6 +70,25 @@ class AppTheme {
           side: BorderSide(color: colors.line, width: 1),
         ),
       ),
+      // Unthemed PopupMenuButton falls back to Material3's default menu
+      // surface (sharp-ish 4px corners, stock elevation tint) -- same
+      // treatment as cardTheme above (radius, border, shadow) so the
+      // overflow menu reads as part of this app, not stock Material.
+      popupMenuTheme: PopupMenuThemeData(
+        color: colors.card,
+        elevation: 8,
+        shadowColor: brightness == Brightness.dark ? Colors.black : const Color(0xFF1B1B22),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          side: BorderSide(color: colors.line, width: 1),
+        ),
+        textStyle: GoogleFonts.inter(color: colors.txt, fontWeight: FontWeight.w600, fontSize: 14.5),
+      ),
+      listTileTheme: ListTileThemeData(
+        iconColor: colors.mut,
+        textColor: colors.txt,
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: colors.card2,

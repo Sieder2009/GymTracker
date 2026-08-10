@@ -54,7 +54,7 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WorkoutHistoryProvider(storage)),
         ChangeNotifierProvider(
             create: (_) => GymPhotosProvider(storage, photosDir)),
-        ChangeNotifierProvider(create: (_) => HealthProvider(HealthService())),
+        ChangeNotifierProvider(create: (_) => HealthProvider(HealthService(), storage)),
         ChangeNotifierProvider(
             create: (_) =>
                 ExerciseDatabaseProvider(storage, ExerciseDatabaseService())),
@@ -62,7 +62,7 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ActiveScreenProvider()),
         ChangeNotifierProvider(create: (_) => ToastProvider()),
         ChangeNotifierProvider(create: (_) => AppearanceProvider(storage)),
-        ChangeNotifierProvider(create: (_) => UpdateProvider()),
+        ChangeNotifierProvider(create: (_) => UpdateProvider(storage)),
         ChangeNotifierProvider(
             create: (_) => ReminderProvider(storage, NotificationService())),
       ],

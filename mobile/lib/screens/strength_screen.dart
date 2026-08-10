@@ -242,7 +242,7 @@ class _BodyWeightCardState extends State<_BodyWeightCard> {
                 OutlinedButton(onPressed: _addEntry, child: Text(t.actionAddEntry)),
               ],
             ),
-            if (health.isSupportedPlatform && health.isAuthorized) ...[
+            if (health.isSupportedPlatform && health.isConnected) ...[
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,

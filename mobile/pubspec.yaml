@@ -33,6 +33,7 @@ dependencies:
   path_drawing: ^1.0.1
   share_plus: ^10.1.4
   file_picker: ^8.1.4
+  flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
   flutter_test:

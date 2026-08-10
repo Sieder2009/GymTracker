@@ -1,4 +1,7 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -6,6 +9,7 @@ import '../config/app_config.dart';
 import '../l10n/app_localizations.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
+import '../state/health_provider.dart';
 import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
 import '../state/update_provider.dart';
@@ -67,6 +71,8 @@ class SettingsScreen extends StatelessWidget {
             _AppearanceSection(),
             SizedBox(height: 24),
             _ReminderSection(),
+            SizedBox(height: 24),
+            _HealthSection(),
             SizedBox(height: 24),
             _GeneralSection(),
             SizedBox(height: 24),
@@ -133,6 +139,25 @@ class _UpdateSection extends StatelessWidget {
                       child: _buildStatusBody(context, t, colors, update),
                     ),
                   ),
+                ),
+                const Divider(height: 28),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(t.labelAutoInstallUpdates, style: Theme.of(context).textTheme.headlineMedium),
+                          const SizedBox(height: 2),
+                          Text(t.hintAutoInstallUpdates, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: update.autoInstall,
+                      onChanged: (v) => update.setAutoInstall(v),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -355,26 +380,119 @@ class _ColorSwatchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
+    final isPreset = _kColorPresets.any((c) => c.toARGB32() == selected.toARGB32());
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       children: [
         for (final c in _kColorPresets)
-          GestureDetector(
-            onTap: () => onSelect(c),
-            child: Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: c,
-                shape: BoxShape.circle,
-                border: selected.toARGB32() == c.toARGB32() ? Border.all(color: colors.txt, width: 3) : null,
-              ),
+          _Swatch(color: c, selected: selected.toARGB32() == c.toARGB32(), onTap: () => onSelect(c)),
+        // The currently-active color, when it's a custom pick rather than
+        // one of the fixed presets -- otherwise picking a custom color
+        // would leave every swatch above looking unselected even though
+        // one very much is active.
+        if (!isPreset) _Swatch(color: selected, selected: true, onTap: () => _openPicker(context)),
+        GestureDetector(
+          onTap: () => _openPicker(context),
+          child: Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colors.card2,
+              border: Border.all(color: colors.line, width: 1.5),
             ),
+            child: Icon(Icons.add, size: 18, color: colors.mut),
           ),
+        ),
       ],
     );
   }
+
+  Future<void> _openPicker(BuildContext context) async {
+    final picked = await showCustomColorPicker(context, initial: selected);
+    if (picked != null) onSelect(picked);
+  }
+}
+
+class _Swatch extends StatelessWidget {
+  const _Swatch({required this.color, required this.selected, required this.onTap});
+
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: selected ? Border.all(color: colors.txt, width: 3) : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// Hex input + a visual picker, for anyone who wants a shade the 12 fixed
+/// presets don't cover -- reached via the "+" swatch in [_ColorSwatchRow].
+/// Bottom sheet, not a centered dialog, to match every other picker in
+/// this app (language, filters, plan picker, ...).
+Future<Color?> showCustomColorPicker(BuildContext context, {required Color initial}) {
+  final t = AppLocalizations.of(context)!;
+  var picked = initial;
+  return showModalBottomSheet<Color>(
+    context: context,
+    isScrollControlled: true,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t.titleCustomColor, style: Theme.of(context).textTheme.headlineLarge),
+              const SizedBox(height: 16),
+              ColorPicker(
+                pickerColor: initial,
+                onColorChanged: (c) => picked = c,
+                // No alpha: accent/secondary render as solid button/icon/
+                // border fills all over the app, never composited over a
+                // known background, so a translucent value would just look
+                // broken depending on what happens to sit behind it.
+                enableAlpha: false,
+                displayThumbColor: true,
+                labelTypes: const [ColorLabelType.hex, ColorLabelType.rgb, ColorLabelType.hsv],
+                pickerAreaHeightPercent: 0.6,
+                pickerAreaBorderRadius: BorderRadius.circular(AppRadii.md),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(picked),
+                  child: Text(t.actionApply),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class _ReminderSection extends StatelessWidget {
@@ -434,6 +552,80 @@ class _ReminderSection extends StatelessWidget {
                     ],
                   ),
                 ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Apps can't revoke their own HealthKit/Health Connect grant -- only the
+/// OS's own Health/Health Connect settings can -- so [HealthProvider
+/// .disconnect] is app-side only: it stops this app from reading/writing
+/// and brings the dashboard's one-time connect card back (see
+/// [_HealthCard] in training_screen.dart), without touching the real OS
+/// permission. Re-enabling here just flips that back, or runs the actual
+/// OS connect flow if it was never granted in the first place.
+class _HealthSection extends StatelessWidget {
+  const _HealthSection();
+
+  static const _iOSBrandColor = Color(0xFFFC3158);
+  static const _androidBrandColor = Color(0xFF4285F4);
+
+  @override
+  Widget build(BuildContext context) {
+    final health = context.watch<HealthProvider>();
+    if (!health.isSupportedPlatform) return const SizedBox.shrink();
+
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final brandColor = Platform.isIOS ? _iOSBrandColor : _androidBrandColor;
+    final brandName = Platform.isIOS ? 'Apple Health' : 'Health Connect';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t.titleHealthSync, style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: brandColor, borderRadius: BorderRadius.circular(AppRadii.sm)),
+                  child: const Icon(Icons.favorite_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(brandName, style: Theme.of(context).textTheme.headlineMedium),
+                      const SizedBox(height: 2),
+                      Text(
+                        health.isConnected ? t.labelHealthConnected : t.labelHealthNotConnected,
+                        style: TextStyle(
+                          color: health.isConnected ? colors.green : colors.mut,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (health.isLoading)
+                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                else
+                  Switch(
+                    value: health.isConnected,
+                    onChanged: (v) => v ? health.connect() : health.disconnect(),
+                  ),
               ],
             ),
           ),

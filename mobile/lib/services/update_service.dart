@@ -85,7 +85,7 @@ class UpdateService {
       }
 
       return UpdateCheckResult(
-        hasUpdate: _isNewer(latest, localVersion),
+        hasUpdate: isNewer(latest, localVersion),
         latestVersion: latest,
         releaseUrl: releaseUrl,
         assets: assets,
@@ -97,7 +97,10 @@ class UpdateService {
     }
   }
 
-  static bool _isNewer(String remote, String local) {
+  /// Public so [UpdateProvider] can reuse the exact same comparison to tell
+  /// whether a previously-downloaded update is still ahead of whatever is
+  /// actually installed now, without duplicating the parsing logic.
+  static bool isNewer(String remote, String local) {
     final r = _parseVersion(remote);
     final l = _parseVersion(local);
     for (var i = 0; i < 3; i++) {

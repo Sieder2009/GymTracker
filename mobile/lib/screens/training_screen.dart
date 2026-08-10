@@ -398,9 +398,12 @@ class _HomeDashboardStats extends StatelessWidget {
   }
 }
 
-/// Steps-today card, only shown on Android/iOS (see
-/// [HealthProvider.isSupportedPlatform]) — hidden entirely on
-/// desktop/web, where there's no OS health store to connect to.
+/// One-time connect prompt, only shown on Android/iOS (see
+/// [HealthProvider.isSupportedPlatform]) and only until the user actually
+/// connects — once [HealthProvider.isConnected] is true this card is gone
+/// from the dashboard entirely (re-enabling/disabling afterwards lives in
+/// Settings, see `_HealthSection`) rather than sitting there permanently
+/// showing a steps count nobody asked to see on the home screen every day.
 ///
 /// Styled as one fully-tappable iOS-Settings-style row (leading brand tile,
 /// title/subtitle, trailing chevron) rather than a card with its own inner
@@ -423,13 +426,12 @@ class _HealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final health = context.watch<HealthProvider>();
-    if (!health.isSupportedPlatform) return const SizedBox.shrink();
+    if (!health.isSupportedPlatform || health.isConnected) return const SizedBox.shrink();
 
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
     final brandColor = Platform.isIOS ? _iOSBrandColor : _androidBrandColor;
     final brandName = Platform.isIOS ? 'Apple Health' : 'Health Connect';
-    final canConnect = !health.isAuthorized && !health.isLoading;
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
@@ -437,7 +439,7 @@ class _HealthCard extends StatelessWidget {
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: canConnect ? () => health.connect() : null,
+          onTap: health.isLoading ? null : () => health.connect(),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -462,20 +464,14 @@ class _HealthCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.headlineMedium),
                       const SizedBox(height: 2),
                       Text(
-                        health.isAuthorized
-                            ? '${t.labelStepsToday}: ${health.stepsToday ?? '—'}'
-                            : (health.isLoading
-                                ? t.actionConnectHealth
-                                : t.titleHealthSync),
+                        health.isLoading ? t.actionConnectHealth : t.titleHealthSync,
                         style: TextStyle(color: colors.mut, fontSize: 13),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                if (health.isAuthorized)
-                  Icon(Icons.check_circle_rounded, color: colors.green, size: 22)
-                else if (health.isLoading)
+                if (health.isLoading)
                   SizedBox(
                     width: 18,
                     height: 18,

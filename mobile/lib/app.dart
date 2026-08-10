@@ -26,6 +26,7 @@ import 'state/toast_provider.dart';
 import 'state/train_state_provider.dart';
 import 'state/update_provider.dart';
 import 'state/workout_history_provider.dart';
+import 'overlays/onboarding_screen.dart';
 import 'theme/app_theme.dart';
 import 'widgets/app_shell.dart';
 import 'widgets/toast_overlay.dart';
@@ -89,7 +90,7 @@ class IronpeakApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: const AppShell(),
+            home: const _Root(),
             // Above the whole Navigator, not just AppShell -- a toast
             // triggered from a pushed screen (Settings, plan editor, ...)
             // needs to render there too, not sit invisible behind it until
@@ -104,5 +105,31 @@ class IronpeakApp extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+/// Decides once, at construction, whether this launch should see
+/// [OnboardingScreen] or go straight to [AppShell] -- a `late` field read
+/// from [StorageService]'s synchronous in-memory cache rather than
+/// recomputed on every rebuild, so a theme/appearance/locale change
+/// mid-onboarding (all of which live above this in the tree, via
+/// [Consumer3] in [IronpeakApp]) can't accidentally flip it back.
+class _Root extends StatefulWidget {
+  const _Root();
+
+  @override
+  State<_Root> createState() => _RootState();
+}
+
+class _RootState extends State<_Root> {
+  late bool _showOnboarding =
+      context.read<StorageService>().readString(kOnboardingCompleteKey) != 'true';
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showOnboarding) {
+      return OnboardingScreen(onFinished: () => setState(() => _showOnboarding = false));
+    }
+    return const AppShell();
   }
 }

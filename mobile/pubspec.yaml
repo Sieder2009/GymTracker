@@ -46,3 +46,4 @@ flutter:
   assets:
     - .env
     - assets/exercises.json
+    - assets/plan_templates.json

@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +6,7 @@ import '../analytics/analytics_engine.dart';
 import '../data/constants.dart';
 import '../data/example_log.dart';
 import '../data/example_ppl_plan.dart';
+import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../models/program.dart';
@@ -412,8 +411,9 @@ class _HomeDashboardStats extends StatelessWidget {
 /// title/subtitle, trailing chevron) rather than a card with its own inner
 /// button — the old [OutlinedButton] rendered in [AppColors.secondary]
 /// (green), which reads as an unrelated accent next to the rest of the
-/// screen's blue. [Platform.isIOS]/Android get their own real product name
-/// and brand color here (not the app's own accent) so the row visually
+/// screen's blue. iOS/Android get their own real product name (see
+/// [healthBrandName]/[healthBrandColor]) and brand color here (not the
+/// app's own accent) so the row visually
 /// reads as "this connects to the OS's health store", distinct from in-app
 /// actions — deliberately not Apple's actual "Works with Apple Health"
 /// badge artwork or Health Connect's launcher icon, both of which are
@@ -423,9 +423,6 @@ class _HomeDashboardStats extends StatelessWidget {
 class _HealthCard extends StatelessWidget {
   const _HealthCard();
 
-  static const _iOSBrandColor = Color(0xFFFC3158);
-  static const _androidBrandColor = Color(0xFF4285F4);
-
   @override
   Widget build(BuildContext context) {
     final health = context.watch<HealthProvider>();
@@ -433,8 +430,8 @@ class _HealthCard extends StatelessWidget {
 
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
-    final brandColor = Platform.isIOS ? _iOSBrandColor : _androidBrandColor;
-    final brandName = Platform.isIOS ? 'Apple Health' : 'Health Connect';
+    final brandColor = healthBrandColor();
+    final brandName = healthBrandName();
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),

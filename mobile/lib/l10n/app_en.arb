@@ -433,6 +433,13 @@
   "labelUpcomingExercises": "Coming up",
   "actionLoadPplExample": "Load PPL example",
   "examplePplPlanName": "Push/Pull/Legs",
+  "templateUpperLowerName": "Upper/Lower",
+  "templateArnoldSplitName": "Arnold Split",
+  "templateFullBodyName": "Full Body",
+  "templateBroSplitName": "Bro Split",
+  "templatePplUpperLowerName": "PPL + Upper/Lower",
+  "templatePowerliftingName": "Powerlifting",
+  "templateBodyweightName": "Bodyweight",
   "toastPplPlanLoaded": "PPL plan added",
   "tabAnalyticsAchievements": "Achievements",
   "achievementPathConsistency": "Training streak",
@@ -465,5 +472,34 @@
   "actionSaveToFiles": "Save/share as file",
   "actionImportFromFile": "Choose file",
   "backupFileHint": "Save the exported file to e.g. iCloud Drive or Google Drive to import it on another device later — there's no server of ours involved, the file only goes wherever you choose to put it.",
-  "toastFileImported": "File loaded"
+  "toastFileImported": "File loaded",
+  "actionSkip": "Skip",
+  "titleOnboardingWelcome": "Welcome to Ironpeak Fitness",
+  "bodyOnboardingWelcome": "Training plans, strength progress, and muscle-group balance — all stored locally on your device, no account needed.",
+  "actionGetStarted": "Get started",
+  "titleOnboardingPlan": "Choose a training plan",
+  "bodyOnboardingPlan": "You can change this anytime in Settings.",
+  "actionCreateOwnPlan": "Create your own plan",
+  "actionSkipForNow": "Add later",
+  "labelTrainingDaysPerWeek": "{count} days/week",
+  "@labelTrainingDaysPerWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "toastPlanTemplateAdded": "Added \"{name}\"",
+  "@toastPlanTemplateAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "titleOnboardingFinish": "Almost done!",
+  "bodyOnboardingFinish": "A few last things you can set up.",
+  "bodyOnboardingBackup": "Back up your data anytime as a file via the share sheet — to iCloud Drive or Google Drive, for example. No account, no server, just your own copy.",
+  "actionOpenBackup": "Open backup",
+  "actionFinishSetup": "Done"
 }

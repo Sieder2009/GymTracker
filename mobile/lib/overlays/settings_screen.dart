@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -7,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
+import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
@@ -579,9 +579,6 @@ class _ReminderSection extends StatelessWidget {
 class _HealthSection extends StatelessWidget {
   const _HealthSection();
 
-  static const _iOSBrandColor = Color(0xFFFC3158);
-  static const _androidBrandColor = Color(0xFF4285F4);
-
   @override
   Widget build(BuildContext context) {
     final health = context.watch<HealthProvider>();
@@ -589,8 +586,8 @@ class _HealthSection extends StatelessWidget {
 
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
-    final brandColor = Platform.isIOS ? _iOSBrandColor : _androidBrandColor;
-    final brandName = Platform.isIOS ? 'Apple Health' : 'Health Connect';
+    final brandColor = healthBrandColor();
+    final brandName = healthBrandName();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

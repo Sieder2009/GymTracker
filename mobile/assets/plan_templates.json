@@ -1,0 +1,405 @@
+{
+  "templates": [
+    {
+      "id": "upper_lower",
+      "days": [
+        {
+          "rest": false,
+          "marker": "Upper A",
+          "exercises": [
+            { "name": "Bankdrücken", "sets": 4, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Langhantelrudern", "sets": 4, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Schulterdrücken (Langhantel)", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Klimmzüge", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Seitheben", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Langhantel-Bizepscurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Trizepsdrücken am Kabel", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Lower A",
+          "exercises": [
+            { "name": "Squats", "sets": 4, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Rumänisches Kreuzheben", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Beinpresse", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Beinstrecker", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Beinbeuger (liegend)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Wadenheben (stehend)", "sets": 4, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true },
+        {
+          "rest": false,
+          "marker": "Upper B",
+          "exercises": [
+            { "name": "Schrägbankdrücken", "sets": 4, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Latzug", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Arnold Press", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "T-Bar-Rudern", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Reverse Butterfly (hintere Schulter)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Hammercurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Trizeps-Überkopfdrücken", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Lower B",
+          "exercises": [
+            { "name": "Kreuzheben", "sets": 3, "reps": "5", "restSeconds": 180 },
+            { "name": "Bulgarian Split Squats", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Hip Thrust", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Ausfallschritte (gehend)", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Abduktoren-Maschine", "sets": 3, "reps": "15-20", "restSeconds": 45 },
+            { "name": "Wadenheben (sitzend)", "sets": 4, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true },
+        { "rest": true }
+      ]
+    },
+    {
+      "id": "arnold_split",
+      "days": [
+        {
+          "rest": false,
+          "marker": "Brust & Rücken A",
+          "exercises": [
+            { "name": "Bankdrücken", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Langhantelrudern", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Kurzhantel-Schrägbankdrücken", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Klimmzüge", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Kabelzug-Crossover", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Latzug", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Schultern & Arme A",
+          "exercises": [
+            { "name": "Schulterdrücken (Langhantel)", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Seitheben", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Reverse Butterfly (hintere Schulter)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Langhantel-Bizepscurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Trizepsdrücken am Kabel", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Hammercurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "French Press", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Beine A",
+          "exercises": [
+            { "name": "Squats", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Beinpresse", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Beinstrecker", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Beinbeuger (liegend)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Wadenheben (stehend)", "sets": 4, "reps": "15-20", "restSeconds": 45 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Brust & Rücken B",
+          "exercises": [
+            { "name": "Kurzhantel-Bankdrücken", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "T-Bar-Rudern", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Dips", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Rudern am Kabelzug (sitzend)", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Fliegende (Kurzhantel)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Face Pull", "sets": 3, "reps": "15", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Schultern & Arme B",
+          "exercises": [
+            { "name": "Arnold Press", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Frontheben", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Aufrechtes Rudern", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "SZ-Stangen-Bizepscurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Trizeps-Überkopfdrücken", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Scottcurls", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Beine B",
+          "exercises": [
+            { "name": "Kreuzheben", "sets": 3, "reps": "5", "restSeconds": 180 },
+            { "name": "Ausfallschritte (gehend)", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Hip Thrust", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Beinbeuger (sitzend)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Wadenheben (sitzend)", "sets": 4, "reps": "15-20", "restSeconds": 45 }
+          ]
+        },
+        { "rest": true }
+      ]
+    },
+    {
+      "id": "full_body",
+      "days": [
+        {
+          "rest": false,
+          "marker": "Ganzkörper A",
+          "exercises": [
+            { "name": "Squats", "sets": 3, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Bankdrücken", "sets": 3, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Langhantelrudern", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Schulterdrücken (Langhantel)", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Beinbeuger (liegend)", "sets": 2, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Cable Crunch", "sets": 3, "reps": "15-20", "restSeconds": 45 }
+          ]
+        },
+        { "rest": true },
+        {
+          "rest": false,
+          "marker": "Ganzkörper B",
+          "exercises": [
+            { "name": "Kreuzheben", "sets": 3, "reps": "5", "restSeconds": 180 },
+            { "name": "Schrägbankdrücken", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Klimmzüge", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Beinpresse", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Seitheben", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Hängendes Beinheben", "sets": 3, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true },
+        {
+          "rest": false,
+          "marker": "Ganzkörper C",
+          "exercises": [
+            { "name": "Front Squats", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Dips", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "T-Bar-Rudern", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Hip Thrust", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Langhantel-Bizepscurls", "sets": 2, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Trizepsdrücken am Kabel", "sets": 2, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true },
+        { "rest": true }
+      ]
+    },
+    {
+      "id": "bro_split",
+      "days": [
+        {
+          "rest": false,
+          "marker": "Brust",
+          "exercises": [
+            { "name": "Bankdrücken", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Schrägbankdrücken", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Kurzhantel-Bankdrücken", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Fliegende (Kurzhantel)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Dips", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Kabelzug-Crossover", "sets": 3, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Rücken",
+          "exercises": [
+            { "name": "Kreuzheben", "sets": 3, "reps": "5", "restSeconds": 180 },
+            { "name": "Klimmzüge", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Langhantelrudern", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Latzug", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Rudern am Kabelzug (sitzend)", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Face Pull", "sets": 3, "reps": "15", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Schultern",
+          "exercises": [
+            { "name": "Schulterdrücken (Langhantel)", "sets": 4, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Arnold Press", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Seitheben", "sets": 4, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Frontheben", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Reverse Butterfly (hintere Schulter)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Aufrechtes Rudern", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Arme",
+          "exercises": [
+            { "name": "Langhantel-Bizepscurls", "sets": 4, "reps": "10-12", "restSeconds": 60 },
+            { "name": "SZ-Stangen-Bizepscurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Hammercurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Trizepsdrücken am Kabel", "sets": 4, "reps": "10-12", "restSeconds": 60 },
+            { "name": "French Press", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "Trizeps-Überkopfdrücken", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Beine",
+          "exercises": [
+            { "name": "Squats", "sets": 4, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Rumänisches Kreuzheben", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Beinpresse", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Beinstrecker", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Beinbeuger (liegend)", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Wadenheben (stehend)", "sets": 4, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true },
+        { "rest": true }
+      ]
+    },
+    {
+      "id": "ppl_upper_lower",
+      "days": [
+        {
+          "rest": false,
+          "marker": "Push",
+          "exercises": [
+            { "name": "Bankdrücken", "sets": 4, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Schulterdrücken (Langhantel)", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Kurzhantel-Schrägbankdrücken", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Seitheben", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Trizepsdrücken am Kabel", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Pull",
+          "exercises": [
+            { "name": "Kreuzheben", "sets": 3, "reps": "5", "restSeconds": 180 },
+            { "name": "Klimmzüge", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Langhantelrudern", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Face Pull", "sets": 3, "reps": "15", "restSeconds": 60 },
+            { "name": "Langhantel-Bizepscurls", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Legs",
+          "exercises": [
+            { "name": "Squats", "sets": 4, "reps": "6-8", "restSeconds": 150 },
+            { "name": "Rumänisches Kreuzheben", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Beinpresse", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Wadenheben (stehend)", "sets": 4, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Upper",
+          "exercises": [
+            { "name": "Schrägbankdrücken", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Latzug", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Arnold Press", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "T-Bar-Rudern", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Hammercurls", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Lower",
+          "exercises": [
+            { "name": "Front Squats", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Hip Thrust", "sets": 3, "reps": "8-10", "restSeconds": 120 },
+            { "name": "Beinstrecker", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "Beinbeuger (liegend)", "sets": 3, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true },
+        { "rest": true }
+      ]
+    },
+    {
+      "id": "powerlifting",
+      "days": [
+        {
+          "rest": false,
+          "marker": "Squat-Tag",
+          "exercises": [
+            { "name": "Squats", "sets": 5, "reps": "5", "restSeconds": 180 },
+            { "name": "Front Squats", "sets": 3, "reps": "6-8", "restSeconds": 120 },
+            { "name": "Beinpresse", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Ausfallschritte (gehend)", "sets": 3, "reps": "10", "restSeconds": 90 },
+            { "name": "Cable Crunch", "sets": 3, "reps": "15", "restSeconds": 45 }
+          ]
+        },
+        { "rest": true },
+        {
+          "rest": false,
+          "marker": "Bankdrücken-Tag",
+          "exercises": [
+            { "name": "Bankdrücken", "sets": 5, "reps": "5", "restSeconds": 180 },
+            { "name": "Enges Bankdrücken (Trizeps)", "sets": 3, "reps": "6-8", "restSeconds": 120 },
+            { "name": "Schulterdrücken (Langhantel)", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Langhantelrudern", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Trizepsdrücken am Kabel", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true },
+        {
+          "rest": false,
+          "marker": "Kreuzheben-Tag",
+          "exercises": [
+            { "name": "Kreuzheben", "sets": 5, "reps": "3", "restSeconds": 210 },
+            { "name": "Rumänisches Kreuzheben", "sets": 3, "reps": "6-8", "restSeconds": 120 },
+            { "name": "Klimmzüge", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Good Mornings", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Hängendes Beinheben", "sets": 3, "reps": "12-15", "restSeconds": 60 }
+          ]
+        },
+        {
+          "rest": false,
+          "marker": "Bankdrücken-Nebeneinheit",
+          "exercises": [
+            { "name": "Schrägbankdrücken", "sets": 4, "reps": "6-8", "restSeconds": 120 },
+            { "name": "Dips", "sets": 3, "reps": "8-10", "restSeconds": 90 },
+            { "name": "Seitheben", "sets": 3, "reps": "12-15", "restSeconds": 60 },
+            { "name": "SZ-Stangen-Bizepscurls", "sets": 3, "reps": "10-12", "restSeconds": 60 },
+            { "name": "French Press", "sets": 3, "reps": "10-12", "restSeconds": 60 }
+          ]
+        },
+        { "rest": true }
+      ]
+    },
+    {
+      "id": "bodyweight",
+      "days": [
+        {
+          "rest": false,
+          "marker": "Oberkörper Push",
+          "exercises": [
+            { "name": "Liegestütze", "sets": 4, "reps": "12-15", "restSeconds": 90 },
+            { "name": "Dips", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Pike Push-up", "sets": 3, "reps": "8-12", "restSeconds": 90 },
+            { "name": "Archer Push-ups", "sets": 3, "reps": "8-10", "restSeconds": 60 },
+            { "name": "Plank", "sets": 3, "reps": "45 Sek.", "restSeconds": 45 }
+          ]
+        },
+        { "rest": true },
+        {
+          "rest": false,
+          "marker": "Rücken & Core",
+          "exercises": [
+            { "name": "Klimmzüge", "sets": 4, "reps": "6-10", "restSeconds": 120 },
+            { "name": "Inverted Row", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Klimmzüge (Untergriff)", "sets": 3, "reps": "6-10", "restSeconds": 90 },
+            { "name": "Hängendes Beinheben", "sets": 3, "reps": "10-15", "restSeconds": 60 },
+            { "name": "Side Plank", "sets": 3, "reps": "30 Sek. je Seite", "restSeconds": 45 }
+          ]
+        },
+        { "rest": true },
+        {
+          "rest": false,
+          "marker": "Unterkörper",
+          "exercises": [
+            { "name": "Ausfallschritte (gehend)", "sets": 4, "reps": "12-15", "restSeconds": 90 },
+            { "name": "Bulgarian Split Squats", "sets": 3, "reps": "10-12", "restSeconds": 90 },
+            { "name": "Pistol Squat", "sets": 3, "reps": "5-8", "restSeconds": 90 },
+            { "name": "Wandsitzen (Wall Sit)", "sets": 3, "reps": "45 Sek.", "restSeconds": 60 },
+            { "name": "Hollow Body Hold", "sets": 3, "reps": "30 Sek.", "restSeconds": 45 }
+          ]
+        },
+        { "rest": true },
+        { "rest": true }
+      ]
+    }
+  ]
+}

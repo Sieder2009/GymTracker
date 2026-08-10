@@ -38,20 +38,37 @@ allprojects {
 //    explicit per-task setting still wins over a project-level toolchain
 //    default regardless of which registered first.
 //
-// The combination that actually closes every hole: gradle.projectsEvaluated
-// (attempt 2's proven "always the last writer" timing, so it wins over
-// flutter_timezone's own explicit kotlinOptions the same way it won for
-// :health) applying Java's target through AGP's own typed `compileOptions`
-// DSL instead of a raw JavaCompile task property (avoids attempt 2's
-// --release-mode regression) plus a task-level Kotlin override (since
-// attempt 3 already proved a plain toolchain default isn't always enough).
+// 4. gradle.projectsEvaluated + AGP's typed `compileOptions` DSL (instead of
+//    attempt 2's raw JavaCompile task property, to dodge its --release-mode
+//    regression) fixed :flutter_timezone too -- but crashed the whole build
+//    with "sourceCompatibility has been finalized" on CI. AGP locks that
+//    property as part of a module's own configuration (finalizeValue()),
+//    and by the time our *global* projectsEvaluated hook runs -- guaranteed
+//    to fire after every module's own configuration, including AGP's
+//    internal finalization -- at least one module (couldn't identify which
+//    from the non-stacktrace CI log) has already locked it. Writing to an
+//    already-finalized Gradle Property throws instead of silently
+//    overriding, unlike a plain var.
+//
+// There's no timing that's simultaneously "after every module's own
+// explicit override" (needed to win, same reason attempt 1 lost) and
+// "before AGP finalizes the DSL property" (needed to not crash) for every
+// module at once -- different modules finalize at different points in
+// their own lifecycle. So: best-effort via the DSL, swallowing the
+// already-finalized case per-module instead of failing the whole build.
+// The Kotlin-side task-level override has never itself thrown across any
+// of the four attempts, so it stays unconditional.
 gradle.projectsEvaluated {
     subprojects {
-        extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
+        runCatching {
+            extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
             }
+        }.onFailure {
+            logger.info("Skipping Java 17 override for $name -- already finalized: ${it.message}")
         }
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
             compilerOptions {

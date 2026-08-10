@@ -2,10 +2,9 @@ name: Build Windows App
 
 on:
   push:
-    branches:
-      - master
     tags:
       - 'v*.*.*'
+  workflow_dispatch: {} # lets us test a fix on demand without cutting a release tag
 
 permissions:
   contents: write

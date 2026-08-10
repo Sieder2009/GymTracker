@@ -1,0 +1,72 @@
+name: Build macOS App
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch: {} # lets us test a fix on demand without cutting a release tag
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # macos/ isn't committed (nothing here has ever been built locally) —
+      # generated fresh each run against whatever Flutter version CI
+      # installs, matching how ios/ is generated in ios.yml. Verified
+      # locally: unlike iOS/Android, this platform needed zero plugin
+      # fixes (no deployment-target bump, no Health entitlement) — every
+      # plugin this app uses already builds clean for macOS out of the box.
+      - run: flutter create --org com.ironpeak --platforms=macos .
+
+      # flutter create also (re-)adds its default counter-app template
+      # test, which references a `MyApp` class that doesn't exist in this
+      # project (ours is `IronpeakApp`) — remove it, our own test/ files
+      # stay (same fix already in android.yml/ios.yml). It also drops a
+      # stray README.md at the project root — remove that too.
+      - run: rm -f test/widget_test.dart README.md
+
+      - run: flutter pub get
+
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - run: flutter test
+
+      # No Apple Developer certificate/provisioning profile is configured
+      # in this repo, so this can only produce an UNSIGNED, unnotarized
+      # .app — enough to prove the app builds correctly for macOS on every
+      # release, but macOS Gatekeeper will refuse to open it normally
+      # (right-click → "Open" once bypasses that, standard for any
+      # unsigned app). Turning this into a properly signed/notarized
+      # build needs your own Apple Developer Program membership: add its
+      # signing certificate + notarization credentials as repo secrets,
+      # then extend this step accordingly.
+      - run: flutter build macos --release
+
+      # ditto (not plain zip) preserves the .app bundle's resource forks/
+      # extended attributes correctly, matching how macOS itself expects
+      # an .app to be archived.
+      - name: Package macOS build
+        run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/ironpeak_mobile.app ironpeak-fitness-macos.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ironpeak-fitness-macos
+          path: mobile/ironpeak-fitness-macos.zip
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mobile/ironpeak-fitness-macos.zip
+          generate_release_notes: true

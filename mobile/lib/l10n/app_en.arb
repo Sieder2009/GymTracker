@@ -350,7 +350,14 @@
       }
     }
   },
-  "labelUpdateReady": "Update ready to install",
+  "labelUpdateReady": "Version {version} ready to install",
+  "@labelUpdateReady": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "labelAutoInstallUpdates": "Auto-install updates",
   "hintAutoInstallUpdates": "Automatically installs a downloaded update the next time the app opens.",
   "updateErrorNoRelease": "No published release to compare against yet.",

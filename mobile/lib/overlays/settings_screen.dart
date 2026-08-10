@@ -230,11 +230,16 @@ class _UpdateSection extends StatelessWidget {
           ],
         );
       case UpdateStatus.downloaded:
+        final downloadedVersion = update.downloadedVersion ?? update.result?.latestVersion ?? '';
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _StatusRow(icon: Icons.check_circle_rounded, color: colors.green, text: t.labelUpdateReady),
+            _StatusRow(
+              icon: Icons.check_circle_rounded,
+              color: colors.green,
+              text: t.labelUpdateReady(downloadedVersion),
+            ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,

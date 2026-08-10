@@ -228,7 +228,7 @@
       }
     }
   },
-  "labelUpdateReady": "Aktualizacja gotowa do instalacji",
+  "labelUpdateReady": "Wersja {version} gotowa do instalacji",
   "labelAutoInstallUpdates": "Instaluj automatycznie",
   "hintAutoInstallUpdates": "Automatycznie instaluje pobraną aktualizację przy następnym otwarciu aplikacji.",
   "updateErrorNoRelease": "Nie ma jeszcze opublikowanej wersji do porównania.",

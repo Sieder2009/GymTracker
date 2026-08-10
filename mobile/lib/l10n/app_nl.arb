@@ -228,7 +228,7 @@
       }
     }
   },
-  "labelUpdateReady": "Update klaar om te installeren",
+  "labelUpdateReady": "Versie {version} klaar om te installeren",
   "labelAutoInstallUpdates": "Automatisch installeren",
   "hintAutoInstallUpdates": "Installeert een gedownloade update automatisch bij de volgende keer dat de app wordt geopend.",
   "updateErrorNoRelease": "Er is nog geen gepubliceerde versie om mee te vergelijken.",

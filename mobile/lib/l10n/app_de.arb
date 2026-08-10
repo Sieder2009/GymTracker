@@ -228,7 +228,7 @@
       }
     }
   },
-  "labelUpdateReady": "Update bereit zur Installation",
+  "labelUpdateReady": "Version {version} bereit zur Installation",
   "labelAutoInstallUpdates": "Automatisch installieren",
   "hintAutoInstallUpdates": "Installiert ein heruntergeladenes Update automatisch beim nächsten App-Start.",
   "updateErrorNoRelease": "Es gibt noch keine veröffentlichte Version zum Vergleichen.",

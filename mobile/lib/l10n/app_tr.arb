@@ -228,7 +228,7 @@
       }
     }
   },
-  "labelUpdateReady": "Güncelleme yüklemeye hazır",
+  "labelUpdateReady": "Sürüm {version} yüklenmeye hazır",
   "labelAutoInstallUpdates": "Otomatik yükle",
   "hintAutoInstallUpdates": "İndirilen bir güncellemeyi uygulamanın bir sonraki açılışında otomatik olarak yükler.",
   "updateErrorNoRelease": "Henüz karşılaştırılacak yayınlanmış bir sürüm yok.",

@@ -50,6 +50,12 @@ class UpdateProvider extends ChangeNotifier {
 
   bool get autoInstall => _autoInstall;
 
+  /// The version number of whatever's sitting in [downloadedFilePath] --
+  /// the real GitHub release tag (see [UpdateService.checkForUpdate]),
+  /// not just a generic "an update is ready" with no indication of what it
+  /// actually is.
+  String? get downloadedVersion => _downloadedVersion;
+
   /// The version actually running right now, read from the platform build's
   /// own metadata (Info.plist / the Android manifest) at startup -- Flutter
   /// stamps this from pubspec.yaml's `version:` field at build time (or, for

@@ -30,9 +30,14 @@ String _shortLabel(DateTime d) => '${d.day}.${d.month}';
 
 Future<void> main() async {
   sqfliteFfiInit();
-  final docs = Platform.environment['USERPROFILE'] != null
-      ? p.join(Platform.environment['USERPROFILE']!, 'Documents')
-      : Directory.current.path;
+  // USERPROFILE (Windows) / HOME (macOS/Linux) -> that user's Documents
+  // folder, matching where the real app's StorageService actually keeps
+  // its database. Only falls back to the current working directory (which
+  // used to be the unconditional default here, and would silently land
+  // ironpeak.db inside this repo when run as `dart run tool/seed_demo_data
+  // .dart` from mobile/) if neither env var is set.
+  final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+  final docs = home != null ? p.join(home, 'Documents') : Directory.current.path;
   final dbPath = p.join(docs, 'ironpeak.db');
   print('Seeding $dbPath ...');
 

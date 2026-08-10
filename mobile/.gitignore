@@ -52,3 +52,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# tool/seed_demo_data.dart's local SQLite database -- the real app never
+# writes here (StorageService uses the OS's per-app documents directory,
+# outside the repo), but the dev seed script's own path resolution used to
+# fall back to the current working directory when run from mobile/ on
+# macOS/Linux, landing it right here. Keeping this ignored is a safety net
+# even after fixing that fallback.
+/ironpeak.db

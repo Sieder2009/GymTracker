@@ -28,6 +28,7 @@ import '../widgets/app_shell.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/day_pill_selector.dart';
 import '../widgets/exercise_card.dart';
+import '../widgets/health_connect_feedback.dart';
 import '../widgets/language_picker_sheet.dart';
 import '../widgets/plan_picker_sheet.dart';
 import '../state/theme_provider.dart';
@@ -113,10 +114,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 
   void _deletePlan(Program p) {
+    final t = AppLocalizations.of(context)!;
     final programs = context.read<ProgramsProvider>();
     final trainState = context.read<TrainStateProvider>();
     final wasActive = trainState.activePlanId == p.id;
     programs.removeProgram(p.id);
+    context.read<ToastProvider>().show(t.toastPlanDeleted);
     if (!wasActive) return;
     final remaining = programs.programs;
     if (remaining.isEmpty) {
@@ -439,7 +442,7 @@ class _HealthCard extends StatelessWidget {
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: health.isLoading ? null : () => health.connect(),
+          onTap: health.isLoading ? null : () => connectHealthWithFeedback(context, health, t),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(

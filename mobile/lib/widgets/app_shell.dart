@@ -9,7 +9,6 @@ import '../state/active_screen_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import 'app_tab_bar.dart';
-import 'toast_overlay.dart';
 
 /// Root shell: the 3 tabs stay mounted simultaneously via [PageView]
 /// (matches the original's always-mounted `.screen` sections, just
@@ -76,7 +75,6 @@ class _AppShellState extends State<AppShell> {
               ExercisesScreen(),
             ],
           ),
-          const ToastOverlay(),
           Positioned(
             left: 20,
             right: 20,

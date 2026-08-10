@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -12,10 +13,12 @@ import '../state/appearance_provider.dart';
 import '../state/health_provider.dart';
 import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
+import '../state/toast_provider.dart';
 import '../state/update_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/backup_sheet.dart';
+import '../widgets/health_connect_feedback.dart';
 import '../widgets/language_picker_sheet.dart';
 
 const List<Color> _kColorPresets = [
@@ -624,7 +627,14 @@ class _HealthSection extends StatelessWidget {
                 else
                   Switch(
                     value: health.isConnected,
-                    onChanged: (v) => v ? health.connect() : health.disconnect(),
+                    onChanged: (v) {
+                      if (v) {
+                        unawaited(connectHealthWithFeedback(context, health, t));
+                      } else {
+                        health.disconnect();
+                        context.read<ToastProvider>().show(t.toastHealthDisconnected);
+                      }
+                    },
                   ),
               ],
             ),

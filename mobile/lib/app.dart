@@ -28,6 +28,7 @@ import 'state/update_provider.dart';
 import 'state/workout_history_provider.dart';
 import 'theme/app_theme.dart';
 import 'widgets/app_shell.dart';
+import 'widgets/toast_overlay.dart';
 
 /// Root widget: one [MultiProvider] above one [MaterialApp]/[Navigator] —
 /// every pushed overlay route stays a descendant of this provider tree, so
@@ -89,6 +90,16 @@ class IronpeakApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             home: const AppShell(),
+            // Above the whole Navigator, not just AppShell -- a toast
+            // triggered from a pushed screen (Settings, plan editor, ...)
+            // needs to render there too, not sit invisible behind it until
+            // the user happens to navigate back to the shell.
+            builder: (context, child) => Stack(
+              children: [
+                if (child != null) child,
+                const ToastOverlay(),
+              ],
+            ),
           );
         },
       ),

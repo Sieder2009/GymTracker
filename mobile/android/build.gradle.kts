@@ -81,6 +81,33 @@ gradle.projectsEvaluated {
     }
 }
 
+// Separately: every plugin gets its own auto-generated Android wrapper
+// project (flutter create-style, from that plugin's own template), and
+// every one of them declares `compileSdk = flutter.compileSdkVersion` --
+// the *installed Flutter SDK's* own bundled default (34 as of writing),
+// shared identically across app/ and every plugin subproject alike. That
+// default is now older than what a transitive dependency
+// (flutter_plugin_android_lifecycle, pulled in via file_picker) requires
+// its consumers to compile against (36+) -- bumping just app/build.gradle
+// .kts's own compileSdk (already done) only touches :app, not the plugin
+// subprojects actually named in the error.
+//
+// Unlike compileOptions above, compileSdk feeds AGP's classpath
+// resolution (which android.jar to compile against) very early in a
+// module's own configuration -- gradle.projectsEvaluated's global,
+// end-of-build timing is almost certainly too late for a write to still
+// matter here, unlike the read-only Kotlin-target fix above. subprojects
+// { afterEvaluate {} } is the earlier, per-module hook instead: it runs
+// once that module's own script (including its own
+// `compileSdk = flutter.compileSdkVersion` line) has finished, but
+// before AGP's classpath-relevant work that a plain `subprojects {}}`
+// (racing each module's own script execution) can't reliably beat.
+subprojects {
+    afterEvaluate {
+        extensions.findByType<com.android.build.gradle.BaseExtension>()?.compileSdkVersion(36)
+    }
+}
+
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
         .dir("../../build")

@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,7 @@ import '../state/toast_provider.dart';
 import '../state/train_state_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/day_pill_selector.dart';
@@ -398,8 +401,24 @@ class _HomeDashboardStats extends StatelessWidget {
 /// Steps-today card, only shown on Android/iOS (see
 /// [HealthProvider.isSupportedPlatform]) — hidden entirely on
 /// desktop/web, where there's no OS health store to connect to.
+///
+/// Styled as one fully-tappable iOS-Settings-style row (leading brand tile,
+/// title/subtitle, trailing chevron) rather than a card with its own inner
+/// button — the old [OutlinedButton] rendered in [AppColors.secondary]
+/// (green), which reads as an unrelated accent next to the rest of the
+/// screen's blue. [Platform.isIOS]/Android get their own real product name
+/// and brand color here (not the app's own accent) so the row visually
+/// reads as "this connects to the OS's health store", distinct from in-app
+/// actions — deliberately not Apple's actual "Works with Apple Health"
+/// badge artwork or Health Connect's launcher icon, both of which are
+/// trademarked assets this app isn't licensed to reproduce; a generic
+/// heart glyph on the brand color communicates the same thing without
+/// copying either badge design.
 class _HealthCard extends StatelessWidget {
   const _HealthCard();
+
+  static const _iOSBrandColor = Color(0xFFFC3158);
+  static const _androidBrandColor = Color(0xFF4285F4);
 
   @override
   Widget build(BuildContext context) {
@@ -408,36 +427,65 @@ class _HealthCard extends StatelessWidget {
 
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
+    final brandColor = Platform.isIOS ? _iOSBrandColor : _androidBrandColor;
+    final brandName = Platform.isIOS ? 'Apple Health' : 'Health Connect';
+    final canConnect = !health.isAuthorized && !health.isLoading;
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(Icons.favorite_border, size: 18, color: colors.accent),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(t.titleHealthSync,
-                        style: Theme.of(context).textTheme.headlineMedium),
-                    if (health.isAuthorized)
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: canConnect ? () => health.connect() : null,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: brandColor,
+                    borderRadius: BorderRadius.circular(AppRadii.sm),
+                  ),
+                  child: const Icon(Icons.favorite_rounded,
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(brandName,
+                          style: Theme.of(context).textTheme.headlineMedium),
+                      const SizedBox(height: 2),
                       Text(
-                        '${t.labelStepsToday}: ${health.stepsToday ?? '—'}',
-                        style: TextStyle(color: colors.mut),
+                        health.isAuthorized
+                            ? '${t.labelStepsToday}: ${health.stepsToday ?? '—'}'
+                            : (health.isLoading
+                                ? t.actionConnectHealth
+                                : t.titleHealthSync),
+                        style: TextStyle(color: colors.mut, fontSize: 13),
                       ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              if (!health.isAuthorized)
-                OutlinedButton(
-                  onPressed: health.isLoading ? null : () => health.connect(),
-                  child: Text(t.actionConnectHealth),
-                ),
-            ],
+                const SizedBox(width: 8),
+                if (health.isAuthorized)
+                  Icon(Icons.check_circle_rounded, color: colors.green, size: 22)
+                else if (health.isLoading)
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: colors.mut),
+                  )
+                else
+                  Icon(Icons.chevron_right_rounded, color: colors.mut),
+              ],
+            ),
           ),
         ),
       ),

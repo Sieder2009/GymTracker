@@ -60,8 +60,7 @@ class ExerciseListView extends StatefulWidget {
 
 class _ExerciseListViewState extends State<ExerciseListView> {
   final TextEditingController _search = TextEditingController();
-  String? _category;
-  MuscleGroup? _muscle;
+  MuscleFilterResult _filter = const MuscleFilterResult.empty();
 
   @override
   void dispose() {
@@ -70,18 +69,19 @@ class _ExerciseListViewState extends State<ExerciseListView> {
   }
 
   Future<void> _openFilterSheet() async {
-    final result = await showMuscleFilterSheet(context);
-    if (result == null) return; // dismissed without choosing -- no change
-    setState(() {
-      _category = result.category;
-      _muscle = result.muscle;
-    });
+    final result = await showMuscleFilterSheet(context, initial: _filter);
+    if (result == null) return; // dismissed without applying -- no change
+    setState(() => _filter = result);
   }
 
-  void _clearFilter() => setState(() {
-        _category = null;
-        _muscle = null;
-      });
+  void _removeMuscle(MuscleGroup m) =>
+      setState(() => _filter = MuscleFilterResult(
+          muscles: {..._filter.muscles}..remove(m),
+          categories: _filter.categories));
+
+  void _removeCategory(String c) => setState(() => _filter = MuscleFilterResult(
+      muscles: _filter.muscles,
+      categories: {..._filter.categories}..remove(c)));
 
   @override
   Widget build(BuildContext context) {
@@ -90,22 +90,21 @@ class _ExerciseListViewState extends State<ExerciseListView> {
     final db = context.watch<ExerciseDatabaseProvider>();
     final custom = context.watch<CustomExercisesProvider>();
     final query = _search.text.trim().toLowerCase();
-    final muscle = _muscle;
+    final hasFilter = !_filter.isEmpty;
 
     final allExercises = [...db.exercises, ...custom.templates];
     final filtered = allExercises.where((e) {
-      if (muscle != null && !exerciseWorksMuscle(e, muscle)) return false;
-      if (_category != null && e.category != _category) return false;
+      if (hasFilter) {
+        final matchesMuscle =
+            _filter.muscles.any((m) => exerciseWorksMuscle(e, m));
+        final matchesCategory = _filter.categories.contains(e.category);
+        if (!matchesMuscle && !matchesCategory) return false;
+      }
       if (query.isNotEmpty && !e.name.toLowerCase().contains(query)) {
         return false;
       }
       return true;
     }).toList();
-
-    final hasFilter = _category != null || muscle != null;
-    final filterLabel = muscle != null
-        ? muscleGroupLabel(t, muscle)
-        : (hasFilter ? categoryLabel(t, _category!) : null);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -138,13 +137,23 @@ class _ExerciseListViewState extends State<ExerciseListView> {
         if (hasFilter)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Chip(
-                label: Text(filterLabel!),
-                onDeleted: _clearFilter,
-                deleteIcon: const Icon(Icons.close, size: 16),
-              ),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final m in _filter.muscles)
+                  Chip(
+                    label: Text(muscleGroupLabel(t, m)),
+                    onDeleted: () => _removeMuscle(m),
+                    deleteIcon: const Icon(Icons.close, size: 16),
+                  ),
+                for (final c in _filter.categories)
+                  Chip(
+                    label: Text(categoryLabel(t, c)),
+                    onDeleted: () => _removeCategory(c),
+                    deleteIcon: const Icon(Icons.close, size: 16),
+                  ),
+              ],
             ),
           ),
         const SizedBox(height: 8),

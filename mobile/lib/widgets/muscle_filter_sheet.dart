@@ -6,44 +6,48 @@ import '../l10n/app_localizations.dart';
 import '../models/muscle_group.dart';
 import '../state/athlete_settings_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import 'detailed_body_diagram.dart';
 import 'exercise_list_view.dart';
 
-/// Result of the muscle-filter sheet -- mutually exclusive: either a tapped
-/// [muscle] (fine-grained, matched via [exerciseWorksMuscle]), a manually
-/// picked [category], or neither (clears the filter). `null` from
-/// [showMuscleFilterSheet] itself means "dismissed, don't change anything",
-/// distinct from this class's `.all()` (explicit "show everything").
+/// Multi-select filter result -- any exercise matching *any* selected
+/// muscle or category is shown (broadening, not narrowing, matches how
+/// picking several body parts at once is expected to behave: "show me
+/// shoulders AND chest exercises", not their intersection).
 class MuscleFilterResult {
-  const MuscleFilterResult.muscle(MuscleGroup m)
-      : muscle = m,
-        category = null;
-  const MuscleFilterResult.category(String c)
-      : muscle = null,
-        category = c;
-  const MuscleFilterResult.all()
-      : muscle = null,
-        category = null;
+  const MuscleFilterResult({required this.muscles, required this.categories});
+  const MuscleFilterResult.empty()
+      : muscles = const {},
+        categories = const {};
 
-  final MuscleGroup? muscle;
-  final String? category;
+  final Set<MuscleGroup> muscles;
+  final Set<String> categories;
+
+  bool get isEmpty => muscles.isEmpty && categories.isEmpty;
 }
 
-Future<MuscleFilterResult?> showMuscleFilterSheet(BuildContext context) {
+Future<MuscleFilterResult?> showMuscleFilterSheet(
+  BuildContext context, {
+  required MuscleFilterResult initial,
+}) {
   return showModalBottomSheet<MuscleFilterResult>(
     context: context,
     isScrollControlled: true,
-    builder: (context) => const _MuscleFilterSheet(),
+    builder: (context) => _MuscleFilterSheet(initial: initial),
   );
 }
 
-/// Tap a body part to filter the exercise list by muscle group -- reuses
-/// the exact tap-to-select mechanism already built for
+/// Tap one or more body parts to filter the exercise list by muscle group
+/// -- reuses the exact tap-to-select mechanism already built for
 /// [MuscleActivationEditor] ([ParsedBodyAtlas.hitTest] against the real
-/// illustrated shape), plus a manual category fallback below for anyone
-/// who'd rather just pick a category the old way.
+/// illustrated shape), extended to multi-select (tap again to remove), plus
+/// a manual multi-select category fallback below for anyone who'd rather
+/// just pick categories the old way. Selections only take effect on
+/// "Anwenden" -- closing the sheet any other way (back/swipe) discards
+/// them, matching how the rest of the app treats an editor sheet.
 class _MuscleFilterSheet extends StatefulWidget {
-  const _MuscleFilterSheet();
+  const _MuscleFilterSheet({required this.initial});
+  final MuscleFilterResult initial;
 
   @override
   State<_MuscleFilterSheet> createState() => _MuscleFilterSheetState();
@@ -51,6 +55,35 @@ class _MuscleFilterSheet extends StatefulWidget {
 
 class _MuscleFilterSheetState extends State<_MuscleFilterSheet> {
   bool _front = true;
+  late Set<MuscleGroup> _muscles;
+  late Set<String> _categories;
+
+  @override
+  void initState() {
+    super.initState();
+    _muscles = {...widget.initial.muscles};
+    _categories = {...widget.initial.categories};
+  }
+
+  void _toggleMuscle(MuscleGroup m) {
+    setState(() {
+      if (!_muscles.add(m)) _muscles.remove(m);
+    });
+  }
+
+  void _toggleCategory(String c) {
+    setState(() {
+      if (!_categories.add(c)) _categories.remove(c);
+    });
+  }
+
+  void _clearAll() => setState(() {
+        _muscles.clear();
+        _categories.clear();
+      });
+
+  void _apply() => Navigator.of(context)
+      .pop(MuscleFilterResult(muscles: _muscles, categories: _categories));
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +91,15 @@ class _MuscleFilterSheetState extends State<_MuscleFilterSheet> {
     final colors = Theme.of(context).extension<AppColors>()!;
     final isMale = context.watch<AthleteSettingsProvider>().isMale;
     final gender = isMale ? BodyGender.male : BodyGender.female;
+    final hasSelection = _muscles.isNotEmpty || _categories.isNotEmpty;
+    // Highlight every selected muscle at full intensity by reusing the
+    // diagram's normal activation coloring, rather than needing a
+    // multi-value "selected" concept the painter doesn't have.
+    final highlightActivation = {for (final m in _muscles) m: 100.0};
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      maxChildSize: 0.92,
+      initialChildSize: 0.9,
+      maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
         return SafeArea(
@@ -76,16 +114,37 @@ class _MuscleFilterSheetState extends State<_MuscleFilterSheet> {
                       child: Text(t.titleMuscleFilter,
                           style: Theme.of(context).textTheme.headlineLarge),
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context)
-                          .pop(const MuscleFilterResult.all()),
-                      child: Text(t.categoryAll),
-                    ),
+                    if (hasSelection)
+                      TextButton(
+                        onPressed: _clearAll,
+                        child: Text(t.categoryAll),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(t.hintMuscleFilterOrManual,
                     style: TextStyle(color: colors.mut, fontSize: 12.5)),
+                if (hasSelection) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final m in _muscles)
+                        _SelectionChip(
+                          label: muscleGroupLabel(t, m),
+                          colors: colors,
+                          onRemove: () => _toggleMuscle(m),
+                        ),
+                      for (final c in _categories)
+                        _SelectionChip(
+                          label: categoryLabel(t, c),
+                          colors: colors,
+                          onRemove: () => _toggleCategory(c),
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 12),
                 SegmentedButton<bool>(
                   segments: [
@@ -112,17 +171,14 @@ class _MuscleFilterSheetState extends State<_MuscleFilterSheet> {
                                   final hit =
                                       ParsedBodyAtlas.get(gender, _front, size)
                                           .hitTest(details.localPosition);
-                                  if (hit != null) {
-                                    Navigator.of(context)
-                                        .pop(MuscleFilterResult.muscle(hit));
-                                  }
+                                  if (hit != null) _toggleMuscle(hit);
                                 },
                                 child: CustomPaint(
                                   size: size,
                                   painter: BodyDiagramPainter(
                                     front: _front,
                                     gender: gender,
-                                    activation: const {},
+                                    activation: highlightActivation,
                                     accent: colors.accent,
                                   ),
                                 ),
@@ -138,10 +194,10 @@ class _MuscleFilterSheetState extends State<_MuscleFilterSheet> {
                           runSpacing: 8,
                           children: [
                             for (final c in kExerciseCategories)
-                              ActionChip(
+                              FilterChip(
                                 label: Text(categoryLabel(t, c)),
-                                onPressed: () => Navigator.of(context)
-                                    .pop(MuscleFilterResult.category(c)),
+                                selected: _categories.contains(c),
+                                onSelected: (_) => _toggleCategory(c),
                               ),
                           ],
                         ),
@@ -149,11 +205,57 @@ class _MuscleFilterSheetState extends State<_MuscleFilterSheet> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _apply,
+                    child: Text(t.actionApply),
+                  ),
+                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _SelectionChip extends StatelessWidget {
+  const _SelectionChip(
+      {required this.label, required this.colors, required this.onRemove});
+
+  final String label;
+  final AppColors colors;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 12, right: 6, top: 4, bottom: 4),
+      decoration: BoxDecoration(
+        color: colors.accentSoft,
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  color: colors.accent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12.5)),
+          InkWell(
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            onTap: onRemove,
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(Icons.close, size: 14, color: colors.accent),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

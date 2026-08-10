@@ -6,14 +6,15 @@ allprojects {
 }
 
 // Some plugins (flutter_timezone, health, ... as of this writing) ship a
-// build.gradle with an internally inconsistent, outdated Java/Kotlin target
-// -- which newer Kotlin Gradle Plugin versions now hard-fail on instead of
-// warning. Force every subproject onto the same JVM 17 target
-// app/build.gradle.kts already declares.
+// build.gradle with an internally inconsistent Java/Kotlin target for
+// their own module -- which newer Kotlin Gradle Plugin versions now
+// hard-fail on instead of warning ("Inconsistent JVM-target compatibility
+// detected for tasks 'compileReleaseJavaWithJavac' (X) and
+// 'compileReleaseKotlin' (Y)").
 //
-// This has taken four attempts, each fixing one plugin module while
-// breaking or missing another -- worth recording why, so nobody "simplifies"
-// this back into a broken version:
+// This has taken five attempts, each fixing one plugin module while
+// breaking or missing another -- worth recording why, so nobody
+// "simplifies" this back into a broken version:
 //
 // 1. tasks.withType<JavaCompile/KotlinCompile>().configureEach {} inside
 //    allprojects{} fixed :health's Kotlin task but left its Java task
@@ -37,7 +38,6 @@ allprojects {
 //    `kotlinOptions.jvmTarget = "1.8"` on its Kotlin task, and that
 //    explicit per-task setting still wins over a project-level toolchain
 //    default regardless of which registered first.
-//
 // 4. gradle.projectsEvaluated + AGP's typed `compileOptions` DSL (instead of
 //    attempt 2's raw JavaCompile task property, to dodge its --release-mode
 //    regression) fixed :flutter_timezone too -- but crashed the whole build
@@ -45,34 +45,37 @@ allprojects {
 //    property as part of a module's own configuration (finalizeValue()),
 //    and by the time our *global* projectsEvaluated hook runs -- guaranteed
 //    to fire after every module's own configuration, including AGP's
-//    internal finalization -- at least one module (couldn't identify which
-//    from the non-stacktrace CI log) has already locked it. Writing to an
-//    already-finalized Gradle Property throws instead of silently
-//    overriding, unlike a plain var.
+//    internal finalization -- at least one module has already locked it.
+//    Writing to an already-finalized Gradle Property throws instead of
+//    silently overriding, unlike a plain var.
+// 5. Wrapping that same write in runCatching (best-effort, swallow the
+//    already-finalized case per-module) stopped the crash, but for
+//    whichever module it swallowed on, Java silently stayed at whatever it
+//    already was -- CI then showed exactly which one: :health, stuck at
+//    Java 11, while the still-unconditional Kotlin-side override forced it
+//    to 17. Recreated the exact "inconsistent target" failure this whole
+//    saga is about, just for a module of our own making instead of the
+//    plugin's.
 //
-// There's no timing that's simultaneously "after every module's own
-// explicit override" (needed to win, same reason attempt 1 lost) and
-// "before AGP finalizes the DSL property" (needed to not crash) for every
-// module at once -- different modules finalize at different points in
-// their own lifecycle. So: best-effort via the DSL, swallowing the
-// already-finalized case per-module instead of failing the whole build.
-// The Kotlin-side task-level override has never itself thrown across any
-// of the four attempts, so it stays unconditional.
+// The insight all five attempts missed: we don't need to WRITE Java's
+// target at all. Every module's Java target is already internally
+// consistent by the time it finishes its own evaluation -- the only actual
+// problem is Kotlin drifting from it. So: read whatever `compileOptions
+// .targetCompatibility` gradle.projectsEvaluated's timing guarantees is
+// each module's *final* Java target (a read never throws, unlike the write
+// every previous attempt fought with), and set that same module's Kotlin
+// tasks to match it exactly. No global "everything must be 17", no
+// fighting AGP for a property it's already locked -- just making Kotlin
+// follow whatever Java already, stably, is, per module.
 gradle.projectsEvaluated {
     subprojects {
-        runCatching {
-            extensions.findByType<com.android.build.gradle.BaseExtension>()?.apply {
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_17
-                    targetCompatibility = JavaVersion.VERSION_17
-                }
-            }
-        }.onFailure {
-            logger.info("Skipping Java 17 override for $name -- already finalized: ${it.message}")
-        }
+        val javaTarget = extensions.findByType<com.android.build.gradle.BaseExtension>()
+            ?.compileOptions
+            ?.targetCompatibility
+            ?: JavaVersion.VERSION_17
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
             compilerOptions {
-                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(javaTarget.toString()))
             }
         }
     }

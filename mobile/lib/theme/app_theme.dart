@@ -85,6 +85,21 @@ class AppTheme {
         ),
         textStyle: GoogleFonts.inter(color: colors.txt, fontWeight: FontWeight.w600, fontSize: 14.5),
       ),
+      // Same story as popupMenuTheme above -- every AlertDialog in the app
+      // (delete-plan/exercise confirmations, exit-workout, ...) otherwise
+      // falls back to Material3's default dialog chrome.
+      dialogTheme: DialogThemeData(
+        backgroundColor: colors.card,
+        elevation: 8,
+        shadowColor: brightness == Brightness.dark ? Colors.black : const Color(0xFF1B1B22),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+          side: BorderSide(color: colors.line, width: 1),
+        ),
+        titleTextStyle: GoogleFonts.sora(color: colors.txt, fontWeight: FontWeight.w800, fontSize: 18),
+        contentTextStyle: GoogleFonts.inter(color: colors.mut, fontSize: 14.5),
+      ),
       listTileTheme: ListTileThemeData(
         iconColor: colors.mut,
         textColor: colors.txt,

@@ -293,6 +293,9 @@
   "categoryAll": "All",
   "deletePlanTitle": "Delete plan?",
   "deletePlanBody": "\"{name}\" and its whole logged history will be permanently deleted. This can't be undone.",
+  "titleExitWorkout": "Exit workout?",
+  "bodyExitWorkoutConfirm": "Your progress in this workout will be lost and won't count toward your stats.",
+  "actionExitWorkout": "Exit",
   "@deletePlanBody": {
     "placeholders": {
       "name": {

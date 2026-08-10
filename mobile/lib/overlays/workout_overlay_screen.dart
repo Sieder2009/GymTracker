@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
@@ -126,12 +127,19 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     // moment this screen opens, since Exercise.done is otherwise one-way.
     _programs.resetSessionProgress(raw);
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _onTick());
+    // A locked screen mid-set is the single most common real-gym annoyance
+    // this screen can actually fix -- barbell in hand, phone auto-locks,
+    // now unlocking one-handed just to log a rep count. Scoped to exactly
+    // this screen's lifetime (enabled here, disabled in dispose), not
+    // requested app-wide.
+    unawaited(WakelockPlus.enable());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
+    unawaited(WakelockPlus.disable());
     // Force-closing mid-rest (back gesture, session-overview navigation
     // away, ...) shouldn't leave a "rest over" ping scheduled for a
     // workout the user already left.
@@ -301,6 +309,36 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     );
   }
 
+  /// A single mis-tap on the close button used to silently discard the
+  /// entire session -- no undo, and while each already-completed set's
+  /// weight/reps stick around (ProgramsProvider saves those incrementally),
+  /// the session itself never reaches WorkoutHistoryProvider.logSession, so
+  /// it wouldn't count toward this week's stats or the streak. Only worth
+  /// asking about once there's actually something to lose -- exiting
+  /// before the first set is still a silent, immediate pop.
+  Future<void> _confirmExit(List<Exercise> exercises) async {
+    if (_doneBefore(exercises) == 0) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final t = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.titleExitWorkout),
+        content: Text(t.bodyExitWorkoutConfirm),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(t.actionCancel)),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(t.actionExitWorkout, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) Navigator.of(context).pop();
+  }
+
   void _advance(List<Exercise> exercises) {
     final currentSets = exercises[_exIdx].sets.length;
     setState(() {
@@ -381,7 +419,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
             children: [
               IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop()),
+                  onPressed: () => _confirmExit(exercises)),
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(AppRadii.xs),

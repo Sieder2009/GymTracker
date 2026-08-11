@@ -62,6 +62,13 @@ class Exercise {
     return max;
   }
 
+  /// The weight to show as "current" for this exercise -- the most
+  /// recently logged history entry's weight (last entered, never the
+  /// heaviest ever lifted), or each set's configured weight before any
+  /// history exists yet.
+  double get currentWeight =>
+      history.isNotEmpty ? history.last.weight : _maxWeight(sets);
+
   Map<String, dynamic> toJson() => {
         'name': name,
         'muscle': muscle,

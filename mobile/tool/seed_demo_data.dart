@@ -6,6 +6,7 @@
 //
 // Usage: dart run tool/seed_demo_data.dart
 // (fully close the running app first — SQLite on Windows locks the file)
+// ignore_for_file: avoid_print
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';

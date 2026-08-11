@@ -10,7 +10,7 @@ class BigLiftsProvider extends ChangeNotifier {
   BigLiftsProvider(this._storage) : _lifts = _initial(_storage);
 
   final StorageService _storage;
-  BigLifts _lifts;
+  final BigLifts _lifts;
 
   BigLifts get lifts => _lifts;
 

@@ -81,17 +81,17 @@ void main() {
       expect(ex.history.single.weight, 50);
     });
 
-    test('importExerciseHistory only overwrites weight if the import is higher',
+    test('importExerciseHistory always overwrites with the last-entered weight',
         () async {
       final storage = await freshStorage();
       final provider = ProgramsProvider(storage);
       final ex =
           Exercise.fresh('Bankdrücken', '', 90, [ExerciseSet(w: 60, r: '8')]);
 
-      provider.importExerciseHistory([ex], 0, 50, []); // lower -> no overwrite
-      expect(ex.sets[0].w, 60);
+      provider.importExerciseHistory([ex], 0, 50, []); // lower -> still overwrites
+      expect(ex.sets[0].w, 50);
 
-      provider.importExerciseHistory([ex], 0, 70, []); // higher -> overwrite
+      provider.importExerciseHistory([ex], 0, 70, []); // higher -> overwrites
       expect(ex.sets[0].w, 70);
     });
 

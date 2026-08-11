@@ -270,23 +270,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   ),
                 ),
               ),
-            if (dailyExercises.isNotEmpty) ...[
-              Text(t.headerEveryTrainingDay,
-                  style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: 8),
-              for (var i = 0; i < dailyExercises.length; i++)
-                ExerciseCard(
-                  exercise: dailyExercises[i],
-                  onTapName: () => _openExerciseDetail(plan.id, null, i),
-                  onAdjustWeight: (setIdx, delta) => context
-                      .read<ProgramsProvider>()
-                      .adjustWeight(plan.dailyExercises, i, setIdx, delta),
-                  onToggleSet: (setIdx) => context
-                      .read<ProgramsProvider>()
-                      .toggleSet(plan.dailyExercises, i, setIdx),
-                ),
-              const SizedBox(height: 16),
-            ],
+            // Today's day-specific exercises come first -- the daily ones
+            // (done every training day, see below) are secondary/repeated
+            // context and belong at the bottom of the list, not competing
+            // with today's actual focus for the top spot.
             if (exercises.isNotEmpty) ...[
               Text(t.headerTodaysDay,
                   style: Theme.of(context).textTheme.labelSmall),
@@ -295,13 +282,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 ExerciseCard(
                   exercise: exercises[i],
                   onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
-                  onAdjustWeight: (setIdx, delta) => context
-                      .read<ProgramsProvider>()
-                      .adjustWeight(
-                          plan.days[dayIdx].exercises, i, setIdx, delta),
-                  onToggleSet: (setIdx) => context
-                      .read<ProgramsProvider>()
-                      .toggleSet(plan.days[dayIdx].exercises, i, setIdx),
+                ),
+              const SizedBox(height: 16),
+            ],
+            if (dailyExercises.isNotEmpty) ...[
+              Text(t.headerEveryTrainingDay,
+                  style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 8),
+              for (var i = 0; i < dailyExercises.length; i++)
+                ExerciseCard(
+                  exercise: dailyExercises[i],
+                  onTapName: () => _openExerciseDetail(plan.id, null, i),
                 ),
             ],
           ],

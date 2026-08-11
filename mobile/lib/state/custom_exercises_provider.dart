@@ -16,7 +16,7 @@ class CustomExercisesProvider extends ChangeNotifier {
   CustomExercisesProvider(this._storage) : _items = _initial(_storage);
 
   final StorageService _storage;
-  List<CustomExercise> _items;
+  final List<CustomExercise> _items;
 
   List<CustomExercise> get items => List.unmodifiable(_items);
 

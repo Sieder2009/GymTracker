@@ -151,16 +151,14 @@ class _CurrentExercise {
     this.note = '',
     this.setCount = 2,
     this.reps = '8',
-    this.weight = 0,
-    this.sawKg = false,
   }) : history = [];
 
   String? name;
   String note;
   int setCount;
   String reps;
-  double weight;
-  bool sawKg;
+  double weight = 0;
+  bool sawKg = false;
   final List<HistoryEntry> history;
 }
 

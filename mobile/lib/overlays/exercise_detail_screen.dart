@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../data/constants.dart';
@@ -33,7 +34,10 @@ Map<MuscleGroup, double> _parsedMuscleActivation(Exercise ex) {
 ///
 /// Saving auto-advances to the next exercise in [exercises] instead of
 /// closing — the screen only pops after saving the LAST exercise in the
-/// list.
+/// list. Independent of saving, the user can also browse between
+/// exercises directly via a horizontal swipe or the left/right arrow keys
+/// (see [_goToOffset]) — browsing away never saves unsaved rep entries,
+/// same as tapping the close button.
 class ExerciseDetailScreen extends StatefulWidget {
   const ExerciseDetailScreen({
     super.key,
@@ -163,6 +167,39 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     }
   }
 
+  /// Browses to another exercise in [widget.exercises] without saving --
+  /// clamps silently at either end instead of wrapping, so swiping past
+  /// the first/last exercise is just a no-op rather than looping around.
+  void _goToOffset(int delta) {
+    final next = _idx + delta;
+    if (next < 0 || next >= widget.exercises.length) return;
+    setState(() => _loadExercise(next));
+  }
+
+  void _onHorizontalSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    // Swipe left (negative velocity) -> next exercise, mirroring the
+    // left-to-right reading order of "forward" through the list.
+    if (velocity < -250) {
+      _goToOffset(1);
+    } else if (velocity > 250) {
+      _goToOffset(-1);
+    }
+  }
+
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _goToOffset(1);
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      _goToOffset(-1);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
   void _addSetRow() {
     setState(() => _repsControllers.add(TextEditingController()));
   }
@@ -194,9 +231,9 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     final isLastExercise = _idx == widget.exercises.length - 1;
     final canShowHistoryPaste =
         widget.onImportHistory != null && !_hasRepsEntered;
-    // Chronological order, oldest first — history entries are already
-    // appended in that order, so no reversal needed.
-    final history = ex.history;
+    // Reverse chronological order, newest first — history entries are
+    // appended oldest-first, so this list needs reversing before display.
+    final history = ex.history.reversed.toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -230,158 +267,171 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
             : null,
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: [
-            if (ex.note.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  ex.note,
-                  style: TextStyle(
-                      color: colors.accent, fontWeight: FontWeight.w600),
-                ),
-              ),
-            // Only custom exercises carry their own activation map (picked
-            // exercises show this in the "Übungen" library instead, keyed
-            // off the shared database) -- an empty map just means nobody
-            // has configured one for this exercise yet, not an error.
-            if (ex.muscleActivation.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Center(
-                  child: DetailedBodyDiagram(
-                    activation: _parsedMuscleActivation(ex),
-                    size: 150,
-                    enableZoom: true,
+        child: Focus(
+          autofocus: true,
+          onKeyEvent: _onKeyEvent,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onHorizontalDragEnd: _onHorizontalSwipe,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              children: [
+                if (ex.note.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      ex.note,
+                      style: TextStyle(
+                          color: colors.accent, fontWeight: FontWeight.w600),
+                    ),
                   ),
-                ),
-              ),
-            Center(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadii.sm),
-                onTap: _openWeightKeyboardEntry,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: Text(
-                    _weight > 0 ? '${fmt1(_weight)} kg' : t.labelBodyweightAbbr,
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            WeightRuler(
-                value: _weight, onChanged: (v) => setState(() => _weight = v)),
-            Center(
-              child: Text(
-                t.infoDragToChange,
-                style: TextStyle(color: colors.mut, fontSize: 11.5),
-              ),
-            ),
-            const SizedBox(height: 20),
-            for (var i = 0; i < _repsControllers.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    SizedBox(
-                        width: 28,
-                        child: Text('${i + 1}',
-                            style: TextStyle(color: colors.mut))),
-                    Expanded(
-                      child: TextField(
-                        controller: _repsControllers[i],
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(hintText: t.hintReps),
+                // Only custom exercises carry their own activation map
+                // (picked exercises show this in the "Übungen" library
+                // instead, keyed off the shared database) -- an empty map
+                // just means nobody has configured one for this exercise
+                // yet, not an error.
+                if (ex.muscleActivation.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Center(
+                      child: DetailedBodyDiagram(
+                        activation: _parsedMuscleActivation(ex),
+                        size: 150,
+                        enableZoom: true,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      onPressed: () => _removeSetRow(i),
+                  ),
+                Center(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadii.sm),
+                    onTap: _openWeightKeyboardEntry,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      child: Text(
+                        _weight > 0
+                            ? '${fmt1(_weight)} kg'
+                            : t.labelBodyweightAbbr,
+                        style: Theme.of(context).textTheme.headlineLarge,
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            TextButton(onPressed: _addSetRow, child: Text(t.actionAddSet)),
-            const SizedBox(height: 12),
-            if (canShowHistoryPaste) ...[
-              if (!_historyPasteOpen)
-                TextButton(
-                  onPressed: () => setState(() => _historyPasteOpen = true),
-                  child: Text(t.actionAddHistoryPaste),
-                )
-              else ...[
-                TextField(
-                  controller: _historyPasteController,
-                  maxLines: 4,
-                  decoration:
-                      InputDecoration(hintText: t.hintExerciseHistoryPaste),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () =>
-                          setState(() => _historyPasteOpen = false),
-                      child: Text(t.actionCancel),
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: _importHistoryPaste,
-                      child: Text(t.actionApply),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _save,
-                child:
-                    Text(isLastExercise ? t.actionSave : t.actionSaveAndNext),
-              ),
-            ),
-            const SizedBox(height: 28),
-            ExerciseAnalyticsSection(exercise: ex),
-            if (history.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              Text(t.headerHistory,
-                  style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 78,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: history.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, i) => _HistoryCard(
-                    entry: history[i],
-                    isLatest: i == history.length - 1,
-                    colors: colors,
-                    t: t,
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                t.infoHistoryLegend,
-                style: TextStyle(color: colors.mut, fontSize: 11),
-              ),
-            ],
-          ],
+                const SizedBox(height: 4),
+                WeightRuler(
+                    value: _weight,
+                    onChanged: (v) => setState(() => _weight = v)),
+                Center(
+                  child: Text(
+                    t.infoDragToChange,
+                    style: TextStyle(color: colors.mut, fontSize: 11.5),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                for (var i = 0; i < _repsControllers.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                            width: 28,
+                            child: Text('${i + 1}',
+                                style: TextStyle(color: colors.mut))),
+                        Expanded(
+                          child: TextField(
+                            controller: _repsControllers[i],
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(hintText: t.hintReps),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 18),
+                          onPressed: () => _removeSetRow(i),
+                        ),
+                      ],
+                    ),
+                  ),
+                TextButton(onPressed: _addSetRow, child: Text(t.actionAddSet)),
+                const SizedBox(height: 12),
+                if (canShowHistoryPaste) ...[
+                  if (!_historyPasteOpen)
+                    TextButton(
+                      onPressed: () =>
+                          setState(() => _historyPasteOpen = true),
+                      child: Text(t.actionAddHistoryPaste),
+                    )
+                  else ...[
+                    TextField(
+                      controller: _historyPasteController,
+                      maxLines: 4,
+                      decoration:
+                          InputDecoration(hintText: t.hintExerciseHistoryPaste),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () =>
+                              setState(() => _historyPasteOpen = false),
+                          child: Text(t.actionCancel),
+                        ),
+                        const Spacer(),
+                        ElevatedButton(
+                          onPressed: _importHistoryPaste,
+                          child: Text(t.actionApply),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _save,
+                    child: Text(
+                        isLastExercise ? t.actionSave : t.actionSaveAndNext),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                ExerciseAnalyticsSection(exercise: ex),
+                if (history.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text(t.headerHistory,
+                      style: Theme.of(context).textTheme.labelSmall),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 78,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: history.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, i) => _HistoryCard(
+                        entry: history[i],
+                        isLatest: i == 0,
+                        colors: colors,
+                        t: t,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    t.infoHistoryLegend,
+                    style: TextStyle(color: colors.mut, fontSize: 11),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// One session in the horizontally-scrolling history strip — oldest entries
-/// on the left, newest (highlighted) on the right, weight as the leading
-/// (top-left) label per entry.
+/// One session in the horizontally-scrolling history strip — newest entry
+/// (highlighted) on the left, oldest entries trailing to the right, weight
+/// as the leading (top-left) label per entry.
 class _HistoryCard extends StatelessWidget {
   const _HistoryCard(
       {required this.entry,

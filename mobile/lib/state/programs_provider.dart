@@ -17,7 +17,7 @@ class ProgramsProvider extends ChangeNotifier {
   ProgramsProvider(this._storage) : _programs = _initial(_storage);
 
   final StorageService _storage;
-  List<Program> _programs;
+  final List<Program> _programs;
 
   List<Program> get programs => List.unmodifiable(_programs);
 
@@ -151,9 +151,10 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Appends pasted history and only overwrites the current set weights if
-  /// the imported weight exceeds the existing max (unlike [saveExerciseLog],
-  /// which always overwrites).
+  /// Appends pasted history and always overwrites the current set weights
+  /// with the newly imported (last-entered) weight -- matching
+  /// [saveExerciseLog], never conditionally keeping an older, heavier
+  /// weight around just because it was higher.
   void importExerciseHistory(
     List<Exercise> exercises,
     int exIdx,
@@ -162,14 +163,8 @@ class ProgramsProvider extends ChangeNotifier {
   ) {
     final ex = exercises[exIdx];
     ex.history.addAll(history);
-    var currentMax = 0.0;
     for (final s in ex.sets) {
-      if (s.w > currentMax) currentMax = s.w;
-    }
-    if (weight > currentMax) {
-      for (final s in ex.sets) {
-        s.w = weight;
-      }
+      s.w = weight;
     }
     _persist();
     notifyListeners();

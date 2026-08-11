@@ -713,9 +713,12 @@ class _SessionOverviewSheetState extends State<_SessionOverviewSheet> {
                     ReorderableListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      onReorder: (oldIndex, newIndex) {
+                      // onReorderItem already adjusts newIndex for the
+                      // removed item at oldIndex -- unlike the deprecated
+                      // onReorder, no manual `if (newIndex > oldIndex)`
+                      // correction needed here.
+                      onReorderItem: (oldIndex, newIndex) {
                         setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
                           final item = _local.removeAt(oldIndex);
                           _local.insert(newIndex, item);
                         });

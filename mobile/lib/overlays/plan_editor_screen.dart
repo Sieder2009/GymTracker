@@ -41,14 +41,13 @@ class _DraftExercise {
 }
 
 class _DraftDay {
-  _DraftDay(
-      {required this.label, this.rest = false, List<_DraftExercise>? exercises})
+  _DraftDay({required this.label, List<_DraftExercise>? exercises})
       : labelController = TextEditingController(text: label),
         exercises = exercises ?? [];
 
   final String label;
   final TextEditingController labelController;
-  bool rest;
+  bool rest = false;
   List<_DraftExercise> exercises;
 
   void dispose() {

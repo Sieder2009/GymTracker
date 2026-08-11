@@ -6,7 +6,7 @@ import '../theme/app_radii.dart';
 import '../state/toast_provider.dart';
 
 /// Fade+slide-up toast pinned near the top of the app shell, reacting to
-/// [ToastProvider] — pendant to `Toast.svelte`.
+/// [ToastProvider].
 class ToastOverlay extends StatelessWidget {
   const ToastOverlay({super.key});
 

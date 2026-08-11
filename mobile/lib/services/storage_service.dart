@@ -26,10 +26,9 @@ void _ensureDesktopSqliteFactory() {
 }
 
 /// Local persistence backed by a single-table SQLite database (via sqflite)
-/// stored on-device — mirrors the original `persisted.js`: every key/value
-/// row loaded once into an in-memory cache at startup so reads stay
-/// synchronous, JSON write-through on every mutation, fail-soft (never
-/// throw) if storage access fails.
+/// stored on-device — every key/value row loaded once into an in-memory
+/// cache at startup so reads stay synchronous, JSON write-through on every
+/// mutation, fail-soft (never throw) if storage access fails.
 class StorageService {
   StorageService._(this._db, Map<String, String> cache) : _cache = cache;
 

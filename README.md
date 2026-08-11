@@ -1,73 +1,127 @@
-# Ironpeak Fitness
+# 🏋️ Ironpeak Fitness
 
-Trainingsplan, Kraft-Fortschritt (Bench/Deadlift/Squat) und detaillierte
-Trainings-Analytics — als **native Mobile-/Desktop-App (Flutter)** und als
-**Web-/Windows-Electron-App (Svelte)**. Alle Daten bleiben **komplett lokal
-auf deinem Gerät** — keine Cloud, kein eigener Server, kein Account nötig.
+**Trainingsplan, Kraft-Fortschritt und ein extrem tiefes Analytics-System — als
+native App für Android, iOS und Windows.** Alle Daten bleiben **komplett
+lokal auf deinem Gerät**: keine Cloud, kein eigener Server, kein Account,
+kein Tracking.
 
-Dieses Repository enthält zwei unabhängige Apps mit demselben Grundkonzept:
-
-| | [`mobile/`](mobile) — Flutter | Root (`src/`) — Svelte/Vite |
-|---|---|---|
-| Plattformen | Android, iOS, Windows | Web (installierbar als PWA), Windows (Electron) |
-| Speicherung | SQLite (`sqflite`) | `localStorage` |
-| Status | Aktiv weiterentwickelt, voller Funktionsumfang | Stabile Basisversion |
-
-Für neue Features und die volle Feature-Tiefe (Analytics, Health-Sync,
-Übungsdatenbank, Erinnerungen, Auto-Update, …) ist **`mobile/`** die
-empfohlene App. Die Web-App bleibt als leichtgewichtige Alternative ohne
-Installation erhalten.
+[![Android Build](https://github.com/Sieder2009/GymTraker/actions/workflows/android.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/android.yml)
+[![iOS Build](https://github.com/Sieder2009/GymTraker/actions/workflows/ios.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/ios.yml)
+[![Windows Build](https://github.com/Sieder2009/GymTraker/actions/workflows/windows.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/windows.yml)
+[![macOS Build](https://github.com/Sieder2009/GymTraker/actions/workflows/macos.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/macos.yml)
+![Flutter](https://img.shields.io/badge/Flutter-stable-02569B?logo=flutter&logoColor=white)
+![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS-informational)
+![Local-only](https://img.shields.io/badge/Data-100%25%20local-1fa76a)
 
 ---
 
-## 📱 Mobile-App (`mobile/`, Flutter)
+## Inhalt
 
-Vollständig lokale Trainings-App mit tiefem Analytics-System, einer
-GitHub-gepflegten Übungsdatenbank, Health-Anbindung und automatischen
-Updates. Läuft nativ auf **Android**, **iOS** und **Windows** aus derselben
-Codebasis.
+- [Was ist Ironpeak Fitness?](#was-ist-ironpeak-fitness)
+- [Features](#features)
+  - [Training](#training)
+  - [Analytics — eigener Tab](#analytics--eigener-tab)
+  - [Übungsdatenbank](#übungsdatenbank)
+  - [Sonstiges](#sonstiges)
+- [App herunterladen](#app-herunterladen)
+- [Einrichtung für Entwickler](#einrichtung-für-entwickler)
+- [Konfiguration (`.env`)](#konfiguration-env)
+- [Tests & Codequalität](#tests--codequalität)
+- [Projektstruktur](#projektstruktur)
+- [Datenschutz](#datenschutz)
+- [Credits](#credits)
 
-### Features
+---
 
-**Training**
+## Was ist Ironpeak Fitness?
+
+Ironpeak Fitness ist eine einzige, native **Flutter-App** — kein
+Web-Zweitprojekt, kein separater Electron-Build, ein Codebase für **Android,
+iOS und Windows** (macOS läuft ebenfalls über CI mit). Die App ist bewusst
+so aufgebaut, dass sich alles über **vier klare Haupt-Tabs** erschließt statt
+über verschachtelte Menüs:
+
+| Tab | Zweck |
+|---|---|
+| **Training** | Heutiger Trainingstag, geführtes Workout, Plan wählen/anlegen/importieren |
+| **Kraft** | Bench Press / Deadlift / Squat: PR, Verlauf, Trend |
+| **Analyse** (deutsch für "Analytics") | Der eigene Auswertungs-Tab — siehe unten |
+| **Übungen** | Durchsuchbare 535-Übungen-Datenbank mit Muskeldiagramm |
+
+Kalender, Foto-Galerie, Einstellungen, Backup, Theme und Sprache hängen
+bewusst **nicht** als fünfter/sechster Tab an der Navigationsleiste, sondern
+liegen gebündelt in einem einzigen Overflow-Menü oben rechts auf dem
+Training-Tab — eine Reihe aus 6+ Icon-Buttons wäre auf Handy-Breite reine
+visuelle Unordnung. Ein Tap genügt, um alles zu finden.
+
+## Features
+
+<a id="training"></a>
+### 🏋 Training
+
 - Trainingspläne nach Wochentag oder Rotation, von Hand angelegt, per
-  Log-Import (eigenes handgeschriebenes Format) oder aus einem
-  Beispielplan.
+  Log-Import (eigenes handgeschriebenes Format) oder aus einem von acht
+  mitgelieferten Plan-Vorlagen (Onboarding-Auswahl beim ersten Start).
 - Geführtes Workout mit Satz-für-Satz-Eingabe, live mitlaufender
   Session-Uhr und RPE-Erfassung pro Satz. Übungsreihenfolge während der
   Session per Drag-and-drop änderbar, ohne den gespeicherten Plan
   anzufassen.
-- Pausen-Timer läuft wanduhrzeitbasiert (nicht als reiner Tick-Zähler) und
-  gleicht sich beim Zurückkehren aus dem Hintergrund sofort wieder ab —
-  bleibt also korrekt, egal wie lange das Handy währenddessen gesperrt war.
+- Pausen-Timer läuft wanduhrzeitbasiert (nicht als reiner Tick-Zähler),
+  gleicht sich beim Zurückkehren aus dem Hintergrund sofort wieder ab und
+  schickt bei Ablauf eine lokale Push-Benachrichtigung — bleibt korrekt,
+  egal wie lange das Handy währenddessen gesperrt war.
 - Ziehregler **und** Tastatur-Eingabe fürs Gewicht (Komma oder Punkt als
   Dezimaltrennzeichen).
-- Trainingskalender mit Monatsübersicht und Workout-Historie.
-- Wisch-Navigation zwischen den vier Haupt-Tabs (Training/Kraft/
-  Fortschritt/Übungen), zusätzlich zur Tab-Leiste unten.
+- Trainingskalender mit Monatsübersicht und Workout-Historie, Foto-Galerie
+  für den Trainingsfortschritt.
+- Wisch-Navigation zwischen den vier Haupt-Tabs, zusätzlich zur Tab-Leiste
+  unten.
 
-**Analytics** — eigener Tab mit vier Bereichen (Übersicht/Kraft/Volumen/
-Konstanz), jede Zahl und jeder Chart nachvollziehbar aus echten geloggten
-Daten, nie aus Platzhaltern:
-- Trend-Charts (30-Tage-Fenster) für **jede einzelne Übung**, nicht nur die
-  drei Hauptlifts — inkl. geschätztem 1RM (Epley-Formel) und
-  Plateau-Erkennung.
-- Wöchentliches Trainingsvolumen, Workouts/Woche, aktuelle & beste
-  Trainings-Serie (Streak).
-- DOTS-Score & Total (powerlifting-normalisierter Kraftvergleich),
-  eigenständiger 1RM-Rechner.
-- Ehrliche Leerzustände: ein Chart mit zu wenig Datenpunkten zeigt einen
-  Hinweistext statt einer erfundenen Linie.
+<a id="analytics--eigener-tab"></a>
+### 📊 Analytics — eigener Tab
 
-**Übungsdatenbank**
+Ein komplett eigener Tab, fünf Bereiche, jede Zahl und jeder Chart
+nachvollziehbar aus echten geloggten Daten — **nie aus Platzhaltern**. Wo zu
+wenig Datenpunkte für eine ehrliche Aussage vorliegen, zeigt die App einen
+Hinweistext statt einer erfundenen Linie (`DataQuality` in
+`analytics_engine.dart`).
+
+- **Übersicht** — ein Fließtext-Status ("wird besser" / "bleibt stabil" /
+  noch keine Daten), plus Kraft-, Volumen-, Konstanz- und
+  Körpergewichtstrend auf einen Blick, und ein Wochenvolumen-Chart der
+  letzten 8 Wochen.
+- **Kraft** — Trend-Chart (30-Tage-Fenster) für Bench Press, Deadlift und
+  Squat inklusive Plateau-Erkennung, Start→Jetzt-Vergleich für jede erkannte
+  Variante dieser drei Lifts im aktuellen Plan (Tippen öffnet direkt den
+  PR-Eintrag), sowie ein eigenständiger **1RM-Rechner** und der
+  **DOTS-Score** (powerlifting-normalisierter Kraftvergleich über
+  Körpergewicht und Total).
+- **Volumen** — Gesamtvolumen diese Woche, Workouts diese Woche, und ein
+  Balkendiagramm des wöchentlichen Trainingsvolumens.
+- **Konstanz** — aktuelle & beste Trainings-Serie (Streak) in Tagen,
+  Workouts diesen Monat, Balkendiagramm der Workouts pro Woche.
+- **Erfolge** — vier gestaffelte Achievement-Pfade (Konstanz,
+  Trainings-Anzahl, Gesamtvolumen, Anzahl PRs), jede Stufe live aus den
+  echten Daten berechnet statt als gespeichertes "freigeschaltet"-Flag
+  (`achievements_engine.dart`) — Fortschrittsbalken bis zur nächsten Stufe
+  inklusive.
+
+**Daten eintragen, nicht nur ansehen:** Körpergewicht wird als eigener
+Verlauf geführt (`BodyWeightProvider`) und fließt direkt in den
+DOTS-Score und den Körpergewichtstrend ein; ein PR lässt sich direkt aus
+dem Kraft-Bereich heraus eintragen, ohne den Tab zu verlassen.
+
+<a id="übungsdatenbank"></a>
+### 💪 Übungsdatenbank
+
 - 535 Übungen, kategorisiert (Brust/Rücken/Schultern/Beine/Arme/Rumpf/
   Cardio), durchsuchbar und filterbar im eigenen "Übungen"-Tab — jede mit
   einer exercise-science-basierten Muskel-Aktivierungs-Zuordnung
   (`lib/data/exercise_muscle_map.dart`).
 - Wird **zur Laufzeit von GitHub** geladen (fällt bei fehlendem Internet auf
   einen zuletzt erfolgreichen Cache bzw. die mitgelieferte Kopie zurück) —
-  Änderungen an `mobile/assets/exercises.json` im Repo aktualisieren die
-  App ohne neues Release.
+  Änderungen an `mobile/assets/exercises.json` in diesem Repo aktualisieren
+  die App ohne neues Release.
 - **Illustriertes Muskeldiagramm pro Übung** (Front-/Rückansicht,
   Männlich/Weiblich passend zur Athlet:innen-Einstellung): eine vollständig
   durchgezeichnete Körperfigur — Hände, Füße, einzelne Bauchmuskel-Segmente
@@ -78,15 +132,14 @@ Daten, nie aus Platzhaltern:
 - Beim Anlegen einer **eigenen** Übung: derselbe Editor interaktiv — Muskeln
   direkt auf der Figur antippen (echtes Hit-Testing gegen die gezeichnete
   Kontur, keine grobe Trefferfläche) und die Belastungsintensität
-  (0–100 %) per Schieberegler einstellen. Das Ergebnis ist keine
-  Fleißarbeit für die Schublade: sobald konfiguriert, erscheint dasselbe
-  Muskeldiagramm auch beim Ausführen dieser Übung im Workout.
+  (0–100 %) per Schieberegler einstellen. Sobald konfiguriert, erscheint
+  dasselbe Muskeldiagramm auch beim Ausführen dieser Übung im Workout.
 
-**Sonstiges**
+<a id="sonstiges"></a>
+### ⚙️ Sonstiges
+
 - Health-Anbindung (Apple Health / Health Connect) für Schritte, Gewicht
   und das Zurückschreiben abgeschlossener Workouts.
-- Foto-Galerie für Trainingsfortschritt (aus der Galerie wählen oder mit
-  der Kamera aufnehmen).
 - Tägliche Trainings-Erinnerung (lokale Benachrichtigung, Uhrzeit frei
   wählbar).
 - Automatischer Update-Check gegen GitHub Releases inkl. Hintergrund-
@@ -96,12 +149,31 @@ Daten, nie aus Platzhaltern:
   Drive, zum Mitnehmen auf ein anderes Gerät. Kein eigener Account, kein
   eigener Server: die Datei geht nur dorthin, wo man sie selbst hinlegt,
   kein automatischer Hintergrund-Sync.
-- Individuelle Primär-/Sekundärfarbe, automatischer System-Light/Dark-Mode
-  mit manuellem Override.
+- Individuelle Primär-/Sekundärfarbe (freier Farbwähler), automatischer
+  System-Light/Dark-Mode mit manuellem Override.
 - 10 Sprachen: Deutsch, Englisch, Spanisch, Französisch, Italienisch,
   Portugiesisch, Niederländisch, Türkisch, Polnisch, Russisch.
+- Geführtes Onboarding beim ersten Start, inklusive Plan-Vorlagen-Auswahl.
 
-### Einrichtung
+## App herunterladen
+
+Jeder `vX.Y.Z`-Tag baut über GitHub Actions automatisch (bewusst nicht bei
+jedem Push, um nicht bei jedem Commit einen vollen Android-/iOS-Build
+anzustoßen):
+
+| Plattform | Format | Workflow |
+|---|---|---|
+| Android | `.apk` | [`android.yml`](.github/workflows/android.yml) |
+| iOS | unsigniertes `.ipa` (siehe Kommentare dort zu eigenem Signing) | [`ios.yml`](.github/workflows/ios.yml) |
+| Windows | gepacktes `.zip` | [`windows.yml`](.github/workflows/windows.yml) |
+| macOS | unsigniertes, unnotarisiertes `.zip` | [`macos.yml`](.github/workflows/macos.yml) |
+
+Fertige Builds gibt's auf der **[Releases-Seite](../../releases)** dieses
+Repos, sobald ein Versions-Tag existiert. Ein manueller
+`workflow_dispatch`-Lauf (ohne Tag) ist jederzeit möglich, um einen Fix auf
+die Schnelle zu testen, ohne einen Release zu schneiden.
+
+## Einrichtung für Entwickler
 
 Voraussetzung: [Flutter SDK](https://docs.flutter.dev/get-started/install)
 (stable channel).
@@ -120,18 +192,12 @@ flutter build windows --release
 # Ergebnis: mobile/build/windows/x64/runner/Release/ironpeak_mobile.exe
 ```
 
-Tests & Analyse:
-
-```bash
-flutter analyze
-flutter test
-```
-
-### Konfiguration (`.env`)
+## Konfiguration (`.env`)
 
 Alles, was konfigurierbar ist, steht in [`mobile/.env`](mobile/.env) statt
 hartkodiert im Code — die Datei enthält keine Geheimnisse und ist bewusst
-mit eingecheckt:
+mit eingecheckt (siehe `lib/config/app_config.dart` für den typisierten
+Zugriff darauf):
 
 | Variable | Bedeutung |
 |---|---|
@@ -140,34 +206,37 @@ mit eingecheckt:
 | `UPDATE_CHECK_ENABLED` / `UPDATE_CHECK_INTERVAL_HOURS` | Ob und wie oft automatisch auf neue Releases geprüft wird |
 | `SUPPORT_EMAIL` / `SUPPORT_PHONE` | Kontakt auf dem Einstellungen-Bildschirm |
 
-### App herunterladen
+## Tests & Codequalität
 
-Jeder `vX.Y.Z`-Tag baut über GitHub Actions automatisch (bewusst nicht bei
-jedem Push auf `master`, um nicht bei jedem Commit einen vollen
-Android-/iOS-Build anzustoßen):
+```bash
+cd mobile
+flutter analyze
+flutter test
+```
 
-- **Android** — `.apk` (`.github/workflows/android.yml`)
-- **iOS** — unsigniertes `.ipa` (`.github/workflows/ios.yml`, siehe
-  Kommentare dort zu eigenem Signing)
-- **Windows** — gepacktes `.zip` (`.github/workflows/windows.yml`)
+Jeder Push läuft automatisch durch `flutter analyze` und `flutter test` in
+allen vier Plattform-Workflows, bevor überhaupt gebaut wird. Die
+Berechnungs-Engines hinter dem Analytics-Tab
+(`lib/analytics/analytics_engine.dart`, `lib/analytics/achievements_engine.dart`,
+`lib/data/dots_score.dart`) haben eigene, dedizierte Testdateien unter
+`mobile/test/` — keine Kennzahl im Analytics-Tab ist ungetestet.
 
-Fertige Builds gibt's auf der **[Releases-Seite](../../releases)** dieses
-Repos, sobald ein Versions-Tag existiert.
-
-### Projektstruktur
+## Projektstruktur
 
 ```
 mobile/
   lib/
-    analytics/          Reine Berechnungs-Engine für Trends/Konsistenz/
-                         DOTS — nie eine Zahl ohne echte Datenbasis
+    analytics/          Reine Berechnungs-Engine für Trends/Konsistenz/DOTS/
+                         Achievements — nie eine Zahl ohne echte Datenbasis
     config/              Typisierter .env-Zugriff (app_config.dart)
     data/                Konstanten, DOTS-/1RM-Formeln, Muskel-Aktivierung
-                         pro Übung, Körperfigur-Atlas fürs Muskeldiagramm
+                         pro Übung, Körperfigur-Atlas fürs Muskeldiagramm,
+                         Plan-Vorlagen
     l10n/                ARB-Übersetzungsdateien (10 Sprachen)
     models/              Datenmodelle (Exercise, Program, BigLift, …)
     overlays/             Vollbild-Screens (Plan-Editor, Workout, Settings, …)
-    screens/             Die 4 Tabs (Training/Kraft/Fortschritt/Übungen)
+    screens/             Die 4 Haupt-Tabs (Training/Kraft/Analytics/Übungen)
+                         + Kalender/Galerie (erreichbar über das Overflow-Menü)
     services/            Externe Integrationen (Health, GitHub, Storage, Update)
     state/               Provider (App-weiter State via package:provider)
     theme/               Design-System (Farben, Radien, Typografie)
@@ -176,132 +245,20 @@ mobile/
   tool/seed_demo_data.dart  Entwickler-Skript: Demo-Daten in die lokale DB füllen
 ```
 
----
+## Datenschutz
 
-## 🖥️ Web-/Desktop-App (Svelte/Electron)
+Die App speichert ausschließlich lokal auf dem Gerät (SQLite via
+`sqflite`). Es gibt keinen eigenen Server und kein Konto — die einzige
+Netzwerk-Kommunikation ist das Laden der Übungsdatenbank (fällt offline auf
+die mitgelieferte lokale Kopie zurück) und der Update-Check gegen die
+öffentliche GitHub-API, letzterer per `.env` (`UPDATE_CHECK_ENABLED`)
+abschaltbar. Der Datei-Export im Backup-Menü nutzt das native
+Teilen-Menü des Betriebssystems (z. B. um die Datei in iCloud Drive oder
+Google Drive zu speichern) — das ist eine bewusste Aktion des Nutzers, kein
+automatischer Cloud-Sync, und die App selbst lädt dabei nichts irgendwohin
+hoch.
 
-Trainingsplan, Kraft-Fortschritt und Muskelgruppen-Balance als Web-App
-(installierbar aufs Handy) **und** als Windows-Desktop-App (Electron) —
-Daten liegen im `localStorage` des Browsers/der App.
-
-### Auf dem Handy installieren
-
-Die App läuft als [GitHub Pages](https://sieder2009.github.io/GymTraker/) —
-kostenlos gehostet, nur der App-Code liegt dort, deine Trainingsdaten
-bleiben im `localStorage` deines Handy-Browsers.
-
-> Der Link leitet automatisch weiter zu
-> **https://monster.sieder.plattnericus.dev/GymTraker/** (eigene Domain) —
-> das ist beabsichtigt, beide Adressen zeigen auf dieselbe, kostenlos über
-> GitHub Pages gehostete App.
-
-1. Im Handy-Browser öffnen: **https://sieder2009.github.io/GymTraker/**
-2. **iOS (Safari):** Teilen-Symbol → "Zum Home-Bildschirm".
-   **Android (Chrome):** Menü (⋮) → "App installieren".
-3. Die App startet danach vollflächig ohne Browser-Leiste und funktioniert
-   auch offline (nur das erste Laden braucht Internet).
-
-Jeder Push auf `master` veröffentlicht automatisch die neueste Version
-(`.github/workflows/pages.yml`); dafür muss einmalig unter **Settings →
-Pages → Source** "GitHub Actions" ausgewählt sein.
-
-### Sieder Hub (Spiele, Links, Zugang zur App)
-
-Unter **https://sieder2009.github.io/GymTraker/home/** liegt der "Sieder
-Hub" — ein kleines Portal (statisches HTML/CSS/JS in `public/home/`, wird bei
-jedem Build automatisch mit veröffentlicht) mit durchgängiger Navigation
-zwischen allen Unterseiten: Spiele (3 Gewinnt, 4 Gewinnt, Blackjack),
-persönliche Infos, Social-Media-Links und ein **Trainingsplan-Archiv**
-(`public/home/archiv/`, 6 alte, handgeschriebene Trainingspläne v2.0–v7.0 im
-originalen grünen Terminal-Look) — sowie einer prominenten Karte, die direkt
-zur GymTraker-App führt. Komplett eigenständig von der Svelte-App, teilt sich
-nur das Repo und den Deploy.
-
-### Windows-Desktop-App herunterladen
-
-Auf der **[Releases-Seite](../../releases)** die neueste
-`Ironpeak-Fitness-*-portable.exe` herunterladen und doppelklicken — keine
-Installation nötig. Windows SmartScreen warnt ggf. vor der unsignierten
-`.exe` ("Weitere Informationen" → "Trotzdem ausführen").
-
-Wird automatisch von GitHub Actions gebaut, sobald ein Versions-Tag
-(`vX.Y.Z`) gepusht wird (`.github/workflows/release.yml`).
-
-### Entwicklung
-
-Node.js (Version 18+) wird benötigt.
-
-```bash
-npm install
-npm run dev             # Browser-Entwicklungsserver (Vite)
-npm run electron:dev    # App im Electron-Fenster, mit Hot-Reload
-npm run electron:build  # Windows-.exe bauen (landet in release/)
-```
-
-### Trainingsplan anlegen & nutzen
-
-Drei Optionen, um einen Plan zu bekommen:
-
-- **+ Neuer Plan** — eigenen Plan Tag für Tag von Hand zusammenstellen.
-- **Log importieren** — eigenes handgeschriebenes Trainingslog als `.txt`
-  hochladen oder Text einfügen.
-- **Beispielplan laden** — lädt ein mitgeliefertes, echtes Trainingslog
-  (`src/lib/exampleLog.js`).
-
-Auf eine Übung tippen öffnet die Detailansicht: Gewicht (vorausgefüllt mit
-dem letzten Wert) im Zahlenfeld anpassen, Wiederholungen pro Satz eintragen,
-"Speichern" sichert den Eintrag und springt zur nächsten Übung. Zwischen
-Übungen lässt sich auch per Wisch-Geste oder Pfeiltasten wechseln. Übungen
-lassen sich umbenennen (Verlauf bleibt erhalten) oder nachträglich per
-Text-Einfügen mit Verlauf befüllen.
-
-**Wie die App ein Log liest** (`src/lib/logParser.js`):
-- `"1PR(27.04.2026)"` gefolgt von `"Deadlift 150kg"`-Zeilen wird als PR-Block
-  mit Datum erkannt.
-- `"1. Wochentag"`, `"2. Wochentag"` usw. beginnt einen neuen Tag (1–6 →
-  Montag–Samstag, Sonntag automatisch Ruhetag).
-- Zeilen ohne führende Zahl sind ein neuer Übungsname; ein `NxM`- oder
-  `NxM-M`-Muster darin wird als Satz-/Wiederholungsschema übernommen,
-  Klammer-Zusätze werden als Notiz angezeigt.
-- Zeilen mit führender Zahl sind Satz-Zeilen der zuletzt genannten Übung;
-  das zuletzt geloggte Gewicht wird als aktuelles Gewicht übernommen, die
-  volle Historie bleibt erhalten.
-- Vor dem Speichern zeigt die App eine Vorschau samt Warnhinweisen — erst
-  nach Bestätigung wird gespeichert.
-
-Existieren mehrere gespeicherte Pläne, fragt die App bei jedem Start,
-welcher heute genutzt werden soll.
-
-### Projektstruktur
-
-```
-electron/
-  main.cjs             Electron-Hauptprozess
-  preload.cjs
-public/
-  manifest.json        Web-App-Manifest (Handy-Installation)
-  icon.svg, icon-*.png Icons fürs Manifest / Home-Bildschirm
-  home/                Sieder Hub: Spiele, Infos, Medien, Link zur App
-scripts/
-  gen-icons.mjs        Erzeugt icon-*.png aus icon.svg
-src/
-  main.js              Einstiegspunkt
-  App.svelte           Bildschirm-Umschaltung + Tabbar
-  app.css              Design-System
-  lib/
-    stores.js          App-Daten (Svelte Stores)
-    persisted.js       localStorage-Anbindung
-    data.js            Trainingsplan-Hilfsfunktionen
-    exampleLog.js       Mitgeliefertes Beispiel-Trainingslog
-    logParser.js        Parser für importierte Log-Texte
-    Training.svelte, PlanEditor.svelte, ImportLog.svelte,
-    ExerciseDetail.svelte, Strength.svelte,
-    Progress.svelte, RadarChart.svelte, TabBar.svelte, Icon.svelte, Toast.svelte
-```
-
----
-
-## 🙏 Credits
+## Credits
 
 Die illustrierte Körperfigur im Muskeldiagramm (`mobile/lib/data/body_atlas*.dart`)
 basiert auf dem SVG-Körpermodell aus
@@ -312,16 +269,3 @@ Muskelgruppen-Zuordnung, die geometrische Aufteilung von Deltoideus in
 vorderen/seitlichen Kopf sowie von "upper-back" in oberen Rücken/Latissimus,
 die Aktivierungsfarbskala, das Hit-Testing und das Caching sind eigene
 Arbeit dieses Projekts.
-
----
-
-## Datenschutz
-
-Beide Apps speichern ausschließlich lokal auf dem jeweiligen Gerät (SQLite
-bzw. `localStorage`). Es gibt keinen eigenen Server und kein Konto — die
-einzige Netzwerk-Kommunikation der Mobile-App ist das Laden der
-Übungsdatenbank und der Update-Check gegen die öffentliche GitHub-API. Der
-Datei-Export im Backup-Menü nutzt das native Teilen-Menü des Betriebssystems
-(z. B. um die Datei in iCloud Drive oder Google Drive zu speichern) — das
-ist eine bewusste Aktion des Nutzers, kein automatischer Cloud-Sync, und die
-App selbst lädt dabei nichts irgendwohin hoch.

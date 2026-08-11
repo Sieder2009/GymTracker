@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Light/dark hex pairs ported 1:1 from the CSS custom properties in
-/// `src/app.css`. Registered as a [ThemeExtension] so screens can read
+/// Light/dark hex pairs for the app's design tokens. Registered as a
+/// [ThemeExtension] so screens can read
 /// `Theme.of(context).extension<AppColors>()!` for tokens that don't map
 /// onto a standard Material [ColorScheme] slot (teal/purple/yellow/green).
 @immutable

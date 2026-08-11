@@ -10,11 +10,10 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import 'app_tab_bar.dart';
 
-/// Root shell: the 3 tabs stay mounted simultaneously via [PageView]
-/// (matches the original's always-mounted `.screen` sections, just
-/// cross-faded via CSS) so switching tabs never loses scroll/local state
-/// -- and, unlike the [IndexedStack] this replaced, also picks up a swipe
-/// gesture for free, in addition to tapping the nav bar.
+/// Root shell: the 4 tabs stay mounted simultaneously via [PageView] so
+/// switching tabs never loses scroll/local state -- and, unlike the
+/// [IndexedStack] this replaced, also picks up a swipe gesture for free,
+/// in addition to tapping the nav bar.
 ///
 /// The nav bar floats over the content (margin + rounded pill + shadow)
 /// rather than docking flush to the screen edge — screens add their own

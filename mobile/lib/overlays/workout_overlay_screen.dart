@@ -57,8 +57,7 @@ String _pathLabel(AppLocalizations t, AchievementPathId id) {
   }
 }
 
-/// Guided, sequential set-by-set workout session, ported from
-/// `WorkoutOverlay.svelte` and since extended with a live session clock,
+/// Guided, sequential set-by-set workout session, with a live session clock,
 /// a wall-clock rest timer, actual weight+rep tracking, PR detection, and
 /// a full session overview (completed/current/upcoming, with reordering).
 ///

@@ -11,8 +11,8 @@ const String _kProgramsKey = 'ironpeak:programs';
 /// Owns every saved [Program]. Exercise-mutation methods take the already
 /// resolved `List<Exercise>` (either `program.days[i].exercises` or
 /// `program.dailyExercises`) rather than duplicating a parallel set of
-/// "daily" handlers as the original Svelte screen does — since Dart lists
-/// are references, mutating the passed-in list mutates the Program itself.
+/// "daily" handlers — since Dart lists are references, mutating the
+/// passed-in list mutates the Program itself.
 class ProgramsProvider extends ChangeNotifier {
   ProgramsProvider(this._storage) : _programs = _initial(_storage);
 
@@ -129,8 +129,7 @@ class ProgramsProvider extends ChangeNotifier {
   }
 
   /// Pushes a new history entry AND overwrites every current set's weight
-  /// to [weight] — matches the original's `saveExerciseLog` exactly (it
-  /// always overwrites, unlike [importExerciseHistory] below).
+  /// to [weight] — always overwrites, unlike [importExerciseHistory] below.
   void saveExerciseLog(
     List<Exercise> exercises,
     int exIdx,

@@ -59,9 +59,9 @@ class _DraftDay {
   }
 }
 
-/// "+ Neuer Plan" — full-screen plan builder, ported from `PlanEditor.svelte`.
+/// "+ Neuer Plan" — full-screen plan builder.
 /// Switching weekday/rotation mode discards whatever was entered and resets
-/// to a fresh skeleton, matching the original.
+/// to a fresh skeleton.
 class PlanEditorScreen extends StatefulWidget {
   const PlanEditorScreen({super.key});
 

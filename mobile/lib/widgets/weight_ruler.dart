@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// The ExerciseDetail "drag ruler" weight picker, ported from
-/// `ExerciseDetail.svelte`. Constants (`min`/`max`/`step`/`pxPerTick`) match
-/// the original exactly — `pxPerTick=12` comes from `.tick{width:1.5px;
-/// margin-right:10.5px}` in `app.css`.
+/// The ExerciseDetail "drag ruler" weight picker.
 ///
 /// Dragging RIGHT increases the weight, LEFT decreases it — inverted versus
-/// normal ruler intuition, intentional (matches the original's comment).
-/// The drag delta is always recomputed relative to the drag's start
-/// position (not accumulated per-frame), avoiding float drift on a long
-/// drag — a 1:1 port of the original's `dx = e.clientX - startX` approach.
+/// normal ruler intuition, intentional: it mirrors pulling the ruler's tape
+/// towards you to read a higher number. The drag delta is always
+/// recomputed relative to the drag's start position (not accumulated
+/// per-frame), avoiding float drift on a long drag.
 class WeightRuler extends StatefulWidget {
   const WeightRuler({super.key, required this.value, required this.onChanged});
 

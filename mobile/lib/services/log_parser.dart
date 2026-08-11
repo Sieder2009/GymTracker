@@ -4,7 +4,7 @@ import '../models/exercise.dart';
 import '../models/exercise_set.dart';
 import '../models/history_entry.dart';
 
-// Ported 1:1 from `src/lib/logParser.js`. A line is treated as a SET/WEIGHT
+// A line is treated as a SET/WEIGHT
 // line if it starts with a digit (e.g. "135kg x5 2.1 1.1 ...", "72,5kg x1
 // 5.4", "1x 20.19.15.10"). Anything else starting a new paragraph is an
 // EXERCISE NAME line, optionally carrying a "NxM" or "NxM-M" scheme (sets x
@@ -67,7 +67,7 @@ _NameNote _splitNameNote(String line) {
 // Gewicht, m = mehr Gewicht) are kept as-is. A token made only of dots (e.g.
 // "....." for an exercise with no rep count, like bodyweight holds) means
 // "done, no reps logged" — recorded as '✓' once per dot-split segment
-// (matches the original's `tok.split('.').length`, which is dots+1).
+// (`tok.split('.').length` is dots+1, so a 3-dot token yields 4 checkmarks).
 List<Object> _parseHistoryReps(String line) {
   final tokens = line.trim().split(_whitespace);
   final xIdx = tokens.indexWhere((t) => _xMarker.hasMatch(t));
@@ -92,9 +92,8 @@ List<Object> _parseHistoryReps(String line) {
 
 /// A single parsed exercise entry (day-scoped or "every training day").
 ///
-/// Named `setCount` (not `sets`, as in the original JS) to avoid colliding
-/// with [Exercise.sets], which is a `List<ExerciseSet>` — a distinction the
-/// loosely-typed JS source only resolves by context.
+/// Named `setCount` (not `sets`) to avoid colliding with [Exercise.sets],
+/// which is a `List<ExerciseSet>`.
 class ParsedExercise {
   ParsedExercise({
     required this.name,

@@ -1,7 +1,6 @@
-// A real, hand-written training log — ported verbatim from
-// `src/lib/exampleLog.js` (the Svelte web app's bundled sample plan) so the
-// same text works as the "⭐ Beispielplan laden" preset here too, and,
-// critically, as the ported parser's primary regression-test fixture.
+// A real, hand-written training log, bundled as the "⭐ Beispielplan laden"
+// preset so anyone can try the app with realistic data right away, and,
+// critically, as `log_parser.dart`'s primary regression-test fixture.
 const String exampleLog = '''1PR(27.04.2026)
 Deadlift 150kg
 Klimmzüge 40kg

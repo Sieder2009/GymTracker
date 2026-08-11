@@ -278,9 +278,9 @@ class _LiftCardState extends State<_LiftCard> {
   @override
   void initState() {
     super.initState();
-    // Lazily seed once from the store's current PR — mirrors the original's
-    // reactive `if (prInputs[key]==='') prInputs[key] = pr || ''` guard,
-    // which never overwrites what the user is actively typing.
+    // Lazily seed once from the store's current PR so this field starts
+    // pre-filled, but never gets overwritten while the user is actively
+    // typing in it.
     final lift = context.read<BigLiftsProvider>().lifts.byKey(widget.liftKey);
     _prController = TextEditingController(text: lift.pr > 0 ? fmt(lift.pr) : '');
   }

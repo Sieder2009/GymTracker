@@ -3,8 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 /// Rest-timer countdown ring for [WorkoutOverlayScreen]. Uses
-/// `Canvas.drawArc` directly instead of the original's SVG
-/// `stroke-dashoffset` trick — visually identical, simpler.
+/// `Canvas.drawArc` directly — simple and cheap to redraw every tick.
 class RestRing extends StatelessWidget {
   const RestRing({
     super.key,

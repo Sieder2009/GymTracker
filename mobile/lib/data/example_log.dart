@@ -10,6 +10,40 @@ Kabelseitheben 7.5kg 8
 Squat 120kg
 
 
+Cat and Cow 1x8
+1x ✓
+
+Ausfallschritt 1x8
+1x ✓
+
+Ausfallschritt Rotationen (Knie vom Boden und Arm vom Boden nach oben ausgestreckt) 1x8
+1x ✓
+
+Bein ausgestreckt und anderes vorne, ca. 30° 1x8
+1x ✓
+
+Ausfallschritt auf dem Bett 1x8
+1x ✓
+
+Boden Ficker 1x8
+1x ✓
+
+Liegend Bein zur anderen Seite legen 1x8
+1x ✓
+
+Schneidersitz anbetten 1x8
+1x ✓
+
+Waage 1x8
+1x ✓
+
+Liegend diagonal Hand und Fuß berühren 1x8
+1x ✓
+
+Vierfüßlerstand, abwechselnd die Hand heben 1x8
+1x ✓
+
+
 Unterrücken (Unterrücken als erstes gerade)
 10kg x2 10.7 12.8
 15kg x1 7.6

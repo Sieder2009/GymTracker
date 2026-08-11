@@ -24,10 +24,26 @@ void main() {
     expect(result.pr.date, '2026-04-27');
   });
 
-  test('"jeden Trainingstag" preamble has exactly 1 exercise: Unterrücken', () {
-    expect(result.dailyExercises.length, 1);
-    expect(result.dailyExercises.single.name, 'Unterrücken');
-    expect(result.dailyExercises.single.note, 'Unterrücken als erstes gerade');
+  test(
+      '"jeden Trainingstag" preamble has 12 exercises: the daily mobility '
+      'routine plus Unterrücken', () {
+    expect(result.dailyExercises.length, 12);
+    expect(result.dailyExercises.map((e) => e.name).toList(), [
+      'Cat and Cow',
+      'Ausfallschritt',
+      'Ausfallschritt Rotationen',
+      'Bein ausgestreckt und anderes vorne, ca. 30°',
+      'Ausfallschritt auf dem Bett',
+      'Boden Ficker',
+      'Liegend Bein zur anderen Seite legen',
+      'Schneidersitz anbetten',
+      'Waage',
+      'Liegend diagonal Hand und Fuß berühren',
+      'Vierfüßlerstand, abwechselnd die Hand heben',
+      'Unterrücken',
+    ]);
+    final unterruecken = result.dailyExercises.last;
+    expect(unterruecken.note, 'Unterrücken als erstes gerade');
   });
 
   test('day 1 has 7 exercises, incl. two UN-MERGED "Ein-armige Rows" entries', () {

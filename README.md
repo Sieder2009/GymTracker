@@ -1,212 +1,242 @@
-# 🏋️ Ironpeak Fitness
+<div align="center">
 
-**Trainingsplan, Kraft-Fortschritt und ein extrem tiefes Analytics-System — als
-native App für Android, iOS und Windows.** Alle Daten bleiben **komplett
-lokal auf deinem Gerät**: keine Cloud, kein eigener Server, kein Account,
-kein Tracking.
+<img src="https://api.iconify.design/lucide:mountain-snow.svg?color=%231fa76a" width="56" height="56" alt=""/>
+
+# Ironpeak Fitness
+
+**A workout planner, strength tracker, and deep analytics tool — built as a
+native app for Android, iOS, Windows, and macOS.** All your data stays
+**100% on your device**: no cloud, no server, no account, no tracking.
 
 [![Android Build](https://github.com/Sieder2009/GymTraker/actions/workflows/android.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/android.yml)
 [![iOS Build](https://github.com/Sieder2009/GymTraker/actions/workflows/ios.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/ios.yml)
 [![Windows Build](https://github.com/Sieder2009/GymTraker/actions/workflows/windows.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/windows.yml)
 [![macOS Build](https://github.com/Sieder2009/GymTraker/actions/workflows/macos.yml/badge.svg)](https://github.com/Sieder2009/GymTraker/actions/workflows/macos.yml)
+
 ![Flutter](https://img.shields.io/badge/Flutter-stable-02569B?logo=flutter&logoColor=white)
 ![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS-informational)
 ![Local-only](https://img.shields.io/badge/Data-100%25%20local-1fa76a)
+![Latest Release](https://img.shields.io/github/v/release/Sieder2009/GymTraker?color=1fa76a&label=latest%20release)
+
+</div>
 
 ---
 
-## Inhalt
+## <img src="https://api.iconify.design/lucide:list.svg?color=%231fa76a" width="20" height="20" alt=""/> Contents
 
-- [Was ist Ironpeak Fitness?](#was-ist-ironpeak-fitness)
+- [What is Ironpeak Fitness?](#what-is-ironpeak-fitness)
+- [Screenshots](#screenshots)
 - [Features](#features)
   - [Training](#training)
-  - [Analytics — eigener Tab](#analytics--eigener-tab)
-  - [Übungsdatenbank](#übungsdatenbank)
-  - [Sonstiges](#sonstiges)
-- [App herunterladen](#app-herunterladen)
-- [Einrichtung für Entwickler](#einrichtung-für-entwickler)
-- [Konfiguration (`.env`)](#konfiguration-env)
-- [Tests & Codequalität](#tests--codequalität)
-- [Projektstruktur](#projektstruktur)
-- [Datenschutz](#datenschutz)
+  - [Analytics — its own tab](#analytics--its-own-tab)
+  - [Exercise database](#exercise-database)
+  - [More features](#more-features)
+- [Download the app](#download-the-app)
+- [Setup for developers](#setup-for-developers)
+- [Configuration (`.env`)](#configuration-env)
+- [Tests & code quality](#tests--code-quality)
+- [Project structure](#project-structure)
+- [Privacy](#privacy)
 - [Credits](#credits)
 
 ---
 
-## Was ist Ironpeak Fitness?
+## <img src="https://api.iconify.design/lucide:info.svg?color=%231fa76a" width="20" height="20" alt=""/> What is Ironpeak Fitness?
 
-Ironpeak Fitness ist eine einzige, native **Flutter-App** — kein
-Web-Zweitprojekt, kein separater Electron-Build, ein Codebase für **Android,
-iOS und Windows** (macOS läuft ebenfalls über CI mit). Die App ist bewusst
-so aufgebaut, dass sich alles über **vier klare Haupt-Tabs** erschließt statt
-über verschachtelte Menüs:
+Ironpeak Fitness is one single, native **Flutter app**. It is not a web app
+with a separate build, and not an Electron app. One codebase runs on
+**Android, iOS, Windows, and macOS**. The app is built around **four main
+tabs**, so you don't need to search through many menus:
 
-| Tab | Zweck |
+| Tab | What it's for |
 |---|---|
-| **Training** | Heutiger Trainingstag, geführtes Workout, Plan wählen/anlegen/importieren |
-| **Kraft** | Bench Press / Deadlift / Squat: PR, Verlauf, Trend |
-| **Analyse** (deutsch für "Analytics") | Der eigene Auswertungs-Tab — siehe unten |
-| **Übungen** | Durchsuchbare 535-Übungen-Datenbank mit Muskeldiagramm |
+| **Training** | Today's workout, guided sets, choose/create/import a plan |
+| **Strength** | Bench Press / Deadlift / Squat: PR, history, trend |
+| **Analytics** | The app's own stats and progress tab — see below |
+| **Exercises** | A searchable database of 535 exercises with a muscle diagram |
 
-Kalender, Foto-Galerie, Einstellungen, Backup, Theme und Sprache hängen
-bewusst **nicht** als fünfter/sechster Tab an der Navigationsleiste, sondern
-liegen gebündelt in einem einzigen Overflow-Menü oben rechts auf dem
-Training-Tab — eine Reihe aus 6+ Icon-Buttons wäre auf Handy-Breite reine
-visuelle Unordnung. Ein Tap genügt, um alles zu finden.
+The calendar, photo gallery, settings, backup, theme, and language are
+**not** extra tabs at the bottom. They live together in one menu at the
+top right of the Training tab. A row of 6+ icons would look messy on a
+phone screen. One tap is enough to find everything.
+
+## <img src="https://api.iconify.design/lucide:image.svg?color=%231fa76a" width="20" height="20" alt=""/> Screenshots
+
+<table>
+<tr>
+<td width="25%"><img src="screenshots/screenshot-training.png" alt="Training tab: today's workout with set tracking and rest timer"/></td>
+<td width="25%"><img src="screenshots/screenshot-strength.png" alt="Strength tab: lift trends, 1RM calculator, DOTS score"/></td>
+<td width="25%"><img src="screenshots/screenshot-analytics.png" alt="Analytics tab: overview stats, weekly volume, achievements"/></td>
+<td width="25%"><img src="screenshots/screenshot-exercises.png" alt="Exercise database with muscle activation diagram"/></td>
+</tr>
+<tr>
+<td align="center"><sub><b>Training</b></sub></td>
+<td align="center"><sub><b>Strength</b></sub></td>
+<td align="center"><sub><b>Analytics</b></sub></td>
+<td align="center"><sub><b>Exercises</b></sub></td>
+</tr>
+</table>
+
+> These images are style mockups made for this README, not live app
+> captures — they show the real screens, layout, and features described
+> below.
 
 ## Features
 
 <a id="training"></a>
-### 🏋 Training
+### <img src="https://api.iconify.design/lucide:dumbbell.svg?color=%231fa76a" width="20" height="20" alt=""/> Training
 
-- Trainingspläne nach Wochentag oder Rotation, von Hand angelegt, per
-  Log-Import (eigenes handgeschriebenes Format) oder aus einem von acht
-  mitgelieferten Plan-Vorlagen (Onboarding-Auswahl beim ersten Start).
-- Geführtes Workout mit Satz-für-Satz-Eingabe, live mitlaufender
-  Session-Uhr und RPE-Erfassung pro Satz. Übungsreihenfolge während der
-  Session per Drag-and-drop änderbar, ohne den gespeicherten Plan
-  anzufassen.
-- Pausen-Timer läuft wanduhrzeitbasiert (nicht als reiner Tick-Zähler),
-  gleicht sich beim Zurückkehren aus dem Hintergrund sofort wieder ab und
-  schickt bei Ablauf eine lokale Push-Benachrichtigung — bleibt korrekt,
-  egal wie lange das Handy währenddessen gesperrt war.
-- Ziehregler **und** Tastatur-Eingabe fürs Gewicht (Komma oder Punkt als
-  Dezimaltrennzeichen).
-- Trainingskalender mit Monatsübersicht und Workout-Historie, Foto-Galerie
-  für den Trainingsfortschritt.
-- Wisch-Navigation zwischen den vier Haupt-Tabs, zusätzlich zur Tab-Leiste
-  unten.
+- Workout plans by weekday or rotation. Create them by hand, import a plan
+  from your own log format, or pick one of eight built-in templates
+  (shown during onboarding on first launch).
+- Guided workouts with set-by-set input, a live session timer, and RPE
+  tracking for each set. You can drag and drop exercises to reorder them
+  during a session, without changing your saved plan.
+- The rest timer uses real clock time, not a simple countdown. It syncs
+  right away when you return from the background and sends a local push
+  notification when it ends — it stays accurate no matter how long your
+  phone was locked.
+- Enter weight with a **slider or the keyboard** (comma or dot as the
+  decimal separator).
+- A training calendar with a monthly view and workout history, plus a
+  photo gallery for your progress.
+- Swipe between the four main tabs, or use the tab bar at the bottom.
 
-<a id="analytics--eigener-tab"></a>
-### 📊 Analytics — eigener Tab
+<a id="analytics--its-own-tab"></a>
+### <img src="https://api.iconify.design/lucide:bar-chart-3.svg?color=%231fa76a" width="20" height="20" alt=""/> Analytics — its own tab
 
-Ein komplett eigener Tab, fünf Bereiche, jede Zahl und jeder Chart
-nachvollziehbar aus echten geloggten Daten — **nie aus Platzhaltern**. Wo zu
-wenig Datenpunkte für eine ehrliche Aussage vorliegen, zeigt die App einen
-Hinweistext statt einer erfundenen Linie (`DataQuality` in
-`analytics_engine.dart`).
+A full tab with five sections. Every number and every chart comes from
+your real logged data — **never from placeholder values**. If there isn't
+enough data yet for an honest chart, the app shows a short message
+instead of a made-up line (`DataQuality` in `analytics_engine.dart`).
 
-- **Übersicht** — ein Fließtext-Status ("wird besser" / "bleibt stabil" /
-  noch keine Daten), plus Kraft-, Volumen-, Konstanz- und
-  Körpergewichtstrend auf einen Blick, und ein Wochenvolumen-Chart der
-  letzten 8 Wochen.
-- **Kraft** — Trend-Chart (30-Tage-Fenster) für Bench Press, Deadlift und
-  Squat inklusive Plateau-Erkennung, Start→Jetzt-Vergleich für jede erkannte
-  Variante dieser drei Lifts im aktuellen Plan (Tippen öffnet direkt den
-  PR-Eintrag), sowie ein eigenständiger **1RM-Rechner** und der
-  **DOTS-Score** (powerlifting-normalisierter Kraftvergleich über
-  Körpergewicht und Total).
-- **Volumen** — Gesamtvolumen diese Woche, Workouts diese Woche, und ein
-  Balkendiagramm des wöchentlichen Trainingsvolumens.
-- **Konstanz** — aktuelle & beste Trainings-Serie (Streak) in Tagen,
-  Workouts diesen Monat, Balkendiagramm der Workouts pro Woche.
-- **Erfolge** — vier gestaffelte Achievement-Pfade (Konstanz,
-  Trainings-Anzahl, Gesamtvolumen, Anzahl PRs), jede Stufe live aus den
-  echten Daten berechnet statt als gespeichertes "freigeschaltet"-Flag
-  (`achievements_engine.dart`) — Fortschrittsbalken bis zur nächsten Stufe
-  inklusive.
+- **Overview** — a plain-text status ("getting better" / "staying
+  stable" / not enough data yet), plus strength, volume, consistency, and
+  body weight trends at a glance, and a weekly volume chart for the last
+  8 weeks.
+- **Strength** — a 30-day trend chart for Bench Press, Deadlift, and
+  Squat, with plateau detection. It compares your start and current
+  numbers for every detected variant of these three lifts in your current
+  plan (tap to open that PR entry). It also has its own **1RM
+  calculator** and a **DOTS score** (a powerlifting formula that compares
+  strength across body weight and total).
+- **Volume** — total volume this week, workouts this week, and a bar
+  chart of your weekly training volume.
+- **Consistency** — your current and best training streak in days,
+  workouts this month, and a bar chart of workouts per week.
+- **Achievements** — four multi-level achievement paths (consistency,
+  number of workouts, total volume, number of PRs). Each level is
+  calculated live from your real data, not saved as a stored "unlocked"
+  flag (`achievements_engine.dart`) — with a progress bar to the next
+  level.
 
-**Daten eintragen, nicht nur ansehen:** Körpergewicht wird als eigener
-Verlauf geführt (`BodyWeightProvider`) und fließt direkt in den
-DOTS-Score und den Körpergewichtstrend ein; ein PR lässt sich direkt aus
-dem Kraft-Bereich heraus eintragen, ohne den Tab zu verlassen.
+**You can log data here too, not just view it:** body weight has its own
+history (`BodyWeightProvider`) and feeds directly into the DOTS score and
+the body weight trend. You can log a new PR right from the Strength
+section, without leaving the tab.
 
-<a id="übungsdatenbank"></a>
-### 💪 Übungsdatenbank
+<a id="exercise-database"></a>
+### <img src="https://api.iconify.design/lucide:database.svg?color=%231fa76a" width="20" height="20" alt=""/> Exercise database
 
-- 535 Übungen, kategorisiert (Brust/Rücken/Schultern/Beine/Arme/Rumpf/
-  Cardio), durchsuchbar und filterbar im eigenen "Übungen"-Tab — jede mit
-  einer exercise-science-basierten Muskel-Aktivierungs-Zuordnung
+- 535 exercises, sorted by category (chest/back/shoulders/legs/arms/
+  core/cardio), searchable and filterable in the "Exercises" tab. Each
+  one has a muscle activation mapping based on exercise science
   (`lib/data/exercise_muscle_map.dart`).
-- Wird **zur Laufzeit von GitHub** geladen (fällt bei fehlendem Internet auf
-  einen zuletzt erfolgreichen Cache bzw. die mitgelieferte Kopie zurück) —
-  Änderungen an `mobile/assets/exercises.json` in diesem Repo aktualisieren
-  die App ohne neues Release.
-- **Illustriertes Muskeldiagramm pro Übung** (Front-/Rückansicht,
-  Männlich/Weiblich passend zur Athlet:innen-Einstellung): eine vollständig
-  durchgezeichnete Körperfigur — Hände, Füße, einzelne Bauchmuskel-Segmente
-  inklusive — bei der jede trainierte Muskelgruppe von Weiß (0 %) über
-  Hellrot bis Dunkelrot (100 %) eingefärbt wird, exakt nach der
-  hinterlegten Aktivierungsstärke. Zum genaueren Ansehen antippen öffnet
-  eine Vollbild-Ansicht zum Reinzoomen/Verschieben (`InteractiveViewer`).
-- Beim Anlegen einer **eigenen** Übung: derselbe Editor interaktiv — Muskeln
-  direkt auf der Figur antippen (echtes Hit-Testing gegen die gezeichnete
-  Kontur, keine grobe Trefferfläche) und die Belastungsintensität
-  (0–100 %) per Schieberegler einstellen. Sobald konfiguriert, erscheint
-  dasselbe Muskeldiagramm auch beim Ausführen dieser Übung im Workout.
+- The database **loads live from GitHub** (it falls back to the last
+  cached copy, or the built-in copy, if you're offline). Changes to
+  `mobile/assets/exercises.json` in this repo update the app without a
+  new release.
+- **An illustrated muscle diagram for every exercise** (front/back view,
+  male/female to match your athlete setting): a fully drawn body figure
+  — hands, feet, and separate ab segments included — where every trained
+  muscle group is colored from white (0%) through light red to dark red
+  (100%), based on its exact activation level. Tap it for a full-screen
+  view you can zoom and drag (`InteractiveViewer`).
+- When you create your **own** exercise, you get the same editor: tap
+  muscles directly on the figure (real hit-testing against the drawn
+  outline, not a rough tap area) and set the activation level (0–100%)
+  with a slider. Once it's set up, the same muscle diagram shows up when
+  you do that exercise in a workout.
 
-<a id="sonstiges"></a>
-### ⚙️ Sonstiges
+<a id="more-features"></a>
+### <img src="https://api.iconify.design/lucide:settings-2.svg?color=%231fa76a" width="20" height="20" alt=""/> More features
 
-- Health-Anbindung (Apple Health / Health Connect) für Schritte, Gewicht
-  und das Zurückschreiben abgeschlossener Workouts.
-- Tägliche Trainings-Erinnerung (lokale Benachrichtigung, Uhrzeit frei
-  wählbar).
-- Automatischer Update-Check gegen GitHub Releases inkl. Hintergrund-
-  Download; Installation bleibt ein bewusster Tap.
-- Backup/Restore als Textexport (Zwischenablage) **oder** als Datei über
-  das native Teilen-Menü — landet z. B. direkt in iCloud Drive oder Google
-  Drive, zum Mitnehmen auf ein anderes Gerät. Kein eigener Account, kein
-  eigener Server: die Datei geht nur dorthin, wo man sie selbst hinlegt,
-  kein automatischer Hintergrund-Sync.
-- Individuelle Primär-/Sekundärfarbe (freier Farbwähler), automatischer
-  System-Light/Dark-Mode mit manuellem Override.
-- 10 Sprachen: Deutsch, Englisch, Spanisch, Französisch, Italienisch,
-  Portugiesisch, Niederländisch, Türkisch, Polnisch, Russisch.
-- Geführtes Onboarding beim ersten Start, inklusive Plan-Vorlagen-Auswahl.
+- Health integration (Apple Health / Health Connect) for steps, weight,
+  and writing back finished workouts.
+- A daily training reminder (local notification, pick your own time).
+- Automatic update checks against GitHub Releases, with background
+  download — installing is still one clear tap.
+- Backup and restore as a text export (clipboard) **or** as a file through
+  the native share menu — for example straight into iCloud Drive or
+  Google Drive, so you can move to another device. No account, no
+  server: the file only goes where you send it, there's no automatic
+  background sync.
+- Custom primary and secondary colors (full color picker), automatic
+  system light/dark mode with a manual override.
+- 10 languages: German, English, Spanish, French, Italian, Portuguese,
+  Dutch, Turkish, Polish, Russian.
+- A guided onboarding flow on first launch, including the plan template
+  picker.
 
-## App herunterladen
+## <img src="https://api.iconify.design/lucide:download.svg?color=%231fa76a" width="20" height="20" alt=""/> Download the app
 
-Jeder `vX.Y.Z`-Tag baut über GitHub Actions automatisch (bewusst nicht bei
-jedem Push, um nicht bei jedem Commit einen vollen Android-/iOS-Build
-anzustoßen):
+Every `vX.Y.Z` tag triggers an automatic build through GitHub Actions.
+This does **not** happen on every push, so a full Android/iOS build
+doesn't run on every single commit:
 
-| Plattform | Format | Workflow |
+| Platform | Format | Workflow |
 |---|---|---|
 | Android | `.apk` | [`android.yml`](.github/workflows/android.yml) |
-| iOS | unsigniertes `.ipa` (siehe Kommentare dort zu eigenem Signing) | [`ios.yml`](.github/workflows/ios.yml) |
-| Windows | gepacktes `.zip` | [`windows.yml`](.github/workflows/windows.yml) |
-| macOS | unsigniertes, unnotarisiertes `.zip` | [`macos.yml`](.github/workflows/macos.yml) |
+| iOS | unsigned `.ipa` (see the comments there about signing it yourself) | [`ios.yml`](.github/workflows/ios.yml) |
+| Windows | packed `.zip`, plus a standalone installer (`.exe`) | [`windows.yml`](.github/workflows/windows.yml) |
+| macOS | unsigned, unnotarized `.zip` | [`macos.yml`](.github/workflows/macos.yml) |
 
-Fertige Builds gibt's auf der **[Releases-Seite](../../releases)** dieses
-Repos, sobald ein Versions-Tag existiert. Ein manueller
-`workflow_dispatch`-Lauf (ohne Tag) ist jederzeit möglich, um einen Fix auf
-die Schnelle zu testen, ohne einen Release zu schneiden.
+You'll find finished builds on this repo's **[Releases page](../../releases)**
+once a version tag exists. You can also trigger a manual
+`workflow_dispatch` run (without a tag) any time, to quickly test a fix
+without cutting a full release.
 
-## Einrichtung für Entwickler
+> <img src="https://api.iconify.design/lucide:badge-check.svg?color=%231fa76a" width="16" height="16" alt=""/> **Build status checked:** The latest release (`v2.6.7`) really does
+> contain all four platform files and they can be downloaded —
+> `app-release.apk`, `ironpeak-fitness-ios-unsigned.ipa`,
+> `ironpeak-fitness-windows.zip` (with the `.exe` installer), and
+> `ironpeak-fitness-macos.zip`. So the release pipeline is producing
+> working builds for Android, iOS, Windows, and macOS.
 
-Voraussetzung: [Flutter SDK](https://docs.flutter.dev/get-started/install)
+## <img src="https://api.iconify.design/lucide:terminal.svg?color=%231fa76a" width="20" height="20" alt=""/> Setup for developers
+
+You need the [Flutter SDK](https://docs.flutter.dev/get-started/install)
 (stable channel).
 
 ```bash
 cd mobile
 flutter pub get
-flutter gen-l10n        # Lokalisierungen aus lib/l10n/*.arb generieren
-flutter run              # Debug-Build auf verbundenem Gerät/Emulator
+flutter gen-l10n        # generate translations from lib/l10n/*.arb
+flutter run              # debug build on a connected device/emulator
 ```
 
-Windows-Release-Build:
+Windows release build:
 
 ```bash
 flutter build windows --release
-# Ergebnis: mobile/build/windows/x64/runner/Release/ironpeak_mobile.exe
+# Output: mobile/build/windows/x64/runner/Release/ironpeak_mobile.exe
 ```
 
-## Konfiguration (`.env`)
+## <img src="https://api.iconify.design/lucide:sliders-horizontal.svg?color=%231fa76a" width="20" height="20" alt=""/> Configuration (`.env`)
 
-Alles, was konfigurierbar ist, steht in [`mobile/.env`](mobile/.env) statt
-hartkodiert im Code — die Datei enthält keine Geheimnisse und ist bewusst
-mit eingecheckt (siehe `lib/config/app_config.dart` für den typisierten
-Zugriff darauf):
+Everything you can configure lives in [`mobile/.env`](mobile/.env), not
+hardcoded in the app. This file has no secrets in it, so it's checked
+into the repo on purpose (see `lib/config/app_config.dart` for the typed
+way the app reads it):
 
-| Variable | Bedeutung |
+| Variable | What it does |
 |---|---|
-| `GITHUB_OWNER` / `GITHUB_REPO` / `GITHUB_BRANCH` | Woher Übungsdatenbank & Update-Checks geladen werden |
-| `EXERCISE_DATABASE_PATH` | Pfad zur `exercises.json` im Repo |
-| `UPDATE_CHECK_ENABLED` / `UPDATE_CHECK_INTERVAL_HOURS` | Ob und wie oft automatisch auf neue Releases geprüft wird |
-| `SUPPORT_EMAIL` / `SUPPORT_PHONE` | Kontakt auf dem Einstellungen-Bildschirm |
+| `GITHUB_OWNER` / `GITHUB_REPO` / `GITHUB_BRANCH` | Where the exercise database and update checks load from |
+| `EXERCISE_DATABASE_PATH` | Path to `exercises.json` in the repo |
+| `UPDATE_CHECK_ENABLED` / `UPDATE_CHECK_INTERVAL_HOURS` | Whether and how often the app checks for new releases |
+| `SUPPORT_EMAIL` / `SUPPORT_PHONE` | Contact info shown on the Settings screen |
 
-## Tests & Codequalität
+## <img src="https://api.iconify.design/lucide:flask-conical.svg?color=%231fa76a" width="20" height="20" alt=""/> Tests & code quality
 
 ```bash
 cd mobile
@@ -214,58 +244,59 @@ flutter analyze
 flutter test
 ```
 
-Jeder Push läuft automatisch durch `flutter analyze` und `flutter test` in
-allen vier Plattform-Workflows, bevor überhaupt gebaut wird. Die
-Berechnungs-Engines hinter dem Analytics-Tab
-(`lib/analytics/analytics_engine.dart`, `lib/analytics/achievements_engine.dart`,
-`lib/data/dots_score.dart`) haben eigene, dedizierte Testdateien unter
-`mobile/test/` — keine Kennzahl im Analytics-Tab ist ungetestet.
+Every push runs through `flutter analyze` and `flutter test` in all four
+platform workflows, before anything gets built. The calculation engines
+behind the Analytics tab (`lib/analytics/analytics_engine.dart`,
+`lib/analytics/achievements_engine.dart`, `lib/data/dots_score.dart`) have
+their own dedicated test files under `mobile/test/` — no number on the
+Analytics tab is untested.
 
-## Projektstruktur
+## <img src="https://api.iconify.design/lucide:folder-tree.svg?color=%231fa76a" width="20" height="20" alt=""/> Project structure
 
 ```
 mobile/
   lib/
-    analytics/          Reine Berechnungs-Engine für Trends/Konsistenz/DOTS/
-                         Achievements — nie eine Zahl ohne echte Datenbasis
-    config/              Typisierter .env-Zugriff (app_config.dart)
-    data/                Konstanten, DOTS-/1RM-Formeln, Muskel-Aktivierung
-                         pro Übung, Körperfigur-Atlas fürs Muskeldiagramm,
-                         Plan-Vorlagen
-    l10n/                ARB-Übersetzungsdateien (10 Sprachen)
-    models/              Datenmodelle (Exercise, Program, BigLift, …)
-    overlays/             Vollbild-Screens (Plan-Editor, Workout, Settings, …)
-    screens/             Die 4 Haupt-Tabs (Training/Kraft/Analytics/Übungen)
-                         + Kalender/Galerie (erreichbar über das Overflow-Menü)
-    services/            Externe Integrationen (Health, GitHub, Storage, Update)
-    state/               Provider (App-weiter State via package:provider)
-    theme/               Design-System (Farben, Radien, Typografie)
-    widgets/              Wiederverwendbare UI-Bausteine (Charts, Editoren, …)
-  test/                  Unit-/Widget-Tests
-  tool/seed_demo_data.dart  Entwickler-Skript: Demo-Daten in die lokale DB füllen
+    analytics/          Pure calculation engine for trends/consistency/DOTS/
+                         achievements — never a number without real data
+    config/              Typed .env access (app_config.dart)
+    data/                Constants, DOTS/1RM formulas, per-exercise muscle
+                         activation, body figure atlas for the muscle
+                         diagram, plan templates
+    l10n/                ARB translation files (10 languages)
+    models/              Data models (Exercise, Program, BigLift, …)
+    overlays/             Full-screen screens (plan editor, workout, settings, …)
+    screens/             The 4 main tabs (Training/Strength/Analytics/Exercises)
+                         + calendar/gallery (reachable from the overflow menu)
+    services/            External integrations (Health, GitHub, storage, update)
+    state/               Providers (app-wide state via package:provider)
+    theme/               Design system (colors, radii, typography)
+    widgets/              Reusable UI building blocks (charts, editors, …)
+  test/                  Unit/widget tests
+  tool/seed_demo_data.dart  Developer script: fills demo data into the local DB
 ```
 
-## Datenschutz
+## <img src="https://api.iconify.design/lucide:shield-check.svg?color=%231fa76a" width="20" height="20" alt=""/> Privacy
 
-Die App speichert ausschließlich lokal auf dem Gerät (SQLite via
-`sqflite`). Es gibt keinen eigenen Server und kein Konto — die einzige
-Netzwerk-Kommunikation ist das Laden der Übungsdatenbank (fällt offline auf
-die mitgelieferte lokale Kopie zurück) und der Update-Check gegen die
-öffentliche GitHub-API, letzterer per `.env` (`UPDATE_CHECK_ENABLED`)
-abschaltbar. Der Datei-Export im Backup-Menü nutzt das native
-Teilen-Menü des Betriebssystems (z. B. um die Datei in iCloud Drive oder
-Google Drive zu speichern) — das ist eine bewusste Aktion des Nutzers, kein
-automatischer Cloud-Sync, und die App selbst lädt dabei nichts irgendwohin
-hoch.
+The app stores everything only on your device (SQLite via `sqflite`).
+There is no server and no account. The only network traffic is loading
+the exercise database (it falls back to the built-in local copy when
+offline) and the update check against the public GitHub API — you can
+turn the update check off in `.env` (`UPDATE_CHECK_ENABLED`). The file
+export in the backup menu uses your operating system's native share
+menu (for example, to save the file to iCloud Drive or Google Drive).
+This is something you choose to do — it is not an automatic cloud sync,
+and the app itself never uploads anything on its own.
 
-## Credits
+## <img src="https://api.iconify.design/lucide:award.svg?color=%231fa76a" width="20" height="20" alt=""/> Credits
 
-Die illustrierte Körperfigur im Muskeldiagramm (`mobile/lib/data/body_atlas*.dart`)
-basiert auf dem SVG-Körpermodell aus
+Special thanks to **[Plattnericus](https://github.com/Plattnericus)** for
+his contribution to this project.
+
+The illustrated body figure in the muscle diagram
+(`mobile/lib/data/body_atlas*.dart`) is based on the SVG body model from
 [react-native-body-highlighter](https://github.com/HichamELBSI/react-native-body-highlighter)
-von Hicham ELABBASSI (MIT-Lizenz, © 2022). Die reinen Pfaddaten wurden 1:1
-übernommen (TypeScript → Dart, Geometrie unverändert); die
-Muskelgruppen-Zuordnung, die geometrische Aufteilung von Deltoideus in
-vorderen/seitlichen Kopf sowie von "upper-back" in oberen Rücken/Latissimus,
-die Aktivierungsfarbskala, das Hit-Testing und das Caching sind eigene
-Arbeit dieses Projekts.
+by Hicham ELABBASSI (MIT license, © 2022). The raw path data was carried
+over 1:1 (TypeScript → Dart, geometry unchanged). The muscle group
+mapping, the split of the deltoid into front/side heads and of
+"upper-back" into upper back/lats, the activation color scale, the
+hit-testing, and the caching are original work for this project.

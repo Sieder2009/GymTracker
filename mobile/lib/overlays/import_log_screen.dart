@@ -12,11 +12,11 @@ import '../state/train_state_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 
-/// "Log importieren" — paste-in log parsing + preview + save, ported
-/// from `ImportLog.svelte`. [initialText]/[initialName] pre-fill and
-/// auto-analyze immediately, matching how the original loads the bundled
-/// "Beispielplan laden" example without any user action. v1 has no file
-/// picker (paste-only) — more natural on a phone, and one less dependency.
+/// "Log importieren" — paste-in log parsing + preview + save.
+/// [initialText]/[initialName] pre-fill and auto-analyze immediately, so the
+/// bundled "Beispielplan laden" example loads without any user action. v1
+/// has no file picker here (paste-only) — more natural on a phone, and one
+/// less dependency.
 class ImportLogScreen extends StatefulWidget {
   const ImportLogScreen({
     super.key,

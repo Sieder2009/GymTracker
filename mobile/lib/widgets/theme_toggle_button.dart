@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../state/theme_provider.dart';
 
-/// Icon shows the TARGET state (sun when currently dark -> tap for light,
-/// moon when currently light -> tap for dark), matching the original.
+/// Icon shows the TARGET state: sun when currently dark (tap for light),
+/// moon when currently light (tap for dark).
 class ThemeToggleButton extends StatelessWidget {
   const ThemeToggleButton({super.key});
 

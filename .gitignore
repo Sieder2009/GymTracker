@@ -1,41 +1,7 @@
-# Ironpeak Fitness — web app (SvelteKit/Vite) + Electron desktop build.
-# The Flutter mobile app under mobile/ has its own .gitignore for
-# Dart/Android/iOS/Windows-specific artifacts.
-
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
-
-# Build output
-dist/
-dist-electron/
-release/
-out/
-build/
-
-# Vite
-.vite/
-*.timestamp-*.mjs
-
-# Environment — .local variants only; a plain .env with no secrets is fine
-# to commit (see mobile/.env for that pattern), but any *.local override is
-# meant to stay on this machine.
-.env.local
-.env.*.local
-*.local
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-logs/
-
-# Coverage / test output
-coverage/
-.nyc_output/
+# Ironpeak Fitness — Flutter app, lives entirely under mobile/.
+# Dart/Android/iOS/Windows build artifacts are ignored there via
+# mobile/.gitignore; this file only covers things that can show up at the
+# repo root (editor/OS cruft, Claude Code's local state).
 
 # Editor/IDE
 .vscode/

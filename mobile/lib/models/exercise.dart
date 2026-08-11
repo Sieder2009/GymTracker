@@ -32,8 +32,8 @@ class Exercise {
   /// detail, not a zero.
   Map<String, double> muscleActivation;
 
-  /// Pendant to the original `freshEx(name, muscle, rest, sets, history, note)`
-  /// — deep-clones `sets` and derives `startW` from their max weight.
+  /// Builds a fresh [Exercise] from its base fields — deep-clones `sets`
+  /// and derives `startW` from their max weight.
   factory Exercise.fresh(
     String name,
     String muscle,

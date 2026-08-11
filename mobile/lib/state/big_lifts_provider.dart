@@ -24,8 +24,8 @@ class BigLiftsProvider extends ChangeNotifier {
 
   void _persist() => _storage.writeJson(_kBigLiftsKey, () => _lifts.toJson());
 
-  /// Overwrites `pr` only — never touches `prDate` (matches the original
-  /// `savePR`, which is a manual-entry field the app never auto-dates).
+  /// Overwrites `pr` only — never touches `prDate`, which is a manual-entry
+  /// field the app never auto-dates.
   void savePr(String key, double value) {
     if (value <= 0) return;
     _lifts.byKey(key).pr = value;

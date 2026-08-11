@@ -64,8 +64,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
   void initState() {
     super.initState();
     // Runs once (this screen stays mounted for the app's lifetime inside
-    // the shell's IndexedStack) — matches the original's onMount-time
-    // forced plan prompt when multiple plans exist.
+    // the shell's PageView) — forces the plan prompt when multiple plans
+    // exist, so the user always confirms which one they're training today.
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _maybeForcePlanPrompt());
   }

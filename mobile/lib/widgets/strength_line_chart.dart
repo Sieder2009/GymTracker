@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 /// Mini line chart for a Strength-tab lift card: last ≤8 history points +
-/// an optional dashed PR reference line. Scaling matches the original's
-/// formula exactly (`min = min(pr>0?pr:first, ...points) - 2`, `max =
-/// max(pr??0, ...points) + 2`). Uses fixed screen-space stroke widths
-/// rather than `canvas.scale()` — the original SVG's
-/// `preserveAspectRatio="none"` stretches stroke width non-uniformly,
-/// an accidental quirk not worth replicating.
+/// an optional dashed PR reference line. Scaling formula:
+/// `min = min(pr>0?pr:first, ...points) - 2`, `max = max(pr??0, ...points) +
+/// 2`. Uses fixed screen-space stroke widths rather than `canvas.scale()`,
+/// so the line stays crisp regardless of the chart's aspect ratio.
 class StrengthLineChart extends StatelessWidget {
   const StrengthLineChart({
     super.key,

@@ -30,11 +30,10 @@ Map<MuscleGroup, double> _parsedMuscleActivation(Exercise ex) {
 
 /// Single-exercise editor: drag-ruler weight picker, per-set reps, rename,
 /// "Verlauf einfügen" paste-in, and reversed (most-recent-first) history.
-/// Ported from `ExerciseDetail.svelte`.
 ///
 /// Saving auto-advances to the next exercise in [exercises] instead of
-/// closing, matching the original's multi-exercise "next" flow — the
-/// screen only pops after saving the LAST exercise in the list.
+/// closing — the screen only pops after saving the LAST exercise in the
+/// list.
 class ExerciseDetailScreen extends StatefulWidget {
   const ExerciseDetailScreen({
     super.key,

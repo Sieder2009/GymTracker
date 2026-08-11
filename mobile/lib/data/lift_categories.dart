@@ -1,6 +1,5 @@
 /// Maps a free-text exercise name to one of the "big three" lift keys used
-/// by [BigLiftsProvider] (`bench`/`deadlift`/`squat`), ported 1:1 from
-/// `Progress.svelte`'s BIG_THREE / LIFT_CATEGORIES. Anchored at `^` so
+/// by [BigLiftsProvider] (`bench`/`deadlift`/`squat`). Anchored at `^` so
 /// grip/stance variants like "Bankdrücken (eng)" match while accessory
 /// lifts merely containing the word (e.g. "Hack Squat") do not.
 ///

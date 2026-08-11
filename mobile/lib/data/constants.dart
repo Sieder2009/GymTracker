@@ -58,8 +58,8 @@ String todayIso() {
       '${now.day.toString().padLeft(2, '0')}';
 }
 
-/// Today's date as an unpadded 'D.M' label — matches the original
-/// `addEntry()` which pushes `{l: 'D.M', v}` onto a lift's history.
+/// Today's date as an unpadded 'D.M' label, used when appending a new
+/// entry to a lift's history.
 String todayShortLabel() {
   final now = DateTime.now();
   return '${now.day}.${now.month}';

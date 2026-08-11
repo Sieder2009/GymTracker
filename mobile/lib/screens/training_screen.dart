@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../analytics/analytics_engine.dart';
 import '../data/constants.dart';
@@ -20,6 +21,7 @@ import '../state/health_provider.dart';
 import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../state/train_state_provider.dart';
+import '../state/update_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
@@ -217,6 +219,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             DateFormat.yMMMMEEEEd(localeName).format(DateTime.now()),
             style: TextStyle(color: colors.mut),
           ),
+          const _UpdateAvailableCard(),
           const SizedBox(height: 12),
           Text(plan.name, style: Theme.of(context).textTheme.headlineMedium),
           Text(
@@ -387,6 +390,79 @@ class _HomeDashboardStats extends StatelessWidget {
             ),
         ],
       ],
+    );
+  }
+}
+
+/// Surfaces a ready-to-install (or, lacking a platform build asset, just
+/// available) app update right on the home screen — previously this state
+/// was only visible if the user happened to open Settings, easy to miss
+/// since [UpdateProvider] checks and downloads silently in the background.
+/// Gone once [UpdateProvider.status] moves past updateAvailable/downloaded
+/// (e.g. back to upToDate once the user has installed and relaunched).
+class _UpdateAvailableCard extends StatelessWidget {
+  const _UpdateAvailableCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final update = context.watch<UpdateProvider>();
+    final isDownloaded = update.status == UpdateStatus.downloaded;
+    final isAvailable = update.status == UpdateStatus.updateAvailable;
+    if (!isDownloaded && !isAvailable) return const SizedBox.shrink();
+
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final version =
+        (isDownloaded ? update.downloadedVersion : update.result?.latestVersion) ?? '';
+    final releaseUrl = update.result?.releaseUrl;
+    final onTap = isDownloaded
+        ? () => update.openDownloadedUpdate()
+        : (releaseUrl == null ? null : () => launchUrl(Uri.parse(releaseUrl)));
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: colors.accent,
+                    borderRadius: BorderRadius.circular(AppRadii.sm),
+                  ),
+                  child: const Icon(Icons.arrow_circle_up_rounded,
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t.labelUpdateAvailable(version),
+                          style: Theme.of(context).textTheme.headlineMedium),
+                      const SizedBox(height: 2),
+                      Text(
+                        isDownloaded ? t.actionInstallUpdate : t.actionDownloadUpdate,
+                        style: TextStyle(color: colors.mut, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.chevron_right_rounded, color: colors.mut),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

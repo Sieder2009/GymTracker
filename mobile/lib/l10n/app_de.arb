@@ -152,6 +152,39 @@
     }
   },
   "emptyPlateTargetBelowBar": "Zielgewicht ist leichter als die Stange selbst.",
+  "tabStrengthOverview": "Übersicht",
+  "tabStrengthTools": "Werkzeuge",
+  "rangeLabel4Weeks": "4W",
+  "rangeLabel3Months": "3M",
+  "rangeLabel6Months": "6M",
+  "rangeLabel1Year": "1J",
+  "rangeLabelAll": "Alle",
+  "titleLiftBalance": "Balance der Hauptübungen",
+  "emptyNeedAllThreeLiftsForBalance": "Trag alle drei PRs ein, um deine Balance zu sehen.",
+  "labelBenchToSquat": "Bankdrücken vs. Squat",
+  "labelDeadliftToSquat": "Kreuzheben vs. Squat",
+  "balanceFlagLow": "unterdurchschnittlich",
+  "balanceFlagBalanced": "typisch",
+  "balanceFlagHigh": "überdurchschnittlich",
+  "balanceRatioValue": "{ratio}× Squat",
+  "@balanceRatioValue": {
+    "placeholders": {
+      "ratio": {
+        "type": "String"
+      }
+    }
+  },
+  "infoTool1rmDescription": "Schätze dein Einer-Maximum aus einem leichteren Satz.",
+  "infoToolPlateDescription": "Berechne, welche Scheiben auf die Stange kommen.",
+  "labelRepMaxTable": "Wiederholungs-Maxima",
+  "repMaxRow": "{reps} RM",
+  "@repMaxRow": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
   "titleCalendar": "Trainingskalender",
   "calendarMonthSummary": "{count} Workouts · {hours} Std.",
   "emptyNoSessionsThisDay": "An diesem Tag kein Workout eingetragen.",
@@ -276,6 +309,12 @@
   "updateErrorNetwork": "GitHub konnte nicht erreicht werden. Prüfe deine Verbindung.",
   "updateErrorNoVersion": "Die Antwort enthielt keine Versionsnummer.",
   "headerAppearance": "DARSTELLUNG",
+  "headerAthleteProfile": "ATHLETEN-PROFIL",
+  "labelGenderForFormulas": "Geschlecht (für DOTS & Kraftlevel)",
+  "actionEditInSettings": "In Einstellungen bearbeiten",
+  "actionContinue": "Weiter",
+  "titleOnboardingProfile": "Dein Profil",
+  "bodyOnboardingProfile": "Wird für den DOTS-Score und das Kraftlevel im Kraft-Tab verwendet. Du kannst das jederzeit später in den Einstellungen ändern.",
   "labelPrimaryColor": "Primärfarbe",
   "labelDarkMode": "Dunkler Modus",
   "labelSecondaryColor": "Sekundärfarbe",

@@ -23,3 +23,14 @@ double estimateOneRepMax({required double weight, required int reps}) {
   if (reps == 1) return weight;
   return weight * (1 + reps / 30);
 }
+
+/// The inverse of [estimateOneRepMax]: given an already-known/estimated
+/// 1RM, what weight should hit failure at [reps] reps? Same Epley formula
+/// solved for the starting weight instead of the max — used for the
+/// 1RM calculator's rep-max table (2RM..10RM) so it stays consistent with
+/// whatever 1RM the calculator just estimated.
+double weightForRepMax({required double oneRepMax, required int reps}) {
+  if (oneRepMax <= 0 || reps <= 0) return 0;
+  if (reps == 1) return oneRepMax;
+  return oneRepMax * 30 / (30 + reps);
+}

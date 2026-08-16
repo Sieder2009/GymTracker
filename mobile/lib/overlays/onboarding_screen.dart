@@ -8,6 +8,7 @@ import '../data/plan_templates.dart';
 import '../l10n/app_localizations.dart';
 import '../models/program.dart';
 import '../services/storage_service.dart';
+import '../state/athlete_settings_provider.dart';
 import '../state/health_provider.dart';
 import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
@@ -60,7 +61,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _step = 0;
   bool _finishing = false;
 
-  static const _stepCount = 3;
+  static const _stepCount = 4;
 
   @override
   void dispose() {
@@ -128,6 +129,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPageChanged: (i) => setState(() => _step = i),
                 children: [
                   _WelcomeStep(onNext: _goNext),
+                  _ProfileStep(onNext: _goNext),
                   _PlanStep(onNext: _goNext),
                   _FinishStep(onFinish: _finish),
                 ],
@@ -177,6 +179,98 @@ class _WelcomeStep extends StatelessWidget {
             child: ElevatedButton(onPressed: onNext, child: Text(t.actionGetStarted)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Captures the app's one athlete-specific setting (see
+/// AthleteSettingsProvider) up front instead of leaving the DOTS score and
+/// Strength-tab strength levels running off a default nobody explicitly
+/// chose until they happen to notice the toggle in Settings later.
+/// Answering here writes through immediately, same as every other
+/// onboarding choice — "Continue" doesn't gate on having picked one.
+class _ProfileStep extends StatelessWidget {
+  const _ProfileStep({required this.onNext});
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final athlete = context.watch<AthleteSettingsProvider>();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(t.titleOnboardingProfile, style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 6),
+          Text(t.bodyOnboardingProfile, style: TextStyle(color: colors.mut, fontSize: 14)),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _GenderOptionTile(
+                  label: 'M',
+                  selected: athlete.isMale,
+                  onTap: () => athlete.setIsMale(true),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _GenderOptionTile(
+                  label: 'F',
+                  selected: !athlete.isMale,
+                  onTap: () => athlete.setIsMale(false),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(onPressed: onNext, child: Text(t.actionContinue)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GenderOptionTile extends StatelessWidget {
+  const _GenderOptionTile({required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    return Material(
+      color: selected ? colors.accentSoft : colors.card,
+      borderRadius: BorderRadius.circular(AppRadii.md),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.md),
+            border: Border.all(color: selected ? colors.accent : colors.line, width: selected ? 2 : 1),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: selected ? colors.accent : colors.txt,
+            ),
+          ),
+        ),
       ),
     );
   }

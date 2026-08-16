@@ -91,6 +91,33 @@ class _OneRepMaxSheetState extends State<_OneRepMaxSheet> {
                       ?.copyWith(color: colors.accent),
                 ),
               ),
+              const SizedBox(height: 20),
+              Text(t.labelRepMaxTable, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (var reps = 2; reps <= 10; reps++)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: colors.card2,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(t.repMaxRow(reps), style: TextStyle(color: colors.mut, fontSize: 11)),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${fmt1(weightForRepMax(oneRepMax: _result!, reps: reps))} kg',
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ],
           ],
         ),

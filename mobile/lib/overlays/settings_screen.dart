@@ -11,6 +11,7 @@ import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
+import '../state/athlete_settings_provider.dart';
 import '../state/health_provider.dart';
 import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
@@ -73,6 +74,8 @@ class SettingsScreen extends StatelessWidget {
             _UpdateSection(),
             SizedBox(height: 24),
             _AppearanceSection(),
+            SizedBox(height: 24),
+            _AthleteProfileSection(),
             SizedBox(height: 24),
             _ReminderSection(),
             SizedBox(height: 24),
@@ -505,6 +508,54 @@ Future<Color?> showCustomColorPicker(BuildContext context, {required Color initi
       );
     },
   );
+}
+
+/// The one athlete-specific setting the app has (see
+/// AthleteSettingsProvider) — used to live as an inline ChoiceChip right
+/// on the Strength tab's Powerlifting-Score card, editable from two
+/// different places. Centralized here instead: Settings is the single
+/// place to change it, and the Strength tab now just shows the current
+/// value with a link back to this section (see
+/// StrengthScreen's `_PowerliftingScoreCard`).
+class _AthleteProfileSection extends StatelessWidget {
+  const _AthleteProfileSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final athlete = context.watch<AthleteSettingsProvider>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t.headerAthleteProfile, style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(t.labelGenderForFormulas, style: Theme.of(context).textTheme.headlineMedium),
+                ),
+                ChoiceChip(
+                  label: const Text('M'),
+                  selected: athlete.isMale,
+                  onSelected: (_) => athlete.setIsMale(true),
+                ),
+                const SizedBox(width: 6),
+                ChoiceChip(
+                  label: const Text('F'),
+                  selected: !athlete.isMale,
+                  onSelected: (_) => athlete.setIsMale(false),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ReminderSection extends StatelessWidget {

@@ -36,4 +36,27 @@ void main() {
       expect(estimateOneRepMax(weight: 100, reps: 0), 0);
     });
   });
+
+  group('weightForRepMax', () {
+    test('is the inverse of estimateOneRepMax', () {
+      final oneRm = estimateOneRepMax(weight: 100, reps: 5);
+      final backToFive = weightForRepMax(oneRepMax: oneRm, reps: 5);
+      expect(backToFive, closeTo(100, 0.001));
+    });
+
+    test('1RM returns the max itself', () {
+      expect(weightForRepMax(oneRepMax: 150, reps: 1), 150);
+    });
+
+    test('a higher rep target means a lighter weight', () {
+      final fiveRm = weightForRepMax(oneRepMax: 150, reps: 5);
+      final tenRm = weightForRepMax(oneRepMax: 150, reps: 10);
+      expect(tenRm, lessThan(fiveRm));
+    });
+
+    test('returns 0 for non-positive 1RM or reps', () {
+      expect(weightForRepMax(oneRepMax: 0, reps: 5), 0);
+      expect(weightForRepMax(oneRepMax: 150, reps: 0), 0);
+    });
+  });
 }

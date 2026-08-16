@@ -30,16 +30,28 @@ class UpdateCheckResult {
   final UpdateCheckError error;
 
   /// The asset matching the OS this build is running on — "windows"/"macos"
-  /// in the filename on Windows/macOS, `.apk` on Android, `.ipa` on iOS —
-  /// null when nothing published yet matches (or on a platform with no CI
-  /// build, e.g. desktop Linux).
+  /// in the filename on Windows/macOS, `.apk` on Android — null when
+  /// nothing published yet matches (or on a platform with no CI build,
+  /// e.g. desktop Linux, or iOS — see below).
+  ///
+  /// iOS is deliberately never matched here: the release `.ipa`
+  /// ([README's download table](../../README.md), built unsigned by
+  /// `ios.yml`) has no way to actually get installed by "downloading it and
+  /// opening it" — Apple has no such mechanism for a sideloaded, unsigned
+  /// `.ipa` without ad-hoc/enterprise signing plus an `itms-services://`
+  /// OTA manifest, neither of which this repo produces. Downloading it
+  /// anyway and handing it to a file opener would just look broken (either
+  /// nothing happens, or Files shows a `.ipa` the user can't do anything
+  /// with). Returning null here means [UpdateProvider.checkNow] never
+  /// starts that pointless download; the UI's `UpdateStatus.updateAvailable`
+  /// case (see `SettingsScreen._buildStatusBody`) already falls back to a
+  /// plain "open the release page" button for exactly this situation.
   ReleaseAsset? get assetForThisPlatform {
     for (final asset in assets) {
       final name = asset.name.toLowerCase();
       if (Platform.isWindows && name.contains('windows')) return asset;
       if (Platform.isMacOS && name.contains('macos')) return asset;
       if (Platform.isAndroid && name.endsWith('.apk')) return asset;
-      if (Platform.isIOS && name.endsWith('.ipa')) return asset;
     }
     return null;
   }

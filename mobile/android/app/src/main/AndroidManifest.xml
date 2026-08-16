@@ -1,4 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for every network call the app makes: the live exercise
+         database fetch (exercise_database_service.dart), the GitHub
+         Releases update check/download (update_service.dart,
+         update_provider.dart), and Health Connect's own network needs.
+         The Flutter template only puts this in the debug/profile
+         manifests, not here — without it, a release build (the only kind
+         actually distributed via GitHub Releases) has zero network access
+         and every one of those features silently no-ops. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Health Connect: read-only steps/weight sync into the app, plus
          writing finished Ironpeak workouts back out — see
          lib/services/health_service.dart. Scoped to only what's actually
@@ -18,6 +27,12 @@
          12+ instead of being silently deferred. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Lets the user actually install the .apk UpdateProvider downloads
+         from GitHub Releases (see update_provider.dart, opened through
+         open_filex's FileProvider). Without this, Android 8+ won't even
+         offer the "install unknown apps" prompt for this app -- the tap
+         on "Installieren" would just silently fail. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
         android:label="Ironpeak Fitness"
         android:name="${applicationName}"

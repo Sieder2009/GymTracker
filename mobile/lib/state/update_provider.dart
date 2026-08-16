@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -228,12 +229,28 @@ class UpdateProvider extends ChangeNotifier {
   }
 
   /// Opens the downloaded update file with the OS's own handler — the
-  /// installer on Windows, the package installer prompt on Android/iOS.
-  /// Nothing here replaces the running app itself.
+  /// package installer prompt on Android, the installer/Finder on
+  /// Windows/macOS. Nothing here replaces the running app itself.
+  ///
+  /// Android needs its own path: since Android 7 (API 24), handing a raw
+  /// `file://` URI to another app's intent (here, the package installer)
+  /// throws `FileUriExposedException` — `Uri.file()` + `launchUrl` would
+  /// crash the app the moment the user taps "Installieren" instead of
+  /// installing anything. `open_filex` routes this through a proper
+  /// `content://` URI via its own `FileProvider` (declared in its own
+  /// AndroidManifest, merged into the app's at build time) and sets the
+  /// APK MIME type, which is what actually lets the installer accept it.
+  /// Desktop has no such restriction, so `launchUrl(Uri.file(...))` — which
+  /// only ever runs there now that [UpdateCheckResult.assetForThisPlatform]
+  /// excludes iOS — is still the right call.
   Future<void> openDownloadedUpdate() async {
     final path = downloadedFilePath;
     if (path == null) return;
-    await launchUrl(Uri.file(path));
+    if (Platform.isAndroid) {
+      await OpenFilex.open(path);
+    } else {
+      await launchUrl(Uri.file(path));
+    }
   }
 
   @override

@@ -223,6 +223,7 @@
   "actionChecking": "Suche …",
   "actionDownloadUpdate": "Herunterladen",
   "actionInstallUpdate": "Installieren",
+  "actionShowInFinder": "Im Finder anzeigen",
   "labelDownloadingUpdate": "Update wird heruntergeladen … {percent}%",
   "@labelDownloadingUpdate": {
     "placeholders": {

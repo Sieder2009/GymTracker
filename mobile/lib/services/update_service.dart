@@ -29,28 +29,46 @@ class UpdateCheckResult {
   final List<ReleaseAsset> assets;
   final UpdateCheckError error;
 
-  /// The asset matching the OS this build is running on — "windows"/"macos"
-  /// in the filename on Windows/macOS, `.apk` on Android — null when
-  /// nothing published yet matches (or on a platform with no CI build,
-  /// e.g. desktop Linux, or iOS — see below).
+  /// The asset [UpdateProvider] should auto-download and, on a tap, hand
+  /// to the OS to actually install — one specific asset per platform, not
+  /// just "whichever one happens to have the right substring in its name".
+  /// Null when nothing published yet matches (no CI build for this
+  /// platform, e.g. desktop Linux, or iOS — see below).
+  ///
+  /// Windows matches the Inno Setup installer specifically
+  /// (`ironpeak-fitness-windows-setup.exe`, built by
+  /// `windows/installer/installer.iss` via `windows.yml`), not the
+  /// portable `ironpeak-fitness-windows.zip` also published alongside it —
+  /// running the zip through a file opener just opens it in Explorer, it
+  /// doesn't install anything. Only the installer's `CloseApplications`/
+  /// `RestartApplications` behavior actually replaces a running copy and
+  /// reopens it. A loose `contains('windows')` match would have picked
+  /// whichever of the two GitHub happened to list first — unde­fined,
+  /// and half the time wrong.
+  ///
+  /// macOS matches the `.zip` (there's no signed installer to build without
+  /// an Apple Developer certificate this repo doesn't have — see
+  /// `macos.yml`'s own comments on that) — [UpdateProvider] extracts it and
+  /// reveals the `.app` in Finder instead of pretending to silently install
+  /// it, since Gatekeeper will require the user's own right-click-Open
+  /// bypass on that unsigned build regardless of what triggered the
+  /// download.
   ///
   /// iOS is deliberately never matched here: the release `.ipa`
   /// ([README's download table](../../README.md), built unsigned by
   /// `ios.yml`) has no way to actually get installed by "downloading it and
   /// opening it" — Apple has no such mechanism for a sideloaded, unsigned
   /// `.ipa` without ad-hoc/enterprise signing plus an `itms-services://`
-  /// OTA manifest, neither of which this repo produces. Downloading it
-  /// anyway and handing it to a file opener would just look broken (either
-  /// nothing happens, or Files shows a `.ipa` the user can't do anything
-  /// with). Returning null here means [UpdateProvider.checkNow] never
-  /// starts that pointless download; the UI's `UpdateStatus.updateAvailable`
-  /// case (see `SettingsScreen._buildStatusBody`) already falls back to a
-  /// plain "open the release page" button for exactly this situation.
+  /// OTA manifest, neither of which this repo produces. Returning null
+  /// here means [UpdateProvider.checkNow] never starts that pointless
+  /// download; the UI's `UpdateStatus.updateAvailable` case (see
+  /// `SettingsScreen._buildStatusBody`) already falls back to a plain
+  /// "open the release page" button for exactly this situation.
   ReleaseAsset? get assetForThisPlatform {
     for (final asset in assets) {
       final name = asset.name.toLowerCase();
-      if (Platform.isWindows && name.contains('windows')) return asset;
-      if (Platform.isMacOS && name.contains('macos')) return asset;
+      if (Platform.isWindows && name.endsWith('windows-setup.exe')) return asset;
+      if (Platform.isMacOS && name.endsWith('macos.zip')) return asset;
       if (Platform.isAndroid && name.endsWith('.apk')) return asset;
     }
     return null;

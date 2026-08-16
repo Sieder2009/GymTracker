@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -245,7 +246,10 @@ class _UpdateSection extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => update.openDownloadedUpdate(),
-                child: Text(t.actionInstallUpdate),
+                // macOS can't silently install an unsigned build (see
+                // UpdateProvider.openDownloadedUpdate) -- say what the tap
+                // actually does there instead of overpromising "Install".
+                child: Text(Platform.isMacOS ? t.actionShowInFinder : t.actionInstallUpdate),
               ),
             ),
           ],

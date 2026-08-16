@@ -46,19 +46,46 @@ jobs:
 
       # Ship the whole Release folder, not just the .exe — it needs its
       # sibling DLLs (flutter_windows.dll, plugin .dlls) and data/ folder
-      # alongside it to actually run. UpdateProvider looks for an asset
-      # whose name contains "windows" when checking GitHub Releases.
-      - name: Package Windows build
+      # alongside it to actually run. Kept as a portable, no-install option
+      # alongside the real installer built below — UpdateProvider only
+      # ever auto-downloads the setup .exe (see
+      # UpdateCheckResult.assetForThisPlatform), not this zip.
+      - name: Package Windows build (portable zip)
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath build\windows\x64\runner\ironpeak-fitness-windows.zip
         shell: pwsh
+
+      # A real installer, not just a zip someone has to manually unpack —
+      # see windows/installer/installer.iss for why (in short: it's what
+      # lets "tap Install" in the app actually replace a running copy and
+      # relaunch it, instead of opening a zip in Explorer and doing
+      # nothing). Inno Setup 6 ships preinstalled on windows-latest
+      # runners; iscc's directory is added to PATH by the runner image, so
+      # no separate install step is needed here. Version is passed through
+      # explicitly so the installer's own version always matches the
+      # binary it's packaging (tag-derived on a release, pubspec.yaml's
+      # version on a manual workflow_dispatch test build), same source
+      # windows-app's own --build-name already uses above.
+      - name: Build Windows installer (Inno Setup)
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | cut -d'+' -f1)
+          fi
+          iscc "/DMyAppVersion=$VERSION" windows\installer\installer.iss
+        shell: bash
 
       - uses: actions/upload-artifact@v4
         with:
           name: ironpeak-fitness-windows
-          path: mobile/build/windows/x64/runner/ironpeak-fitness-windows.zip
+          path: |
+            mobile/build/windows/x64/runner/ironpeak-fitness-windows.zip
+            mobile/build/windows/x64/runner/ironpeak-fitness-windows-setup.exe
 
       - if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: mobile/build/windows/x64/runner/ironpeak-fitness-windows.zip
+          files: |
+            mobile/build/windows/x64/runner/ironpeak-fitness-windows.zip
+            mobile/build/windows/x64/runner/ironpeak-fitness-windows-setup.exe
           generate_release_notes: true

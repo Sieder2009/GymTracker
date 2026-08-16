@@ -36,6 +36,7 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   wakelock_plus: ^1.2.10
   open_filex: ^4.5.0
+  archive: ^4.0.7
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_filex/open_filex.dart';
@@ -90,7 +91,12 @@ class UpdateProvider extends ChangeNotifier {
     final savedVersion = _storage.readString(_kDownloadedVersionKey);
     if (savedPath != null && savedPath.isNotEmpty && savedVersion != null && savedVersion.isNotEmpty) {
       final stillAhead = UpdateService.isNewer(savedVersion, installedVersion!);
-      final fileStillThere = stillAhead && await File(savedPath).exists();
+      // Not just File(...).exists(): on macOS, savedPath points at the
+      // extracted .app *directory* (see _extractMacZip), and File.exists()
+      // always reports false for a directory -- this would otherwise
+      // "forget" a perfectly good pending macOS update on every restart.
+      final fileStillThere =
+          stillAhead && await FileSystemEntity.type(savedPath) != FileSystemEntityType.notFound;
       if (fileStillThere) {
         downloadedFilePath = savedPath;
         _downloadedVersion = savedVersion;
@@ -179,9 +185,15 @@ class UpdateProvider extends ChangeNotifier {
       }).pipe(sink);
       client.close();
 
-      downloadedFilePath = filePath;
+      // macOS ships a plain .zip (no signed installer -- see
+      // UpdateCheckResult.assetForThisPlatform) -- extract it now so
+      // there's an actual .app to reveal later, instead of a .zip a file
+      // opener wouldn't know what to do with.
+      final finalPath = Platform.isMacOS ? await _extractMacZip(filePath, updatesDir) : filePath;
+
+      downloadedFilePath = finalPath;
       _downloadedVersion = version;
-      unawaited(_storage.writeString(_kDownloadedPathKey, filePath));
+      unawaited(_storage.writeString(_kDownloadedPathKey, finalPath));
       unawaited(_storage.writeString(_kDownloadedVersionKey, version));
       status = UpdateStatus.downloaded;
       unawaited(_notifyDownloadReady(version));
@@ -212,6 +224,41 @@ class UpdateProvider extends ChangeNotifier {
     );
   }
 
+  /// macOS only: unpacks the downloaded `.zip` (see
+  /// [UpdateCheckResult.assetForThisPlatform] for why there's no signed
+  /// installer to run instead) into `updates/extracted/` next to it, using
+  /// `package:archive`'s own `extractFileToDisk` rather than hand-rolling
+  /// the unzip loop — a macOS `.app` bundle contains symlinks
+  /// (`Contents/Frameworks/*.framework/Versions/Current -> A`, etc.) and
+  /// its main binary needs its executable bit intact; `extractFileToDisk`
+  /// recreates symlinks properly and `chmod`s each file back to the
+  /// permissions the zip recorded, both of which a plain "read bytes,
+  /// write bytes" loop would silently drop, leaving an `.app` that looks
+  /// extracted but won't launch. Returns the path to the `.app` itself so
+  /// [openDownloadedUpdate] has something concrete to reveal in Finder.
+  Future<String> _extractMacZip(String zipPath, Directory updatesDir) async {
+    final extractDir = Directory(p.join(updatesDir.path, 'extracted'));
+    if (await extractDir.exists()) await extractDir.delete(recursive: true);
+    await extractFileToDisk(zipPath, extractDir.path);
+
+    String? appPath;
+    await for (final entity in extractDir.list()) {
+      if (entity is Directory && entity.path.toLowerCase().endsWith('.app')) {
+        appPath = entity.path;
+        break;
+      }
+    }
+
+    try {
+      await File(zipPath).delete();
+    } catch (_) {
+      // fail-soft: a leftover zip in the app's own support directory is
+      // harmless, just wasted disk space.
+    }
+
+    return appPath ?? extractDir.path;
+  }
+
   Future<void> _forgetDownloadedUpdate() async {
     final path = downloadedFilePath;
     downloadedFilePath = null;
@@ -220,17 +267,27 @@ class UpdateProvider extends ChangeNotifier {
     unawaited(_storage.writeString(_kDownloadedVersionKey, ''));
     if (path == null) return;
     try {
-      final f = File(path);
-      if (await f.exists()) await f.delete();
+      // Not just File(path).delete(): on macOS, path is the extracted
+      // .app *directory* (see _extractMacZip) -- File.delete() on a
+      // directory path fails, and File.exists() reports false for it too,
+      // so the old file-only version silently skipped cleanup here for
+      // every macOS user.
+      final type = await FileSystemEntity.type(path);
+      if (type == FileSystemEntityType.directory) {
+        await Directory(path).delete(recursive: true);
+      } else if (type == FileSystemEntityType.file) {
+        await File(path).delete();
+      }
     } catch (_) {
-      // fail-soft: a leftover file in the app's own support directory is
-      // harmless, just wasted disk space.
+      // fail-soft: a leftover file/folder in the app's own support
+      // directory is harmless, just wasted disk space.
     }
   }
 
-  /// Opens the downloaded update file with the OS's own handler — the
-  /// package installer prompt on Android, the installer/Finder on
-  /// Windows/macOS. Nothing here replaces the running app itself.
+  /// Hands the downloaded update to the OS to actually apply — a package
+  /// install prompt on Android, revealing the new build in Finder on
+  /// macOS, running the installer on Windows. Nothing here replaces the
+  /// running app itself; the OS/installer does that part.
   ///
   /// Android needs its own path: since Android 7 (API 24), handing a raw
   /// `file://` URI to another app's intent (here, the package installer)
@@ -240,14 +297,30 @@ class UpdateProvider extends ChangeNotifier {
   /// `content://` URI via its own `FileProvider` (declared in its own
   /// AndroidManifest, merged into the app's at build time) and sets the
   /// APK MIME type, which is what actually lets the installer accept it.
-  /// Desktop has no such restriction, so `launchUrl(Uri.file(...))` — which
-  /// only ever runs there now that [UpdateCheckResult.assetForThisPlatform]
-  /// excludes iOS — is still the right call.
+  ///
+  /// macOS reveals the extracted `.app` in Finder (`open -R`) instead of
+  /// trying to launch it directly: this repo has no Apple Developer
+  /// signing certificate (see `macos.yml`'s own comments on that), so
+  /// Gatekeeper blocks a freshly-downloaded, unsigned `.app`'s very first
+  /// launch no matter how it's opened — the user has to do the
+  /// right-click-"Open" bypass themselves regardless. Showing them exactly
+  /// where the new build landed is the honest, actually-useful version of
+  /// "install" here, rather than pretending a silent one-tap install
+  /// happened when Gatekeeper would just block it.
+  ///
+  /// Windows runs the downloaded Inno Setup installer directly — a real
+  /// `.exe`, so plain `launchUrl(Uri.file(...))` (no `FileUriExposedException`
+  /// restriction on desktop) already does the right thing; the installer's
+  /// own `CloseApplications`/`RestartApplications` (see
+  /// `windows/installer/installer.iss`) handles closing this running copy
+  /// and reopening the new one.
   Future<void> openDownloadedUpdate() async {
     final path = downloadedFilePath;
     if (path == null) return;
     if (Platform.isAndroid) {
       await OpenFilex.open(path);
+    } else if (Platform.isMacOS) {
+      await Process.run('open', ['-R', path]);
     } else {
       await launchUrl(Uri.file(path));
     }

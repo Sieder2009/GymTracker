@@ -345,6 +345,7 @@
   "actionChecking": "Checking…",
   "actionDownloadUpdate": "Download",
   "actionInstallUpdate": "Install",
+  "actionShowInFinder": "Show in Finder",
   "labelDownloadingUpdate": "Downloading update… {percent}%",
   "@labelDownloadingUpdate": {
     "placeholders": {

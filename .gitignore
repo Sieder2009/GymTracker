@@ -16,5 +16,9 @@ Thumbs.db
 desktop.ini
 ehthumbs.db
 
+# Leftovers from an aborted `git apply`/merge, not something to ever commit
+*.orig
+*.rej
+
 # Claude Code
 .claude/

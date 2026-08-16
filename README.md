@@ -28,6 +28,7 @@ native app for Android, iOS, Windows, and macOS.** All your data stays
 - [Screenshots](#screenshots)
 - [Features](#features)
   - [Training](#training)
+  - [Strength](#strength)
   - [Analytics — its own tab](#analytics--its-own-tab)
   - [Exercise database](#exercise-database)
   - [More features](#more-features)
@@ -51,7 +52,7 @@ tabs**, so you don't need to search through many menus:
 | Tab | What it's for |
 |---|---|
 | **Training** | Today's workout, guided sets, choose/create/import a plan |
-| **Strength** | Bench Press / Deadlift / Squat: PR, history, trend |
+| **Strength** | Bench Press / Deadlift / Squat: PR, history, trend, plain-language strength level, plate calculator |
 | **Analytics** | The app's own stats and progress tab — see below |
 | **Exercises** | A searchable database of 535 exercises with a muscle diagram |
 
@@ -65,7 +66,7 @@ phone screen. One tap is enough to find everything.
 <table>
 <tr>
 <td width="25%"><img src="screenshots/screenshot-training.png" alt="Training tab: today's workout with set tracking and rest timer"/></td>
-<td width="25%"><img src="screenshots/screenshot-strength.png" alt="Strength tab: lift trends, 1RM calculator, DOTS score"/></td>
+<td width="25%"><img src="screenshots/screenshot-strength.png" alt="Strength tab: bodyweight log, DOTS score, and a Bench Press card showing its plain-language strength level"/></td>
 <td width="25%"><img src="screenshots/screenshot-analytics.png" alt="Analytics tab: overview stats, weekly volume, achievements"/></td>
 <td width="25%"><img src="screenshots/screenshot-exercises.png" alt="Exercise database with muscle activation diagram"/></td>
 </tr>
@@ -77,9 +78,7 @@ phone screen. One tap is enough to find everything.
 </tr>
 </table>
 
-> These images are style mockups made for this README, not live app
-> captures — they show the real screens, layout, and features described
-> below.
+> Real captures from the iOS Simulator (iPhone 17, iOS 26).
 
 ## Features
 
@@ -102,6 +101,27 @@ phone screen. One tap is enough to find everything.
   photo gallery for your progress.
 - Swipe between the four main tabs, or use the tab bar at the bottom.
 
+<a id="strength"></a>
+### <img src="https://api.iconify.design/lucide:trophy.svg?color=%231fa76a" width="20" height="20" alt=""/> Strength
+
+- Log your bodyweight, and your PR for Bench Press, Deadlift, and Squat —
+  each with its own history and trend chart, plateau detection
+  (`plateau_notice.dart`), and a quick "add today's entry" field right on
+  the card.
+- **Every lift gets a plain-language strength level** — Beginner through
+  Elite, bodyweight-relative, with a progress bar toward the next level
+  (`data/strength_standards.dart`). A bare DOTS score means nothing if
+  you've never heard of Wilks/DOTS; "Fortgeschritten — 50% bis Sehr
+  fortgeschritten" tells you something the moment you look at it.
+- Total (Bench+Deadlift+Squat) and DOTS score still sit above that for
+  anyone who does want the bodyweight-normalized comparison number
+  competitive powerlifters use (`data/dots_score.dart`).
+- A built-in **1RM calculator** (Epley formula) and **plate calculator**
+  — given a target weight and bar weight, works out which plates go on
+  each side from a standard kg or lb set (`data/plate_calculator.dart`),
+  both reachable from the header, both pure scratchpad tools that don't
+  read or write your logged data.
+
 <a id="analytics--its-own-tab"></a>
 ### <img src="https://api.iconify.design/lucide:bar-chart-3.svg?color=%231fa76a" width="20" height="20" alt=""/> Analytics — its own tab
 
@@ -117,9 +137,11 @@ instead of a made-up line (`DataQuality` in `analytics_engine.dart`).
 - **Strength** — a 30-day trend chart for Bench Press, Deadlift, and
   Squat, with plateau detection. It compares your start and current
   numbers for every detected variant of these three lifts in your current
-  plan (tap to open that PR entry). It also has its own **1RM
-  calculator** and a **DOTS score** (a powerlifting formula that compares
-  strength across body weight and total).
+  plan (tap to open that PR entry). For the DOTS score, 1RM calculator,
+  and plate calculator, see the [Strength tab](#strength) at the bottom
+  of the app — this is the Analytics tab's own strength *trend* view, a
+  different screen from the bottom "Strength" tab despite the shared
+  name.
 - **Volume** — total volume this week, workouts this week, and a bar
   chart of your weekly training volume.
 - **Consistency** — your current and best training streak in days,
@@ -188,7 +210,7 @@ doesn't run on every single commit:
 |---|---|---|
 | Android | `.apk` | [`android.yml`](.github/workflows/android.yml) |
 | iOS | unsigned `.ipa` (see the comments there about signing it yourself) | [`ios.yml`](.github/workflows/ios.yml) |
-| Windows | packed `.zip`, plus a standalone installer (`.exe`) | [`windows.yml`](.github/workflows/windows.yml) |
+| Windows | a real installer (`ironpeak-fitness-windows-setup.exe`, built with Inno Setup — Start Menu shortcut, proper uninstall, replaces a running install in place), plus a portable `.zip` for anyone who'd rather not install anything | [`windows.yml`](.github/workflows/windows.yml) |
 | macOS | unsigned, unnotarized `.zip` | [`macos.yml`](.github/workflows/macos.yml) |
 
 You'll find finished builds on this repo's **[Releases page](../../releases)**
@@ -196,12 +218,14 @@ once a version tag exists. You can also trigger a manual
 `workflow_dispatch` run (without a tag) any time, to quickly test a fix
 without cutting a full release.
 
-> <img src="https://api.iconify.design/lucide:badge-check.svg?color=%231fa76a" width="16" height="16" alt=""/> **Build status checked:** The latest release (`v2.6.7`) really does
-> contain all four platform files and they can be downloaded —
-> `app-release.apk`, `ironpeak-fitness-ios-unsigned.ipa`,
-> `ironpeak-fitness-windows.zip` (with the `.exe` installer), and
-> `ironpeak-fitness-macos.zip`. So the release pipeline is producing
-> working builds for Android, iOS, Windows, and macOS.
+> <img src="https://api.iconify.design/lucide:badge-check.svg?color=%231fa76a" width="16" height="16" alt=""/> **Build status:** each workflow runs `flutter analyze` and
+> `flutter test` before building anything, on every push, so a broken
+> commit fails loudly instead of silently shipping. A tagged release
+> (`vX.Y.Z`) produces `app-release.apk`,
+> `ironpeak-fitness-ios-unsigned.ipa`, `ironpeak-fitness-windows-setup.exe`
+> + `ironpeak-fitness-windows.zip`, and `ironpeak-fitness-macos.zip` —
+> check the [Releases page](../../releases) for the actual files on the
+> latest tag.
 
 ## <img src="https://api.iconify.design/lucide:terminal.svg?color=%231fa76a" width="20" height="20" alt=""/> Setup for developers
 
@@ -220,6 +244,14 @@ Windows release build:
 ```bash
 flutter build windows --release
 # Output: mobile/build/windows/x64/runner/Release/ironpeak_mobile.exe
+```
+
+To also build the installer locally (Windows only, needs
+[Inno Setup](https://jrsoftware.org/isinfo.php) installed):
+
+```bash
+iscc /DMyAppVersion=0.0.0 windows/installer/installer.iss
+# Output: mobile/build/windows/x64/runner/ironpeak-fitness-windows-setup.exe
 ```
 
 ## <img src="https://api.iconify.design/lucide:sliders-horizontal.svg?color=%231fa76a" width="20" height="20" alt=""/> Configuration (`.env`)
@@ -247,9 +279,11 @@ flutter test
 Every push runs through `flutter analyze` and `flutter test` in all four
 platform workflows, before anything gets built. The calculation engines
 behind the Analytics tab (`lib/analytics/analytics_engine.dart`,
-`lib/analytics/achievements_engine.dart`, `lib/data/dots_score.dart`) have
-their own dedicated test files under `mobile/test/` — no number on the
-Analytics tab is untested.
+`lib/analytics/achievements_engine.dart`) and the Strength tab
+(`lib/data/dots_score.dart`, `lib/data/strength_standards.dart`,
+`lib/data/plate_calculator.dart`) all have their own dedicated test files
+under `mobile/test/` — pure calculations, not just UI, so every number
+you see on either tab traces back to a tested function.
 
 ## <img src="https://api.iconify.design/lucide:folder-tree.svg?color=%231fa76a" width="20" height="20" alt=""/> Project structure
 

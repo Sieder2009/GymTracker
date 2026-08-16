@@ -713,12 +713,13 @@ class _SessionOverviewSheetState extends State<_SessionOverviewSheet> {
                     ReorderableListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      // onReorderItem already adjusts newIndex for the
-                      // removed item at oldIndex -- unlike the deprecated
-                      // onReorder, no manual `if (newIndex > oldIndex)`
-                      // correction needed here.
-                      onReorderItem: (oldIndex, newIndex) {
+                      // onReorder reports newIndex as if the dragged item
+                      // hadn't been removed from oldIndex yet -- moving it
+                      // down the list needs the standard -1 correction so
+                      // it lands where the user actually dropped it.
+                      onReorder: (oldIndex, newIndex) {
                         setState(() {
+                          if (newIndex > oldIndex) newIndex -= 1;
                           final item = _local.removeAt(oldIndex);
                           _local.insert(newIndex, item);
                         });

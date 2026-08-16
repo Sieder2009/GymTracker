@@ -135,7 +135,7 @@ class _UpdateSection extends StatelessWidget {
                     switchOutCurve: Curves.easeIn,
                     transitionBuilder: (child, anim) => FadeTransition(
                       opacity: anim,
-                      child: SizeTransition(sizeFactor: anim, alignment: const Alignment(-1, -1), child: child),
+                      child: SizeTransition(sizeFactor: anim, axisAlignment: -1, child: child),
                     ),
                     child: KeyedSubtree(
                       key: ValueKey(update.status),

@@ -112,10 +112,46 @@
   "dotsFormulaFor": "DOTS-Formel für:",
   "emptyNeedAllThreeLifts": "Trag einen PR für Bankdrücken, Kreuzheben und Squat ein, um Total & DOTS-Score zu sehen.",
   "emptyNeedBodyweight": "Trag dein Körpergewicht ein, um den DOTS-Score zu sehen.",
+  "infoDotsExplainer": "Zum Vergleich von Athleten über Gewichtsklassen hinweg – keine Zielgröße für sich allein. Bei den einzelnen Übungen unten steht, wo du wirklich stehst.",
+  "strengthLevelBeginner": "Anfänger",
+  "strengthLevelNovice": "Geübt",
+  "strengthLevelIntermediate": "Fortgeschritten",
+  "strengthLevelAdvanced": "Sehr fortgeschritten",
+  "strengthLevelElite": "Elite",
+  "progressToNextLevel": "{percent}% bis {level}",
+  "@progressToNextLevel": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyNeedBodyweightForLevel": "Trag dein Körpergewicht ein, um dein Kraftlevel zu sehen.",
+  "infoStrengthLevelNote": "Grobe Schätzung auf Basis des Körpergewichts, keine exakte Wissenschaft.",
   "title1rmCalculator": "1RM-Rechner",
   "actionCalculate": "Berechnen",
   "estimated1rmResult": "Geschätztes 1RM: {value} kg",
   "hintRepsPerformed": "Ausgeführte Wiederholungen",
+  "titlePlateCalculator": "Plattenrechner",
+  "labelBarWeight": "Stangengewicht",
+  "labelTargetWeight": "Zielgewicht",
+  "labelPerSide": "Pro Seite",
+  "infoPlateBarAlone": "Nur die Stange – keine Scheiben nötig.",
+  "infoPlateApprox": "Nächstmöglich: {value} {unit} (Ziel ist mit diesen Scheiben nicht exakt erreichbar)",
+  "@infoPlateApprox": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyPlateTargetBelowBar": "Zielgewicht ist leichter als die Stange selbst.",
   "titleCalendar": "Trainingskalender",
   "calendarMonthSummary": "{count} Workouts · {hours} Std.",
   "emptyNoSessionsThisDay": "An diesem Tag kein Workout eingetragen.",

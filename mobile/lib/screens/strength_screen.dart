@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../analytics/analytics_engine.dart';
 import '../data/constants.dart';
 import '../data/dots_score.dart';
+import '../data/strength_standards.dart';
 import '../l10n/app_localizations.dart';
 import '../state/athlete_settings_provider.dart';
 import '../state/big_lifts_provider.dart';
@@ -13,6 +14,7 @@ import '../state/toast_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/one_rep_max_sheet.dart';
+import '../widgets/plate_calculator_sheet.dart';
 import '../widgets/plateau_notice.dart';
 import '../widgets/strength_line_chart.dart';
 
@@ -34,6 +36,11 @@ class StrengthScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(t.tabStrength, style: Theme.of(context).textTheme.headlineLarge),
+              ),
+              IconButton(
+                icon: const Icon(Icons.fitness_center_outlined),
+                tooltip: t.titlePlateCalculator,
+                onPressed: () => showPlateCalculator(context),
               ),
               IconButton(
                 icon: const Icon(Icons.calculate_outlined),
@@ -104,6 +111,9 @@ class _PowerliftingScoreCard extends StatelessWidget {
               if (dots == null) ...[
                 const SizedBox(height: 8),
                 Text(t.emptyNeedBodyweight, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+              ] else ...[
+                const SizedBox(height: 8),
+                Text(t.infoDotsExplainer, style: TextStyle(color: colors.mut, fontSize: 12.5)),
               ],
             ],
             const SizedBox(height: 12),
@@ -127,6 +137,69 @@ class _PowerliftingScoreCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A bare DOTS number means nothing to someone who's never heard of
+/// Wilks/DOTS (see [_PowerliftingScoreCard]) -- this is the legible
+/// per-lift answer to "is this PR any good?": a level name plus a thin
+/// progress bar toward the next one, both driven by [classifyLift].
+class _StrengthLevelIndicator extends StatelessWidget {
+  const _StrengthLevelIndicator({required this.standard, required this.color});
+
+  final StrengthStandardResult standard;
+  final Color color;
+
+  String _levelLabel(AppLocalizations t, StrengthLevel level) {
+    switch (level) {
+      case StrengthLevel.beginner:
+        return t.strengthLevelBeginner;
+      case StrengthLevel.novice:
+        return t.strengthLevelNovice;
+      case StrengthLevel.intermediate:
+        return t.strengthLevelIntermediate;
+      case StrengthLevel.advanced:
+        return t.strengthLevelAdvanced;
+      case StrengthLevel.elite:
+        return t.strengthLevelElite;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final nextLevel = standard.nextLevel;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _levelLabel(t, standard.level),
+              style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13),
+            ),
+            if (nextLevel != null)
+              Text(
+                t.progressToNextLevel((standard.progressToNext * 100).round(), _levelLabel(t, nextLevel)),
+                style: TextStyle(color: colors.mut, fontSize: 12),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: standard.progressToNext,
+            minHeight: 5,
+            backgroundColor: colors.card2,
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -318,6 +391,13 @@ class _LiftCardState extends State<_LiftCard> {
         : null;
     final plateaued = isLiftPlateaued(lift) ?? false;
 
+    final bodyWeightEntries = context.watch<BodyWeightProvider>().entries;
+    final isMale = context.watch<AthleteSettingsProvider>().isMale;
+    final latestBodyWeight = bodyWeightEntries.isEmpty ? null : bodyWeightEntries.last.weight;
+    final standard = (lift.pr > 0 && latestBodyWeight != null)
+        ? classifyLift(liftKey: widget.liftKey, liftKg: lift.pr, bodyweightKg: latestBodyWeight, isMale: isMale)
+        : null;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -335,6 +415,13 @@ class _LiftCardState extends State<_LiftCard> {
                 Text(widget.label, style: Theme.of(context).textTheme.headlineMedium),
               ],
             ),
+            if (lift.pr > 0) ...[
+              const SizedBox(height: 10),
+              if (standard != null)
+                _StrengthLevelIndicator(standard: standard, color: widget.color)
+              else
+                Text(t.emptyNeedBodyweightForLevel, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+            ],
             if (plateaued) ...[
               const SizedBox(height: 10),
               PlateauNotice(label: widget.label),

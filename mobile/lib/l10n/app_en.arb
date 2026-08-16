@@ -176,6 +176,25 @@
   "dotsFormulaFor": "DOTS formula for:",
   "emptyNeedAllThreeLifts": "Log a PR for Bench, Deadlift and Squat to see your Total & DOTS score.",
   "emptyNeedBodyweight": "Log your bodyweight to see your DOTS score.",
+  "infoDotsExplainer": "For comparing lifters across bodyweight classes — not a target number on its own. See each lift below for a more useful read on where you stand.",
+  "strengthLevelBeginner": "Beginner",
+  "strengthLevelNovice": "Novice",
+  "strengthLevelIntermediate": "Intermediate",
+  "strengthLevelAdvanced": "Advanced",
+  "strengthLevelElite": "Elite",
+  "progressToNextLevel": "{percent}% to {level}",
+  "@progressToNextLevel": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyNeedBodyweightForLevel": "Log your bodyweight to see your strength level.",
+  "infoStrengthLevelNote": "Rough bodyweight-based estimate, not an exact science.",
   "title1rmCalculator": "1RM Calculator",
   "actionCalculate": "Calculate",
   "estimated1rmResult": "Estimated 1RM: {value} kg",
@@ -187,6 +206,23 @@
     }
   },
   "hintRepsPerformed": "Reps performed",
+  "titlePlateCalculator": "Plate Calculator",
+  "labelBarWeight": "Bar weight",
+  "labelTargetWeight": "Target weight",
+  "labelPerSide": "Per side",
+  "infoPlateBarAlone": "Just the bar — no plates needed.",
+  "infoPlateApprox": "Closest possible: {value} {unit} (target isn't exactly loadable with these plates)",
+  "@infoPlateApprox": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyPlateTargetBelowBar": "Target is lighter than the bar itself.",
   "titleCalendar": "Training Calendar",
   "calendarMonthSummary": "{count} workouts · {hours} h",
   "@calendarMonthSummary": {

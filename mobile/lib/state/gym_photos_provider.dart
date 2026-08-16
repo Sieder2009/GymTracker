@@ -9,8 +9,6 @@ import '../data/constants.dart';
 import '../models/gym_photo.dart';
 import '../services/storage_service.dart';
 
-const String _kGymPhotosKey = 'ironpeak:gymPhotos';
-
 /// Resolves (and creates if needed) the on-device folder gym photos live
 /// in. Called once at app startup (see `main.dart`) so [GymPhotosProvider]
 /// itself can stay a synchronous constructor like every other provider —
@@ -32,9 +30,11 @@ Future<Directory> resolveGymPhotosDir() async {
   }
 }
 
-/// Photos are real files in [photosDir]; only the lightweight
-/// id/date pairs are persisted in the local database (see [GymPhoto]) —
-/// storing image bytes as JSON text would be wasteful and slow.
+/// Photos are real files in [photosDir]; only the lightweight id/date
+/// pairs are persisted, as rows in StorageService's `gym_photos` table
+/// (one INSERT to add, one targeted DELETE to remove — not a JSON blob of
+/// every photo ever taken rewritten on each change). Storing image bytes
+/// as JSON text would be wasteful and slow either way.
 class GymPhotosProvider extends ChangeNotifier {
   GymPhotosProvider(this._storage, this.photosDir) : _photos = _initial(_storage);
 
@@ -48,29 +48,22 @@ class GymPhotosProvider extends ChangeNotifier {
   String pathFor(GymPhoto photo) => p.join(photosDir.path, photo.id);
 
   static List<GymPhoto> _initial(StorageService storage) {
-    final decoded = storage.readJson<List<GymPhoto>>(
-      _kGymPhotosKey,
-      (raw) => (raw as List).map((e) => GymPhoto.fromJson(e as Map<String, dynamic>)).toList(),
-    );
-    return decoded ?? [];
-  }
-
-  void _persist() {
-    _storage.writeJson(_kGymPhotosKey, () => _photos.map((e) => e.toJson()).toList());
+    return storage.gymPhotos.map((row) => GymPhoto(id: row['id'] as String, date: row['date'] as String)).toList();
   }
 
   Future<void> addFromXFile(XFile file) async {
     final ext = p.extension(file.path).isEmpty ? '.jpg' : p.extension(file.path);
     final id = '${DateTime.now().microsecondsSinceEpoch}$ext';
     await file.saveTo(p.join(photosDir.path, id));
-    _photos = [..._photos, GymPhoto(id: id, date: todayIso())];
-    _persist();
+    final photo = GymPhoto(id: id, date: todayIso());
+    _photos = [..._photos, photo];
+    await _storage.insertGymPhoto(photo.toJson());
     notifyListeners();
   }
 
   Future<void> removePhoto(GymPhoto photo) async {
     _photos = _photos.where((p) => p.id != photo.id).toList();
-    _persist();
+    await _storage.deleteGymPhoto(photo.id);
     notifyListeners();
     final file = File(pathFor(photo));
     if (await file.exists()) await file.delete();

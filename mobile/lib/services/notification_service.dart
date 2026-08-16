@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 const int _kWorkoutReminderId = 1001;
 const int _kRestOverId = 1002;
+const int _kUpdateReadyId = 1003;
 
 /// Local "time to train" reminder, fired daily at a user-chosen time.
 /// `flutter_local_notifications` has no Windows implementation (see
@@ -128,6 +129,35 @@ class NotificationService {
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (_) {
+      // fail-soft
+    }
+  }
+
+  /// Fires immediately (no scheduling) once [UpdateProvider] finishes
+  /// downloading a new release in the background -- the home-screen/
+  /// Settings update card already surfaces this state, but only while the
+  /// app is actually open; this is what catches it otherwise.
+  Future<void> showUpdateReady({required String title, required String body}) async {
+    if (!isSupportedPlatform) return;
+    await _ensureInitialized();
+    try {
+      await _plugin.show(
+        _kUpdateReadyId,
+        title,
+        body,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'update_ready',
+            'App Updates',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(),
+          macOS: DarwinNotificationDetails(),
+          linux: LinuxNotificationDetails(),
+        ),
       );
     } catch (_) {
       // fail-soft

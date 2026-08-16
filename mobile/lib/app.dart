@@ -69,7 +69,9 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ActiveScreenProvider()),
         ChangeNotifierProvider(create: (_) => ToastProvider()),
         ChangeNotifierProvider(create: (_) => AppearanceProvider(storage)),
-        ChangeNotifierProvider(create: (_) => UpdateProvider(storage)),
+        ChangeNotifierProvider(
+            create: (context) =>
+                UpdateProvider(storage, notificationService, context.read<LocaleProvider>())),
         ChangeNotifierProvider(
             create: (_) => ReminderProvider(storage, notificationService)),
       ],

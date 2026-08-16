@@ -3,7 +3,7 @@ description: >
   Ironpeak Fitness — Trainingsplan, Kraft-Fortschritt (Bench/Deadlift/Squat)
   und Muskelgruppen-Balance, komplett lokal auf dem Gerät gespeichert.
 publish_to: 'none'
-version: 1.0.0+1
+version: 2.7.0+1
 
 environment:
   sdk: '>=3.4.0 <4.0.0'

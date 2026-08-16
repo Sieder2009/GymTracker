@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -9,8 +10,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
+import '../l10n/app_localizations.dart';
+import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../services/update_service.dart';
+import 'locale_provider.dart';
 
 const String _kAutoInstallKey = 'ironpeak:autoInstallUpdates';
 const String _kDownloadedPathKey = 'ironpeak:downloadedUpdatePath';
@@ -35,11 +39,14 @@ enum UpdateStatus { idle, checking, upToDate, updateAvailable, downloading, down
 /// [setAutoInstall]) escape hatch for anyone who'd rather it just happen
 /// the moment a ready update is detected on app open.
 class UpdateProvider extends ChangeNotifier {
-  UpdateProvider(this._storage) : _autoInstall = _storage.readString(_kAutoInstallKey) == 'true' {
+  UpdateProvider(this._storage, this._notifications, this._locale)
+      : _autoInstall = _storage.readString(_kAutoInstallKey) == 'true' {
     unawaited(_bootstrap());
   }
 
   final StorageService _storage;
+  final NotificationService _notifications;
+  final LocaleProvider _locale;
   Timer? _timer;
   UpdateStatus status = UpdateStatus.idle;
   UpdateCheckResult? result;
@@ -176,6 +183,7 @@ class UpdateProvider extends ChangeNotifier {
       unawaited(_storage.writeString(_kDownloadedPathKey, filePath));
       unawaited(_storage.writeString(_kDownloadedVersionKey, version));
       status = UpdateStatus.downloaded;
+      unawaited(_notifyDownloadReady(version));
     } catch (_) {
       status = UpdateStatus.updateAvailable; // still available — just retry the download
     }
@@ -184,6 +192,23 @@ class UpdateProvider extends ChangeNotifier {
     if (status == UpdateStatus.downloaded && _autoInstall) {
       unawaited(openDownloadedUpdate());
     }
+  }
+
+  /// Local, on-device notification only -- no cloud/push service involved,
+  /// same `flutter_local_notifications` plugin [ReminderProvider] uses for
+  /// the daily workout reminder. Fires once, right after a fresh download
+  /// finishes, so a user who isn't currently looking at the app still
+  /// finds out an update is ready without having to reopen Settings.
+  Future<void> _notifyDownloadReady(String version) async {
+    final granted = await _notifications.requestPermission();
+    if (!granted) return;
+    final languageCode = _locale.languageCode ?? PlatformDispatcher.instance.locale.languageCode;
+    final locale = Locale(kSupportedLocales.contains(languageCode) ? languageCode : 'en');
+    final t = lookupAppLocalizations(locale);
+    await _notifications.showUpdateReady(
+      title: 'Ironpeak Fitness',
+      body: t.labelUpdateReady(version),
+    );
   }
 
   Future<void> _forgetDownloadedUpdate() async {

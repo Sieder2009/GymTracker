@@ -6,6 +6,18 @@
     <uses-permission android:name="android.permission.health.READ_STEPS"/>
     <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
+    <!-- NotificationService: the daily workout reminder, the guided
+         workout's rest-timer ping, and the "update ready" ping (see
+         lib/services/notification_service.dart). Android 13+ (API 33)
+         needs POST_NOTIFICATIONS explicitly requested/granted at runtime;
+         without it in the manifest there's nothing for
+         requestNotificationsPermission() to actually grant, so every
+         notification silently never shows. SCHEDULE_EXACT_ALARM is what
+         lets the plugin's AndroidScheduleMode.exactAllowWhileIdle (used
+         by both scheduled reminders) fire at the precise time on Android
+         12+ instead of being silently deferred. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <application
         android:label="Ironpeak Fitness"
         android:name="${applicationName}"

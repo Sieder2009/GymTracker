@@ -29,14 +29,15 @@ class UpdateCheckResult {
   final List<ReleaseAsset> assets;
   final UpdateCheckError error;
 
-  /// The asset matching the OS this build is running on — "windows" in the
-  /// filename on Windows, `.apk` on Android, `.ipa` on iOS — null when
-  /// nothing published yet matches (or on a platform with no CI build, e.g.
-  /// desktop Linux/macOS).
+  /// The asset matching the OS this build is running on — "windows"/"macos"
+  /// in the filename on Windows/macOS, `.apk` on Android, `.ipa` on iOS —
+  /// null when nothing published yet matches (or on a platform with no CI
+  /// build, e.g. desktop Linux).
   ReleaseAsset? get assetForThisPlatform {
     for (final asset in assets) {
       final name = asset.name.toLowerCase();
       if (Platform.isWindows && name.contains('windows')) return asset;
+      if (Platform.isMacOS && name.contains('macos')) return asset;
       if (Platform.isAndroid && name.endsWith('.apk')) return asset;
       if (Platform.isIOS && name.endsWith('.ipa')) return asset;
     }

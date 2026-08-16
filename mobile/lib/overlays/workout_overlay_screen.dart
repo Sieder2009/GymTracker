@@ -418,6 +418,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
             children: [
               IconButton(
                   icon: const Icon(Icons.close),
+                  tooltip: t.actionExitWorkout,
                   onPressed: () => _confirmExit(exercises)),
               Expanded(
                 child: ClipRRect(

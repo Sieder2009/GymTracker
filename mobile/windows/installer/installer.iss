@@ -26,7 +26,11 @@
 ; Setup recognize "this is an upgrade of an existing install" (same
 ; install dir, replaces in place, keeps it in Apps & Features as one
 ; entry) instead of installing a confusing second copy side by side.
-#define MyAppId "{720BC523-8F21-48FF-8EAB-558CA030078B}"
+; The doubled leading "{{" is required, not a typo -- Inno Setup treats a
+; single "{" in a [Setup] value as the start of a {constant} reference
+; (like {app}), so a literal brace (as GUIDs need here) must be escaped by
+; doubling it, per ISCC's own "Unknown constant" error message.
+#define MyAppId "{{720BC523-8F21-48FF-8EAB-558CA030078B}"
 
 [Setup]
 AppId={#MyAppId}

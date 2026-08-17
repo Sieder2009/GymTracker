@@ -74,6 +74,13 @@ jobs:
           fi
           iscc "/DMyAppVersion=$VERSION" windows/installer/installer.iss
         shell: bash
+        # Git Bash's MSYS runtime auto-converts any argument starting with
+        # "/" (like /DMyAppVersion=...) into a Windows path before handing
+        # it to a native .exe, mangling the switch and making iscc think
+        # it got a second script filename. This is the standard escape
+        # hatch for that class of bug.
+        env:
+          MSYS_NO_PATHCONV: 1
 
       - uses: actions/upload-artifact@v4
         with:

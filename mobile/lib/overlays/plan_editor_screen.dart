@@ -12,6 +12,7 @@ import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../state/train_state_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/exercise_list_view.dart';
 import '../widgets/exercise_picker_sheet.dart';
 import '../widgets/muscle_activation_editor.dart';
 
@@ -20,12 +21,18 @@ class _DraftExercise {
       : name = TextEditingController(),
         sets = TextEditingController(text: '3'),
         reps = TextEditingController(text: '8'),
-        weight = TextEditingController(text: '0');
+        weight = TextEditingController(text: '0'),
+        note = TextEditingController();
 
   final TextEditingController name;
   final TextEditingController sets;
   final TextEditingController reps;
   final TextEditingController weight;
+  final TextEditingController note;
+
+  /// Broad category dropdown -- see [kExerciseCategories]. Distinct from
+  /// [muscleActivation] below, which is a much finer per-muscle breakdown.
+  String muscle = '';
 
   /// Set via [MuscleActivationEditor] — a detailed per-muscle breakdown for
   /// user-authored exercises, on top of the broad category the shared
@@ -37,6 +44,7 @@ class _DraftExercise {
     sets.dispose();
     reps.dispose();
     weight.dispose();
+    note.dispose();
   }
 }
 
@@ -139,9 +147,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
               final r = e.reps.text.trim().isEmpty ? '—' : e.reps.text.trim();
               return Exercise.fresh(
                 e.name.text.trim(),
-                '',
+                e.muscle,
                 90,
                 List.generate(setCount, (_) => ExerciseSet(w: w, r: r)),
+                note: e.note.text.trim(),
                 muscleActivation: e.muscleActivation,
               );
             }).toList();
@@ -348,6 +357,22 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                 onPressed: () => _removeExercise(dayIdx, exIdx),
               ),
             ],
+          ),
+          const SizedBox(height: 6),
+          TextField(
+            controller: ex.note,
+            decoration: InputDecoration(hintText: t.hintExerciseNote),
+          ),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            initialValue: ex.muscle,
+            decoration: InputDecoration(labelText: t.labelMuscleGroup),
+            items: [
+              DropdownMenuItem(value: '', child: Text(t.labelMuscleGroupNone)),
+              for (final c in kExerciseCategories)
+                DropdownMenuItem(value: c, child: Text(categoryLabel(t, c))),
+            ],
+            onChanged: (v) => setState(() => ex.muscle = v ?? ''),
           ),
           TextButton.icon(
             onPressed: () => _configureMuscles(ex),

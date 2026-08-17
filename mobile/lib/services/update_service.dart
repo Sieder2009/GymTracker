@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 
 import '../config/app_config.dart';
 
@@ -82,50 +85,74 @@ class UpdateCheckResult {
 /// workflow only creates a GitHub Release — not just a build artifact —
 /// when triggered by a `vX.Y.Z` tag push).
 class UpdateService {
+  /// Up to 2 attempts total (1 retry) for transient failures -- a single
+  /// dropped packet or slow DNS lookup on a weak mobile connection
+  /// shouldn't permanently report "no connection" for the next
+  /// [AppConfig.updateCheckIntervalHours].
+  static const int _maxAttempts = 2;
+
   static Future<UpdateCheckResult> checkForUpdate(String localVersion) async {
-    final client = HttpClient();
-    try {
-      final request = await client
-          .getUrl(Uri.parse(AppConfig.latestReleaseApiUrl))
-          .timeout(const Duration(seconds: 10));
-      request.headers.set(HttpHeaders.acceptHeader, 'application/vnd.github+json');
-      request.headers.set(HttpHeaders.userAgentHeader, 'ironpeak-fitness-app');
-      final response = await request.close().timeout(const Duration(seconds: 10));
+    for (var attempt = 1; attempt <= _maxAttempts; attempt++) {
+      final client = HttpClient()..findProxy = HttpClient.findProxyFromEnvironment;
+      try {
+        final request = await client
+            .getUrl(Uri.parse(AppConfig.latestReleaseApiUrl))
+            .timeout(const Duration(seconds: 10));
+        request.headers.set(HttpHeaders.acceptHeader, 'application/vnd.github+json');
+        request.headers.set(HttpHeaders.userAgentHeader, 'ironpeak-fitness-app');
+        final response = await request.close().timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 404) {
-        return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.noReleaseYet);
+        if (response.statusCode == 404) {
+          return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.noReleaseYet);
+        }
+        if (response.statusCode != 200) {
+          return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.badResponse);
+        }
+
+        final body = await response.transform(utf8.decoder).join();
+        final json = jsonDecode(body) as Map<String, dynamic>;
+        final tag = (json['tag_name'] as String?) ?? '';
+        final releaseUrl = json['html_url'] as String?;
+        final latest = tag.startsWith('v') ? tag.substring(1) : tag;
+        final assets = (json['assets'] as List? ?? [])
+            .map((a) => ReleaseAsset(
+                  name: a['name'] as String,
+                  downloadUrl: a['browser_download_url'] as String,
+                ))
+            .toList();
+
+        if (latest.isEmpty) {
+          return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.noVersionInResponse);
+        }
+
+        return UpdateCheckResult(
+          hasUpdate: isNewer(latest, localVersion),
+          latestVersion: latest,
+          releaseUrl: releaseUrl,
+          assets: assets,
+        );
+      } on TimeoutException catch (e) {
+        debugPrint('UpdateService.checkForUpdate timed out (attempt $attempt/$_maxAttempts): $e');
+        if (attempt == _maxAttempts) {
+          return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.networkFailure);
+        }
+        await Future.delayed(const Duration(seconds: 2));
+      } on SocketException catch (e) {
+        debugPrint('UpdateService.checkForUpdate socket error (attempt $attempt/$_maxAttempts): $e');
+        if (attempt == _maxAttempts) {
+          return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.networkFailure);
+        }
+        await Future.delayed(const Duration(seconds: 2));
+      } catch (e, st) {
+        // Not a transient connectivity issue (e.g. malformed JSON) --
+        // retrying wouldn't help, fail immediately like before.
+        debugPrint('UpdateService.checkForUpdate failed: $e\n$st');
+        return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.networkFailure);
+      } finally {
+        client.close();
       }
-      if (response.statusCode != 200) {
-        return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.badResponse);
-      }
-
-      final body = await response.transform(utf8.decoder).join();
-      final json = jsonDecode(body) as Map<String, dynamic>;
-      final tag = (json['tag_name'] as String?) ?? '';
-      final releaseUrl = json['html_url'] as String?;
-      final latest = tag.startsWith('v') ? tag.substring(1) : tag;
-      final assets = (json['assets'] as List? ?? [])
-          .map((a) => ReleaseAsset(
-                name: a['name'] as String,
-                downloadUrl: a['browser_download_url'] as String,
-              ))
-          .toList();
-
-      if (latest.isEmpty) {
-        return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.noVersionInResponse);
-      }
-
-      return UpdateCheckResult(
-        hasUpdate: isNewer(latest, localVersion),
-        latestVersion: latest,
-        releaseUrl: releaseUrl,
-        assets: assets,
-      );
-    } catch (_) {
-      return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.networkFailure);
-    } finally {
-      client.close();
     }
+    return const UpdateCheckResult(hasUpdate: false, error: UpdateCheckError.networkFailure);
   }
 
   /// Public so [UpdateProvider] can reuse the exact same comparison to tell

@@ -58,6 +58,28 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Appends a new [Exercise] to an already-saved plan's day (or its
+  /// `dailyExercises`) — the only way exercises previously entered a plan
+  /// was via [PlanEditorScreen] at creation time; this lets a user extend a
+  /// plan afterwards from `AddExerciseSheet`.
+  void addExercise(List<Exercise> exercises, Exercise exercise) {
+    exercises.add(exercise);
+    _persist();
+    notifyListeners();
+  }
+
+  void setMuscle(List<Exercise> exercises, int exIdx, String muscle) {
+    exercises[exIdx].muscle = muscle;
+    _persist();
+    notifyListeners();
+  }
+
+  void setNote(List<Exercise> exercises, int exIdx, String note) {
+    exercises[exIdx].note = note;
+    _persist();
+    notifyListeners();
+  }
+
   void adjustWeight(
     List<Exercise> exercises,
     int exIdx,

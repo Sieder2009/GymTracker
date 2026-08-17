@@ -162,43 +162,70 @@ class UpdateProvider extends ChangeNotifier {
     downloadProgress = 0;
     notifyListeners();
 
-    try {
-      final dir = await getApplicationSupportDirectory();
-      final updatesDir = Directory(p.join(dir.path, 'updates'));
-      await updatesDir.create(recursive: true);
-      final filePath = p.join(updatesDir.path, asset.name);
+    const maxAttempts = 2;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        final dir = await getApplicationSupportDirectory();
+        final updatesDir = Directory(p.join(dir.path, 'updates'));
+        await updatesDir.create(recursive: true);
+        final filePath = p.join(updatesDir.path, asset.name);
 
-      final client = http.Client();
-      final request = http.Request('GET', Uri.parse(asset.downloadUrl));
-      final response = await client.send(request);
-      final total = response.contentLength ?? 0;
-      var received = 0;
+        final client = http.Client();
+        final request = http.Request('GET', Uri.parse(asset.downloadUrl));
+        final response = await client.send(request).timeout(const Duration(seconds: 15));
+        final total = response.contentLength ?? 0;
+        var received = 0;
 
-      final sink = File(filePath).openWrite();
-      await response.stream.map((chunk) {
-        received += chunk.length;
-        if (total > 0) {
-          downloadProgress = received / total;
-          notifyListeners();
+        final sink = File(filePath).openWrite();
+        await response.stream.map((chunk) {
+          received += chunk.length;
+          if (total > 0) {
+            downloadProgress = received / total;
+            notifyListeners();
+          }
+          return chunk;
+        }).pipe(sink);
+        client.close();
+
+        // macOS ships a plain .zip (no signed installer -- see
+        // UpdateCheckResult.assetForThisPlatform) -- extract it now so
+        // there's an actual .app to reveal later, instead of a .zip a file
+        // opener wouldn't know what to do with.
+        final finalPath = Platform.isMacOS ? await _extractMacZip(filePath, updatesDir) : filePath;
+
+        downloadedFilePath = finalPath;
+        _downloadedVersion = version;
+        unawaited(_storage.writeString(_kDownloadedPathKey, finalPath));
+        unawaited(_storage.writeString(_kDownloadedVersionKey, version));
+        status = UpdateStatus.downloaded;
+        unawaited(_notifyDownloadReady(version));
+        break;
+      } on TimeoutException catch (e) {
+        debugPrint('UpdateProvider._downloadUpdate timed out (attempt $attempt/$maxAttempts): $e');
+        if (attempt == maxAttempts) {
+          status = UpdateStatus.updateAvailable; // still available — just retry the download
+        } else {
+          await Future.delayed(const Duration(seconds: 2));
         }
-        return chunk;
-      }).pipe(sink);
-      client.close();
-
-      // macOS ships a plain .zip (no signed installer -- see
-      // UpdateCheckResult.assetForThisPlatform) -- extract it now so
-      // there's an actual .app to reveal later, instead of a .zip a file
-      // opener wouldn't know what to do with.
-      final finalPath = Platform.isMacOS ? await _extractMacZip(filePath, updatesDir) : filePath;
-
-      downloadedFilePath = finalPath;
-      _downloadedVersion = version;
-      unawaited(_storage.writeString(_kDownloadedPathKey, finalPath));
-      unawaited(_storage.writeString(_kDownloadedVersionKey, version));
-      status = UpdateStatus.downloaded;
-      unawaited(_notifyDownloadReady(version));
-    } catch (_) {
-      status = UpdateStatus.updateAvailable; // still available — just retry the download
+      } on SocketException catch (e) {
+        debugPrint('UpdateProvider._downloadUpdate socket error (attempt $attempt/$maxAttempts): $e');
+        if (attempt == maxAttempts) {
+          status = UpdateStatus.updateAvailable;
+        } else {
+          await Future.delayed(const Duration(seconds: 2));
+        }
+      } on http.ClientException catch (e) {
+        debugPrint('UpdateProvider._downloadUpdate client error (attempt $attempt/$maxAttempts): $e');
+        if (attempt == maxAttempts) {
+          status = UpdateStatus.updateAvailable;
+        } else {
+          await Future.delayed(const Duration(seconds: 2));
+        }
+      } catch (e, st) {
+        debugPrint('UpdateProvider._downloadUpdate failed: $e\n$st');
+        status = UpdateStatus.updateAvailable; // still available — just retry the download
+        break;
+      }
     }
     notifyListeners();
 

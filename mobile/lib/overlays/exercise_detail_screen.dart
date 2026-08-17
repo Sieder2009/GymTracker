@@ -3,16 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../data/constants.dart';
+import '../data/weight_conversion.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../models/history_entry.dart';
 import '../models/muscle_group.dart';
 import '../services/log_parser.dart';
+import '../state/bar_weight_provider.dart';
 import '../state/toast_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/detailed_body_diagram.dart';
 import '../widgets/exercise_analytics_section.dart';
+import '../widgets/exercise_list_view.dart';
 import '../widgets/weight_ruler.dart';
 
 String _formatRep(Object v) => v is int ? '$v' : v.toString().toUpperCase();
@@ -46,6 +49,8 @@ class ExerciseDetailScreen extends StatefulWidget {
     required this.onSave,
     this.onRename,
     this.onImportHistory,
+    this.onMuscleChanged,
+    this.onNoteChanged,
   });
 
   final List<Exercise> exercises;
@@ -54,6 +59,8 @@ class ExerciseDetailScreen extends StatefulWidget {
   final void Function(int idx, String newName)? onRename;
   final void Function(int idx, double weight, List<HistoryEntry> history)?
       onImportHistory;
+  final void Function(int idx, String muscle)? onMuscleChanged;
+  final void Function(int idx, String note)? onNoteChanged;
 
   @override
   State<ExerciseDetailScreen> createState() => _ExerciseDetailScreenState();
@@ -67,12 +74,16 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   final TextEditingController _renameController = TextEditingController();
   bool _historyPasteOpen = false;
   final TextEditingController _historyPasteController = TextEditingController();
+  late TextEditingController _noteController;
+  late String _muscle;
+  bool _perSideEntry = false;
 
   Exercise get _ex => widget.exercises[_idx];
 
   @override
   void initState() {
     super.initState();
+    _noteController = TextEditingController();
     _loadExercise(widget.startIdx);
   }
 
@@ -89,6 +100,9 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     _renaming = false;
     _historyPasteOpen = false;
     _historyPasteController.clear();
+    _noteController.text = ex.note;
+    _muscle = ex.muscle;
+    _perSideEntry = false;
   }
 
   @override
@@ -98,7 +112,17 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     }
     _renameController.dispose();
     _historyPasteController.dispose();
+    _noteController.dispose();
     super.dispose();
+  }
+
+  void _confirmNote() {
+    widget.onNoteChanged?.call(_idx, _noteController.text.trim());
+  }
+
+  void _changeMuscle(String? value) {
+    setState(() => _muscle = value ?? '');
+    widget.onMuscleChanged?.call(_idx, _muscle);
   }
 
   void _startRename() {
@@ -135,35 +159,80 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
 
   Future<void> _openWeightKeyboardEntry() async {
     final t = AppLocalizations.of(context)!;
-    final controller =
-        TextEditingController(text: _weight > 0 ? fmt1(_weight) : '');
+    final barWeightKg = context.read<BarWeightProvider>().barWeightKg;
+    var perSide = _perSideEntry;
+    String initialText(bool perSideMode) {
+      if (_weight <= 0) return '';
+      final v = perSideMode
+          ? totalToPerSide(totalKg: _weight, barWeightKg: barWeightKg)
+          : _weight;
+      return fmt1(v);
+    }
+
+    final controller = TextEditingController(text: initialText(perSide));
     final result = await showDialog<double>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.titleEnterWeight),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(suffixText: 'kg'),
-          // Both comma and period should work as the decimal separator.
-          onSubmitted: (v) =>
-              Navigator.of(ctx).pop(double.tryParse(v.replaceAll(',', '.'))),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(t.actionCancel)),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx)
-                .pop(double.tryParse(controller.text.replaceAll(',', '.'))),
-            child: Text(t.actionApply),
-          ),
-        ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          void setMode(bool perSideMode) {
+            if (perSideMode == perSide) return;
+            setDialogState(() {
+              perSide = perSideMode;
+              controller.text = initialText(perSide);
+            });
+          }
+
+          double? parsed() {
+            final raw = double.tryParse(controller.text.replaceAll(',', '.'));
+            if (raw == null) return null;
+            return perSide
+                ? perSideToTotal(perSideKg: raw, barWeightKg: barWeightKg)
+                : raw;
+          }
+
+          return AlertDialog(
+            title: Text(t.titleEnterWeight),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: false, label: Text(t.labelTotal)),
+                    ButtonSegment(value: true, label: Text(t.labelPerSide)),
+                  ],
+                  selected: {perSide},
+                  onSelectionChanged: (s) => setMode(s.first),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(suffixText: 'kg'),
+                  // Both comma and period should work as the decimal separator.
+                  onSubmitted: (_) => Navigator.of(ctx).pop(parsed()),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(t.actionCancel)),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(parsed()),
+                child: Text(t.actionApply),
+              ),
+            ],
+          );
+        },
       ),
     );
     if (result != null && result >= 0) {
-      setState(() => _weight = result);
+      setState(() {
+        _weight = result;
+        _perSideEntry = perSide;
+      });
     }
   }
 
@@ -276,15 +345,38 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
-                if (ex.note.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      ex.note,
-                      style: TextStyle(
-                          color: colors.accent, fontWeight: FontWeight.w600),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: TextField(
+                    controller: _noteController,
+                    maxLines: 3,
+                    minLines: 1,
+                    decoration: InputDecoration(
+                      hintText: t.hintExerciseNote,
+                      isDense: true,
                     ),
+                    onEditingComplete: _confirmNote,
+                    onTapOutside: (_) => _confirmNote(),
                   ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _muscle,
+                    decoration: InputDecoration(
+                      labelText: t.labelMuscleGroup,
+                      isDense: true,
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                          value: '', child: Text(t.labelMuscleGroupNone)),
+                      for (final c in kExerciseCategories)
+                        DropdownMenuItem(
+                            value: c, child: Text(categoryLabel(t, c))),
+                    ],
+                    onChanged: _changeMuscle,
+                  ),
+                ),
                 // Only custom exercises carry their own activation map
                 // (picked exercises show this in the "Übungen" library
                 // instead, keyed off the shared database) -- an empty map
@@ -327,6 +419,13 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                     style: TextStyle(color: colors.mut, fontSize: 11.5),
                   ),
                 ),
+                if (_perSideEntry && _weight > 0)
+                  Center(
+                    child: Text(
+                      '${fmt1(totalToPerSide(totalKg: _weight, barWeightKg: context.watch<BarWeightProvider>().barWeightKg))} kg ${t.labelPerSide.toLowerCase()}',
+                      style: TextStyle(color: colors.mut, fontSize: 11.5),
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 for (var i = 0; i < _repsControllers.length; i++)
                   Padding(

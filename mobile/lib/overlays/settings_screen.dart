@@ -7,11 +7,13 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
+import '../data/constants.dart';
 import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
 import '../state/athlete_settings_provider.dart';
+import '../state/bar_weight_provider.dart';
 import '../state/health_provider.dart';
 import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
@@ -76,6 +78,8 @@ class SettingsScreen extends StatelessWidget {
             _AppearanceSection(),
             SizedBox(height: 24),
             _AthleteProfileSection(),
+            SizedBox(height: 24),
+            _EquipmentSection(),
             SizedBox(height: 24),
             _ReminderSection(),
             SizedBox(height: 24),
@@ -548,6 +552,77 @@ class _AthleteProfileSection extends StatelessWidget {
                   label: const Text('F'),
                   selected: !athlete.isMale,
                   onSelected: (_) => athlete.setIsMale(false),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The default barbell weight used to convert a "per side" weight entry
+/// into the total stored for a set (see `data/weight_conversion.dart` and
+/// `ExerciseDetailScreen`'s weight-entry dialog).
+class _EquipmentSection extends StatefulWidget {
+  const _EquipmentSection();
+
+  @override
+  State<_EquipmentSection> createState() => _EquipmentSectionState();
+}
+
+class _EquipmentSectionState extends State<_EquipmentSection> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit(BarWeightProvider provider) {
+    final value = double.tryParse(_controller.text.replaceAll(',', '.'));
+    if (value != null && value > 0) provider.setBarWeightKg(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final barWeight = context.watch<BarWeightProvider>();
+    if (_controller.text.isEmpty) {
+      _controller.text = fmt1(barWeight.barWeightKg);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t.headerEquipment, style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(t.labelBarWeight, style: Theme.of(context).textTheme.headlineMedium),
+                ),
+                SizedBox(
+                  width: 90,
+                  child: TextField(
+                    controller: _controller,
+                    textAlign: TextAlign.end,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(suffixText: 'kg', isDense: true),
+                    onEditingComplete: () => _submit(barWeight),
+                    onTapOutside: (_) => _submit(barWeight),
+                  ),
                 ),
               ],
             ),

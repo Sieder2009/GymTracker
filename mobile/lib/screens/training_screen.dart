@@ -25,6 +25,7 @@ import '../state/update_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
+import '../widgets/add_exercise_sheet.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/day_pill_selector.dart';
@@ -145,8 +146,23 @@ class _TrainingScreenState extends State<TrainingScreen> {
         onRename: (idx, name) => programs.renameExercise(exercises, idx, name),
         onImportHistory: (idx, weight, history) =>
             programs.importExerciseHistory(exercises, idx, weight, history),
+        onMuscleChanged: (idx, muscle) =>
+            programs.setMuscle(exercises, idx, muscle),
+        onNoteChanged: (idx, note) => programs.setNote(exercises, idx, note),
       ),
     ));
+  }
+
+  /// Adds a new exercise to an already-saved plan -- either a specific
+  /// day's list ([dayIdx] set) or the "every training day" list
+  /// ([dayIdx] null), same list-resolution as [_openExerciseDetail].
+  Future<void> _addExercise(String programId, int? dayIdx) async {
+    final programs = context.read<ProgramsProvider>();
+    final plan = programs.byId(programId)!;
+    final exercises =
+        dayIdx == null ? plan.dailyExercises : plan.days[dayIdx].exercises;
+    final exercise = await showAddExerciseSheet(context);
+    if (exercise != null) programs.addExercise(exercises, exercise);
   }
 
   @override
@@ -276,28 +292,36 @@ class _TrainingScreenState extends State<TrainingScreen> {
             // Today's day-specific exercises come first -- the daily ones
             // (done every training day, see below) are secondary/repeated
             // context and belong at the bottom of the list, not competing
-            // with today's actual focus for the top spot.
-            if (exercises.isNotEmpty) ...[
-              Text(t.headerTodaysDay,
-                  style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: 8),
-              for (var i = 0; i < exercises.length; i++)
-                ExerciseCard(
-                  exercise: exercises[i],
-                  onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
-                ),
-              const SizedBox(height: 16),
-            ],
-            if (dailyExercises.isNotEmpty) ...[
-              Text(t.headerEveryTrainingDay,
-                  style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: 8),
-              for (var i = 0; i < dailyExercises.length; i++)
-                ExerciseCard(
-                  exercise: dailyExercises[i],
-                  onTapName: () => _openExerciseDetail(plan.id, null, i),
-                ),
-            ],
+            // with today's actual focus for the top spot. The header and
+            // "add exercise" button stay visible even when the list is
+            // still empty, so a day with nothing in it yet isn't a dead
+            // end -- otherwise there'd be no way to add its first exercise
+            // from this screen.
+            Text(t.headerTodaysDay,
+                style: Theme.of(context).textTheme.labelSmall),
+            const SizedBox(height: 8),
+            for (var i = 0; i < exercises.length; i++)
+              ExerciseCard(
+                exercise: exercises[i],
+                onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
+              ),
+            TextButton(
+              onPressed: () => _addExercise(plan.id, dayIdx),
+              child: Text(t.actionAddExercise),
+            ),
+            const SizedBox(height: 16),
+            Text(t.headerEveryTrainingDay,
+                style: Theme.of(context).textTheme.labelSmall),
+            const SizedBox(height: 8),
+            for (var i = 0; i < dailyExercises.length; i++)
+              ExerciseCard(
+                exercise: dailyExercises[i],
+                onTapName: () => _openExerciseDetail(plan.id, null, i),
+              ),
+            TextButton(
+              onPressed: () => _addExercise(plan.id, null),
+              child: Text(t.actionAddExercise),
+            ),
           ],
         ],
       ),

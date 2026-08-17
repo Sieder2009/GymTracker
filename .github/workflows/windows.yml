@@ -65,22 +65,24 @@ jobs:
       # binary it's packaging (tag-derived on a release, pubspec.yaml's
       # version on a manual workflow_dispatch test build), same source
       # windows-app's own --build-name already uses above.
+      # PowerShell, not bash: Git Bash's MSYS runtime auto-converts any
+      # argument starting with "/" (like /DMyAppVersion=...) before handing
+      # it to a native .exe, mangling the switch enough that iscc thinks
+      # it received a second script filename (MSYS_NO_PATHCONV=1 was tried
+      # first and didn't stop it). pwsh invokes native executables without
+      # that POSIX-path translation layer at all, so the switch reaches
+      # iscc unmodified -- same reasoning as the zip step above already
+      # using pwsh.
       - name: Build Windows installer (Inno Setup)
         run: |
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-          else
-            VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | cut -d'+' -f1)
-          fi
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $VERSION = "${{ github.ref_name }}".Substring(1)
+          } else {
+            $line = (Get-Content pubspec.yaml | Select-String '^version:').Line
+            $VERSION = ($line -replace 'version:\s*', '').Split('+')[0]
+          }
           iscc "/DMyAppVersion=$VERSION" windows/installer/installer.iss
-        shell: bash
-        # Git Bash's MSYS runtime auto-converts any argument starting with
-        # "/" (like /DMyAppVersion=...) into a Windows path before handing
-        # it to a native .exe, mangling the switch and making iscc think
-        # it got a second script filename. This is the standard escape
-        # hatch for that class of bug.
-        env:
-          MSYS_NO_PATHCONV: 1
+        shell: pwsh
 
       - uses: actions/upload-artifact@v4
         with:

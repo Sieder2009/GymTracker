@@ -30,7 +30,7 @@
     <!-- Lets the user actually install the .apk UpdateProvider downloads
          from GitHub Releases (see update_provider.dart, opened through
          open_filex's FileProvider). Without this, Android 8+ won't even
-         offer the "install unknown apps" prompt for this app -- the tap
+         offer the "install unknown apps" prompt for this app — the tap
          on "Installieren" would just silently fail. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application

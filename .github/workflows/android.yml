@@ -9,6 +9,18 @@ on:
 permissions:
   contents: write
 
+# Shared across all four platform workflows on purpose (same group name in
+# android/ios/windows/macos.yml): all four trigger on the same tag push and
+# each ends by uploading its own asset to that one shared GitHub Release
+# via softprops/action-gh-release. Running unserialized, two of them
+# racing to create/update the same release at once reliably fails one or
+# two of the four with a conflict -- queuing them one at a time (not
+# cancel-in-progress, every platform's build still has to actually run)
+# fixes that instead of leaving it to chance on every release.
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest

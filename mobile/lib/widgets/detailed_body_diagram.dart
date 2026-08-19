@@ -66,7 +66,15 @@ class BodyDiagramPainter extends CustomPainter {
     }
 
     for (final entry in atlas.musclesOutline.entries) {
-      final value = activation[entry.key];
+      // A coarse-tagged exercise (the ~1300 hand-tagged entries in
+      // exercise_muscle_map.dart all are) has no value for a head-level
+      // key like tricepsLongHead -- since triceps/biceps/chest/quads no
+      // longer exist as their own atlas keys once split into heads, this
+      // falls back to the parent's value so every one of those exercises
+      // still paints its heads uniformly, instead of silently painting
+      // nothing.
+      final value = activation[entry.key] ??
+          activation[muscleGroupParent(entry.key)];
       final isSelected = selected == entry.key;
       final color = activationColor(value ?? 0);
       // One bold fill + one outer stroke per muscle group (not per

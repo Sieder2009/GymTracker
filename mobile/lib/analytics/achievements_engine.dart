@@ -7,7 +7,15 @@ import '../models/workout_session.dart';
 /// derived live from the same logged data the rest of `analytics/` already
 /// uses (no separate "is this unlocked" persistence, matching this
 /// module's existing philosophy: nothing is guessed or stored twice).
-enum AchievementPathId { consistency, totalWorkouts, totalVolume, prCount }
+enum AchievementPathId {
+  consistency,
+  totalWorkouts,
+  totalVolume,
+  prCount,
+  totalSets,
+  totalWorkoutMinutes,
+  distinctExercises,
+}
 
 const List<int> kConsistencyTiers = [3, 7, 14, 30, 60, 100];
 const List<int> kTotalWorkoutsTiers = [1, 5, 10, 25, 50, 100, 250];
@@ -20,6 +28,9 @@ const List<double> kTotalVolumeTiers = [
   100000
 ];
 const List<int> kPrCountTiers = [1, 3, 5, 10, 20, 35];
+const List<int> kTotalSetsTiers = [50, 150, 400, 1000, 2500, 5000];
+const List<int> kTotalWorkoutMinutesTiers = [60, 300, 900, 2400, 6000, 12000];
+const List<int> kDistinctExercisesTiers = [3, 8, 15, 25, 40, 60];
 
 class AchievementPathResult {
   AchievementPathResult({
@@ -90,6 +101,19 @@ int _prEventCount(List<Program> programs) {
   return count;
 }
 
+/// Count of distinct exercises actually trained at least once (non-empty
+/// [Exercise.history]) across every saved program -- matched by lowercased
+/// name, since the same exercise can appear in more than one plan/day as
+/// separate [Exercise] objects. Deliberately not "every exercise sitting in
+/// a plan," only ones with real logged history.
+int _distinctExercisesTrained(List<Program> programs) {
+  final names = <String>{};
+  for (final ex in _allExercises(programs)) {
+    if (ex.history.isNotEmpty) names.add(ex.name.trim().toLowerCase());
+  }
+  return names.length;
+}
+
 List<AchievementPathResult> computeAchievements({
   required List<WorkoutSession> sessions,
   required List<Program> programs,
@@ -97,6 +121,9 @@ List<AchievementPathResult> computeAchievements({
 }) {
   final totalVolume =
       sessions.fold<double>(0, (sum, s) => sum + s.totalVolumeKg);
+  final totalSets = sessions.fold<int>(0, (sum, s) => sum + s.totalSets);
+  final totalMinutes =
+      sessions.fold<int>(0, (sum, s) => sum + s.durationMinutes);
   return [
     AchievementPathResult(
       id: AchievementPathId.consistency,
@@ -119,7 +146,58 @@ List<AchievementPathResult> computeAchievements({
       currentValue: _prEventCount(programs).toDouble(),
       thresholds: kPrCountTiers.map((e) => e.toDouble()).toList(),
     ),
+    AchievementPathResult(
+      id: AchievementPathId.totalSets,
+      currentValue: totalSets.toDouble(),
+      thresholds: kTotalSetsTiers.map((e) => e.toDouble()).toList(),
+    ),
+    AchievementPathResult(
+      id: AchievementPathId.totalWorkoutMinutes,
+      currentValue: totalMinutes.toDouble(),
+      thresholds: kTotalWorkoutMinutesTiers.map((e) => e.toDouble()).toList(),
+    ),
+    AchievementPathResult(
+      id: AchievementPathId.distinctExercises,
+      currentValue: _distinctExercisesTrained(programs).toDouble(),
+      thresholds: kDistinctExercisesTiers.map((e) => e.toDouble()).toList(),
+    ),
   ];
+}
+
+/// A single overall progression across every achievement path combined --
+/// sums how many tiers are unlocked path-wide against the theoretical max
+/// (every path at its top tier) and buckets that fraction into one of 6
+/// named tiers. Colors are existing [AppColors] tokens, not new hex
+/// literals, so a rank badge always matches whatever accent/secondary the
+/// user (or a Custom theme) has picked.
+enum RankTier { starter, bronze, silver, gold, platinum, legend }
+
+class RankResult {
+  RankResult({required this.tier, required this.progressToNext});
+
+  final RankTier tier;
+
+  /// 0..1 progress toward the next tier (1 once Legend is reached -- there
+  /// is no tier after it).
+  final double progressToNext;
+}
+
+RankResult computeRank(List<AchievementPathResult> paths) {
+  var score = 0;
+  var maxScore = 0;
+  for (final p in paths) {
+    score += p.unlockedTierIndex + 1;
+    maxScore += p.thresholds.length;
+  }
+  final fraction = maxScore == 0 ? 0.0 : score / maxScore;
+  final tierCount = RankTier.values.length;
+  final tierIndex = (fraction * tierCount).floor().clamp(0, tierCount - 1);
+  final bandStart = tierIndex / tierCount;
+  final bandEnd = (tierIndex + 1) / tierCount;
+  final progress = tierIndex == tierCount - 1
+      ? 1.0
+      : ((fraction - bandStart) / (bandEnd - bandStart)).clamp(0.0, 1.0);
+  return RankResult(tier: RankTier.values[tierIndex], progressToNext: progress);
 }
 
 /// Which paths just climbed a tier between two snapshots (e.g. one taken

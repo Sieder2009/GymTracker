@@ -3,11 +3,14 @@ import 'package:provider/provider.dart';
 
 import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
+import '../analytics/body_measurement_analytics.dart';
 import '../data/constants.dart';
 import '../data/lift_categories.dart';
 import '../l10n/app_localizations.dart';
 import '../models/big_lift.dart';
+import '../models/body_measurement_entry.dart';
 import '../state/big_lifts_provider.dart';
+import '../state/body_measurements_provider.dart';
 import '../state/body_weight_provider.dart';
 import '../state/programs_provider.dart';
 import '../state/train_state_provider.dart';
@@ -15,8 +18,10 @@ import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
+import '../widgets/body_shape_diagram.dart';
 import '../widgets/chart_card.dart';
 import '../widgets/plateau_notice.dart';
+import '../widgets/strength_line_chart.dart';
 import '../widgets/trend_value.dart';
 
 class _ProgressRow {
@@ -32,10 +37,10 @@ class _ProgressRow {
 }
 
 /// "Fortschritt"/Analytics tab — its own dedicated multi-section area
-/// (Overview / Strength / Volume / Consistency), every number and chart
-/// traced back to real logged data. Nothing here is guessed: charts show
-/// an honest empty state instead of a flat line when there isn't enough
-/// data yet (see analytics_engine.dart's [DataQuality]).
+/// (Overview / Strength / Consistency / Achievements), every number and
+/// chart traced back to real logged data. Nothing here is guessed: charts
+/// show an honest empty state instead of a flat line when there isn't
+/// enough data yet (see analytics_engine.dart's [DataQuality]).
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
@@ -56,7 +61,7 @@ class ProgressScreen extends StatelessWidget {
 
     return SafeArea(
       child: DefaultTabController(
-        length: 5,
+        length: 4,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -78,7 +83,6 @@ class ProgressScreen extends StatelessWidget {
               tabs: [
                 Tab(text: t.tabAnalyticsOverview),
                 Tab(text: t.tabAnalyticsStrength),
-                Tab(text: t.tabAnalyticsVolume),
                 Tab(text: t.tabAnalyticsConsistency),
                 Tab(text: t.tabAnalyticsAchievements),
               ],
@@ -88,7 +92,6 @@ class ProgressScreen extends StatelessWidget {
                 children: [
                   _OverviewTab(),
                   _StrengthTab(),
-                  const _VolumeTab(),
                   const _ConsistencyTab(),
                   const _AchievementsTab(),
                 ],
@@ -121,6 +124,8 @@ class _OverviewTab extends StatelessWidget {
       children: [
         const _YourProgressCard(),
         const SizedBox(height: 16),
+        const _BodyMeasurementsCard(),
+        const SizedBox(height: 16),
         LineChartCard(
           title: t.chartTitleWeeklyVolume,
           subtitle: t.labelLast8Weeks,
@@ -130,6 +135,170 @@ class _OverviewTab extends StatelessWidget {
           color: colors.teal,
         ),
       ],
+    );
+  }
+}
+
+/// Body-circumference tracking -- six optional entry fields (a user
+/// typically only has a few measured on any given day), a chip picker to
+/// choose which single field's trend the mini chart below shows (matching
+/// how [StrengthLineChart] is already a single-series widget elsewhere,
+/// e.g. `strength_screen.dart`'s `_BodyWeightCard`), and, once at least two
+/// entries exist, an approximate visual shape (see [BodyShapeDiagram]) so
+/// growth shows up as a picture, not just numbers.
+class _BodyMeasurementsCard extends StatefulWidget {
+  const _BodyMeasurementsCard();
+
+  @override
+  State<_BodyMeasurementsCard> createState() => _BodyMeasurementsCardState();
+}
+
+class _BodyMeasurementsCardState extends State<_BodyMeasurementsCard> {
+  final _chestCtrl = TextEditingController();
+  final _waistCtrl = TextEditingController();
+  final _hipsCtrl = TextEditingController();
+  final _armCtrl = TextEditingController();
+  final _thighCtrl = TextEditingController();
+  final _calfCtrl = TextEditingController();
+  BodyMeasurementField _selected = BodyMeasurementField.chest;
+
+  List<TextEditingController> get _controllers =>
+      [_chestCtrl, _waistCtrl, _hipsCtrl, _armCtrl, _thighCtrl, _calfCtrl];
+
+  @override
+  void dispose() {
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  double? _parse(TextEditingController c) {
+    final text = c.text.trim();
+    if (text.isEmpty) return null;
+    return double.tryParse(text.replaceAll(',', '.'));
+  }
+
+  void _save() {
+    context.read<BodyMeasurementsProvider>().addEntry(
+          chestCm: _parse(_chestCtrl),
+          waistCm: _parse(_waistCtrl),
+          hipsCm: _parse(_hipsCtrl),
+          armCm: _parse(_armCtrl),
+          thighCm: _parse(_thighCtrl),
+          calfCm: _parse(_calfCtrl),
+        );
+    setState(() {
+      for (final c in _controllers) {
+        c.clear();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final entries = context.watch<BodyMeasurementsProvider>().entries;
+    final series = [
+      for (final e in entries)
+        if (bodyMeasurementFieldValue(e, _selected) != null) bodyMeasurementFieldValue(e, _selected)!,
+    ];
+    final points = series.length > 8 ? series.sublist(series.length - 8) : series;
+    final latest = points.isEmpty ? null : points.last;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.straighten, size: 18, color: colors.accent),
+                const SizedBox(width: 8),
+                Text(t.titleBodyMeasurements,
+                    style: Theme.of(context).textTheme.headlineMedium),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final f in BodyMeasurementField.values)
+                  ChoiceChip(
+                    label: Text(bodyMeasurementFieldLabel(t, f)),
+                    selected: _selected == f,
+                    onSelected: (_) => setState(() => _selected = f),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (points.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(t.emptyNoEntries, style: TextStyle(color: colors.mut)),
+              )
+            else ...[
+              StrengthLineChart(
+                points: points,
+                pr: 0,
+                color: colors.accent,
+                lineColor: colors.line,
+              ),
+              const SizedBox(height: 8),
+              Text('${t.labelCurrent}: ${fmt1(latest!)} cm',
+                  style: TextStyle(color: colors.mut)),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                BodyMeasurementField.chest,
+                BodyMeasurementField.waist,
+                BodyMeasurementField.hips,
+                BodyMeasurementField.arm,
+                BodyMeasurementField.thigh,
+                BodyMeasurementField.calf,
+              ].asMap().entries.map((entry) {
+                final ctrl = _controllers[entry.key];
+                return SizedBox(
+                  width: 90,
+                  child: TextField(
+                    controller: ctrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: bodyMeasurementFieldLabel(t, entry.value),
+                      suffixText: 'cm',
+                      isDense: true,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(onPressed: _save, child: Text(t.actionAddEntry)),
+            ),
+            if (entries.length >= 2) ...[
+              const Divider(height: 28),
+              Center(
+                child: Text(t.titleBodyShape,
+                    style: Theme.of(context).textTheme.headlineMedium),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: BodyShapeDiagram(
+                  scaleFactors: measurementScaleFactors(entries),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -292,58 +461,6 @@ class _LiftTrendCard extends StatelessWidget {
   }
 }
 
-/// Weekly training volume — total kg logged per rolling 7-day window,
-/// backed by [WorkoutHistoryProvider] sessions.
-class _VolumeTab extends StatelessWidget {
-  const _VolumeTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).extension<AppColors>()!;
-    final sessions = context.watch<WorkoutHistoryProvider>().sessions;
-    final week = computeWeekSummary(sessions);
-    final buckets = weeklyBuckets(sessions);
-    final bars = [
-      for (final b in buckets)
-        BarPoint('${b.weekStart.day}.${b.weekStart.month}', b.totalVolumeKg),
-    ];
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatTile(
-                label: t.labelThisWeek,
-                value: '${fmt1(week.totalVolumeKg)} kg',
-                colors: colors,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatTile(
-                label: t.labelWorkouts,
-                value: '${week.workoutCount}',
-                colors: colors,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        BarChartCard(
-          title: t.chartTitleWeeklyVolume,
-          subtitle: t.labelLast8Weeks,
-          bars: bars,
-          emptyLabel: t.chartEmptyVolume,
-          color: colors.teal,
-        ),
-      ],
-    );
-  }
-}
-
 /// Streaks + workouts-per-week, backed by [computeConsistency] /
 /// [weeklyBuckets] — never a fabricated streak when there's no logged
 /// history to compute one from.
@@ -421,6 +538,12 @@ class _AchievementsTab extends StatelessWidget {
         return t.achievementPathTotalVolume;
       case AchievementPathId.prCount:
         return t.achievementPathPrCount;
+      case AchievementPathId.totalSets:
+        return t.achievementPathTotalSets;
+      case AchievementPathId.totalWorkoutMinutes:
+        return t.achievementPathTotalWorkoutMinutes;
+      case AchievementPathId.distinctExercises:
+        return t.achievementPathDistinctExercises;
     }
   }
 
@@ -434,6 +557,12 @@ class _AchievementsTab extends StatelessWidget {
         return Icons.scale;
       case AchievementPathId.prCount:
         return Icons.emoji_events;
+      case AchievementPathId.totalSets:
+        return Icons.repeat;
+      case AchievementPathId.totalWorkoutMinutes:
+        return Icons.timer_outlined;
+      case AchievementPathId.distinctExercises:
+        return Icons.grid_view;
     }
   }
 
@@ -445,7 +574,13 @@ class _AchievementsTab extends StatelessWidget {
         return '${fmt(value)} kg';
       case AchievementPathId.totalWorkouts:
       case AchievementPathId.prCount:
+      case AchievementPathId.totalSets:
+      case AchievementPathId.distinctExercises:
         return '${value.round()}';
+      case AchievementPathId.totalWorkoutMinutes:
+        final hours = value ~/ 60;
+        final minutes = value.round() % 60;
+        return hours > 0 ? '${hours}h ${minutes}min' : '${value.round()}min';
     }
   }
 
@@ -456,10 +591,13 @@ class _AchievementsTab extends StatelessWidget {
     final sessions = context.watch<WorkoutHistoryProvider>().sessions;
     final programs = context.watch<ProgramsProvider>().programs;
     final paths = computeAchievements(sessions: sessions, programs: programs);
+    final rank = computeRank(paths);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
       children: [
+        _RankCard(rank: rank, colors: colors, t: t),
+        const SizedBox(height: 16),
         for (final path in paths) ...[
           _AchievementPathCard(
             label: _pathLabel(t, path.id),
@@ -475,6 +613,98 @@ class _AchievementsTab extends StatelessWidget {
           const SizedBox(height: 12),
         ],
       ],
+    );
+  }
+}
+
+String _rankLabel(AppLocalizations t, RankTier tier) {
+  switch (tier) {
+    case RankTier.starter:
+      return t.rankStarter;
+    case RankTier.bronze:
+      return t.rankBronze;
+    case RankTier.silver:
+      return t.rankSilver;
+    case RankTier.gold:
+      return t.rankGold;
+    case RankTier.platinum:
+      return t.rankPlatinum;
+    case RankTier.legend:
+      return t.rankLegend;
+  }
+}
+
+Color _rankColor(AppColors colors, RankTier tier) {
+  switch (tier) {
+    case RankTier.starter:
+      return colors.mut;
+    case RankTier.bronze:
+      return colors.green;
+    case RankTier.silver:
+      return colors.teal;
+    case RankTier.gold:
+      return colors.accent;
+    case RankTier.platinum:
+      return colors.purple;
+    case RankTier.legend:
+      return colors.yellow;
+  }
+}
+
+/// Overall progression across every achievement path combined -- shown
+/// above the individual path cards so "how am I doing overall" has one
+/// answer, not just seven separate ones.
+class _RankCard extends StatelessWidget {
+  const _RankCard({required this.rank, required this.colors, required this.t});
+
+  final RankResult rank;
+  final AppColors colors;
+  final AppLocalizations t;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _rankColor(colors, rank.tier);
+    final isMaxTier = rank.tier == RankTier.values.last;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.military_tech, size: 22, color: color),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t.labelRank, style: TextStyle(color: colors.mut, fontSize: 12)),
+                      Text(_rankLabel(t, rank.tier),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(color: color)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (!isMaxTier) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+                child: LinearProgressIndicator(
+                  value: rank.progressToNext,
+                  minHeight: 6,
+                  backgroundColor: colors.card2,
+                  color: color,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

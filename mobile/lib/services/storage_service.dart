@@ -36,6 +36,7 @@ const String tWorkoutSessions = 'workout_sessions';
 const String tBigLiftHistory = 'big_lift_history';
 const String tBodyWeightEntries = 'body_weight_entries';
 const String tGymPhotos = 'gym_photos';
+const String tBodyMeasurementEntries = 'body_measurement_entries';
 
 // The pre-2.8 kv keys these tables replace. Kept as constants because
 // they're still meaningful in two places: [exportAll]/[importAll] use the
@@ -48,6 +49,10 @@ const String _kBigLiftHistoryKey = 'ironpeak:bigLiftHistory';
 const String _kBigLiftsKey = 'ironpeak:bigLifts';
 const String _kBodyWeightKey = 'ironpeak:bodyWeight';
 const String _kGymPhotosKey = 'ironpeak:gymPhotos';
+// Not a pre-2.8 legacy blob (this table is new) -- kept as a constant only
+// so exportAll/importAll/_absorbList can share the exact same plumbing the
+// four legacy-migrated collections already use.
+const String _kBodyMeasurementsKey = 'ironpeak:bodyMeasurements';
 
 /// Local persistence backed by SQLite (via sqflite) stored on-device:
 /// small/bounded data as JSON-per-key in a `kv` table (loaded once into an
@@ -64,11 +69,13 @@ class StorageService {
     required List<Map<String, Object?>> bigLiftHistory,
     required List<Map<String, Object?>> bodyWeightEntries,
     required List<Map<String, Object?>> gymPhotos,
+    required List<Map<String, Object?>> bodyMeasurementEntries,
   })  : _cache = cache,
         _workoutSessions = workoutSessions,
         _bigLiftHistory = bigLiftHistory,
         _bodyWeightEntries = bodyWeightEntries,
-        _gymPhotos = gymPhotos;
+        _gymPhotos = gymPhotos,
+        _bodyMeasurementEntries = bodyMeasurementEntries;
 
   final Database? _db;
   final Map<String, String> _cache;
@@ -76,6 +83,7 @@ class StorageService {
   final List<Map<String, Object?>> _bigLiftHistory;
   final List<Map<String, Object?>> _bodyWeightEntries;
   final List<Map<String, Object?>> _gymPhotos;
+  final List<Map<String, Object?>> _bodyMeasurementEntries;
 
   static Future<StorageService> create({Database? database}) async {
     try {
@@ -97,6 +105,8 @@ class StorageService {
       final bodyWeightEntries =
           (await db.query(tBodyWeightEntries, orderBy: 'id ASC')).map(Map<String, Object?>.from).toList();
       final gymPhotos = (await db.query(tGymPhotos, orderBy: 'id ASC')).map(Map<String, Object?>.from).toList();
+      final bodyMeasurementEntries =
+          (await db.query(tBodyMeasurementEntries, orderBy: 'id ASC')).map(Map<String, Object?>.from).toList();
 
       final service = StorageService._(
         db,
@@ -105,6 +115,7 @@ class StorageService {
         bigLiftHistory: bigLiftHistory,
         bodyWeightEntries: bodyWeightEntries,
         gymPhotos: gymPhotos,
+        bodyMeasurementEntries: bodyMeasurementEntries,
       );
 
       // One-time migration from the old single-blob-per-key storage. Only
@@ -123,6 +134,7 @@ class StorageService {
         bigLiftHistory: [],
         bodyWeightEntries: [],
         gymPhotos: [],
+        bodyMeasurementEntries: [],
       );
     }
   }
@@ -186,6 +198,21 @@ class StorageService {
       )
     ''');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_gym_photos_date ON $tGymPhotos(date)');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tBodyMeasurementEntries(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        chestCm REAL,
+        waistCm REAL,
+        hipsCm REAL,
+        armCm REAL,
+        thighCm REAL,
+        calfCm REAL
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_body_measurement_date ON $tBodyMeasurementEntries(date)');
   }
 
   String? readString(String key) => _cache[key];
@@ -232,6 +259,7 @@ class StorageService {
   List<Map<String, Object?>> get bigLiftHistory => List.unmodifiable(_bigLiftHistory);
   List<Map<String, Object?>> get bodyWeightEntries => List.unmodifiable(_bodyWeightEntries);
   List<Map<String, Object?>> get gymPhotos => List.unmodifiable(_gymPhotos);
+  List<Map<String, Object?>> get bodyMeasurementEntries => List.unmodifiable(_bodyMeasurementEntries);
 
   Future<void> insertWorkoutSession(Map<String, Object?> values) => _insertRow(tWorkoutSessions, _workoutSessions, values);
 
@@ -241,6 +269,9 @@ class StorageService {
       _insertRow(tBodyWeightEntries, _bodyWeightEntries, values);
 
   Future<void> insertGymPhoto(Map<String, Object?> values) => _insertRow(tGymPhotos, _gymPhotos, values);
+
+  Future<void> insertBodyMeasurementEntry(Map<String, Object?> values) =>
+      _insertRow(tBodyMeasurementEntries, _bodyMeasurementEntries, values);
 
   Future<void> deleteGymPhoto(String id) async {
     _gymPhotos.removeWhere((row) => row['id'] == id);
@@ -279,6 +310,7 @@ class StorageService {
     map[_kWorkoutHistoryKey] = jsonEncode(_workoutSessions);
     map[_kBodyWeightKey] = jsonEncode(_bodyWeightEntries);
     map[_kGymPhotosKey] = jsonEncode(_gymPhotos);
+    map[_kBodyMeasurementsKey] = jsonEncode(_bodyMeasurementEntries);
     map[_kBigLiftHistoryKey] = jsonEncode([
       for (final row in _bigLiftHistory)
         {'liftKey': row['liftKey'], 'l': row['label'], 'isoDate': row['isoDate'], 'v': row['value']},
@@ -294,7 +326,13 @@ class StorageService {
   /// the app afterwards — providers cache their state in memory at
   /// construction time and won't pick this up on their own.
   Future<void> importAll(Map<String, dynamic> data) async {
-    const tableBackedKeys = {_kWorkoutHistoryKey, _kBodyWeightKey, _kGymPhotosKey, _kBigLiftHistoryKey};
+    const tableBackedKeys = {
+      _kWorkoutHistoryKey,
+      _kBodyWeightKey,
+      _kGymPhotosKey,
+      _kBigLiftHistoryKey,
+      _kBodyMeasurementsKey,
+    };
     for (final entry in data.entries) {
       if (!entry.key.startsWith('ironpeak:')) continue;
       if (tableBackedKeys.contains(entry.key)) continue;
@@ -351,6 +389,28 @@ class StorageService {
     await _forgetLegacyKey(_kGymPhotosKey);
 
     await _absorbBigLiftHistory(source, forceReplace: forceReplace);
+
+    // Not a pre-2.8 migration (this table is new) -- this call only ever
+    // does anything from importAll (forceReplace: true, restoring a
+    // previously exported backup that already has this key); the
+    // forceReplace:false migration call from create() always no-ops since
+    // no legacy blob ever carried this key.
+    await _absorbList(
+      source: source,
+      key: _kBodyMeasurementsKey,
+      table: tBodyMeasurementEntries,
+      cache: _bodyMeasurementEntries,
+      forceReplace: forceReplace,
+      toRow: (e) => {
+        'date': e['date'] as String,
+        'chestCm': (e['chestCm'] as num?)?.toDouble(),
+        'waistCm': (e['waistCm'] as num?)?.toDouble(),
+        'hipsCm': (e['hipsCm'] as num?)?.toDouble(),
+        'armCm': (e['armCm'] as num?)?.toDouble(),
+        'thighCm': (e['thighCm'] as num?)?.toDouble(),
+        'calfCm': (e['calfCm'] as num?)?.toDouble(),
+      },
+    );
   }
 
   Future<void> _absorbList({

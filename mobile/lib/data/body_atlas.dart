@@ -167,6 +167,81 @@ Path _unionAll(List<Path> paths) {
   );
 }
 
+/// Splits one triceps blob (back view only) into 3 heads by x-position
+/// thirds -- outer third = lateral head, middle third = long head, inner
+/// third (toward the body's midline) = medial head. Same
+/// honest-geometric-approximation caveat as [_splitDeltoid]: a bounding-box
+/// guess, not a traced anatomical boundary.
+(Path lateralHead, Path longHead, Path medialHead) _splitTriceps(
+    Path raw, double centerlineX) {
+  final b = raw.getBounds().inflate(12);
+  final isLeftOfCenter = raw.getBounds().center.dx < centerlineX;
+  final left = raw.getBounds().left;
+  final w = raw.getBounds().width;
+  final x1 = left + w / 3;
+  final x2 = left + w * 2 / 3;
+  final outerRect = isLeftOfCenter
+      ? Rect.fromLTRB(b.left, b.top, x1, b.bottom)
+      : Rect.fromLTRB(x2, b.top, b.right, b.bottom);
+  final innerRect = isLeftOfCenter
+      ? Rect.fromLTRB(x2, b.top, b.right, b.bottom)
+      : Rect.fromLTRB(b.left, b.top, x1, b.bottom);
+  final middleRect = Rect.fromLTRB(x1, b.top, x2, b.bottom);
+  return (_clip(raw, outerRect), _clip(raw, middleRect), _clip(raw, innerRect));
+}
+
+/// Splits one biceps blob (front view only) into long head (outer half)
+/// and short head (inner half, toward the midline) -- same approach as
+/// [_splitTriceps], one fewer division.
+(Path longHead, Path shortHead) _splitBiceps(Path raw, double centerlineX) {
+  final b = raw.getBounds().inflate(12);
+  final isLeftOfCenter = raw.getBounds().center.dx < centerlineX;
+  final splitX = raw.getBounds().left + raw.getBounds().width * 0.5;
+  final outerRect = isLeftOfCenter
+      ? Rect.fromLTRB(b.left, b.top, splitX, b.bottom)
+      : Rect.fromLTRB(splitX, b.top, b.right, b.bottom);
+  final innerRect = isLeftOfCenter
+      ? Rect.fromLTRB(splitX, b.top, b.right, b.bottom)
+      : Rect.fromLTRB(b.left, b.top, splitX, b.bottom);
+  return (_clip(raw, outerRect), _clip(raw, innerRect));
+}
+
+/// Splits one pec blob (front view only) into upper/mid/lower thirds -- a
+/// pure top-to-bottom split, so unlike the two above this needs no
+/// left/right side detection at all.
+(Path upper, Path mid, Path lower) _splitChest(Path raw) {
+  final b = raw.getBounds().inflate(12);
+  final top = raw.getBounds().top;
+  final h = raw.getBounds().height;
+  final y1 = top + h / 3;
+  final y2 = top + h * 2 / 3;
+  return (
+    _clip(raw, Rect.fromLTRB(b.left, b.top, b.right, y1)),
+    _clip(raw, Rect.fromLTRB(b.left, y1, b.right, y2)),
+    _clip(raw, Rect.fromLTRB(b.left, y2, b.right, b.bottom)),
+  );
+}
+
+/// Quads already ship as 3 separately traced shapes per side in the source
+/// illustration (no clipping needed, unlike the three splits above) --
+/// this just sorts them into medial/central/lateral by each shape's own
+/// bounding-box x-position, using the same side-detection as
+/// [_splitDeltoid] so it's correct regardless of left/right leg or the
+/// source array's own ordering. Falls back to `null` (caller keeps the
+/// old undivided behavior) if a part doesn't have exactly 3 sub-paths --
+/// defensive only, every quadriceps entry in `body_atlas_data.dart` does.
+(Path medial, Path central, Path lateral)? _orderedQuadHeads(
+    List<String> rawPaths, double centerlineX) {
+  if (rawPaths.length != 3) return null;
+  final parsed = rawPaths.map(parseSvgPathData).toList()
+    ..sort((a, b) => a.getBounds().center.dx.compareTo(b.getBounds().center.dx));
+  final combinedCenterX = _unionSubpaths(rawPaths).getBounds().center.dx;
+  final isLeftOfCenter = combinedCenterX < centerlineX;
+  final medial = isLeftOfCenter ? parsed[2] : parsed[0];
+  final lateral = isLeftOfCenter ? parsed[0] : parsed[2];
+  return (medial, parsed[1], lateral);
+}
+
 /// Every shape for one (gender, view) combination, already parsed and
 /// scaled to a concrete pixel [Size] -- built once per size via
 /// [ParsedBodyAtlas.get] and reused across paints/hit-tests instead of
@@ -234,6 +309,42 @@ class ParsedBodyAtlas {
         add(MuscleGroup.upperBack, scaled(upperBack));
         add(MuscleGroup.lats, scaled(lats));
         continue;
+      }
+      // Guarded by view so each opposite-view's decorative sliver (see
+      // _directMuscleForSlug's doc comment) still falls through to the
+      // generic path below untouched, exactly as it did before these
+      // splits existed.
+      if (!front && part.slug == 'triceps') {
+        final (lateral, long, medial) =
+            _splitTriceps(_unionSubpaths(part.paths), centerlineX);
+        add(MuscleGroup.tricepsLateralHead, scaled(lateral));
+        add(MuscleGroup.tricepsLongHead, scaled(long));
+        add(MuscleGroup.tricepsMedialHead, scaled(medial));
+        continue;
+      }
+      if (front && part.slug == 'biceps') {
+        final (long, short) =
+            _splitBiceps(_unionSubpaths(part.paths), centerlineX);
+        add(MuscleGroup.bicepsLongHead, scaled(long));
+        add(MuscleGroup.bicepsShortHead, scaled(short));
+        continue;
+      }
+      if (front && part.slug == 'chest') {
+        final (upper, mid, lower) = _splitChest(_unionSubpaths(part.paths));
+        add(MuscleGroup.chestUpper, scaled(upper));
+        add(MuscleGroup.chestMid, scaled(mid));
+        add(MuscleGroup.chestLower, scaled(lower));
+        continue;
+      }
+      if (front && part.slug == 'quadriceps') {
+        final heads = _orderedQuadHeads(part.paths, centerlineX);
+        if (heads != null) {
+          final (medial, central, lateral) = heads;
+          add(MuscleGroup.quadVastusMedialis, scaled(medial));
+          add(MuscleGroup.quadRectusFemoris, scaled(central));
+          add(MuscleGroup.quadVastusLateralis, scaled(lateral));
+          continue;
+        }
       }
 
       final direct = _directMuscleForSlug(part.slug, front);

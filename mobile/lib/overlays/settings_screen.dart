@@ -26,18 +26,34 @@ import '../widgets/health_connect_feedback.dart';
 import '../widgets/language_picker_sheet.dart';
 
 const List<Color> _kColorPresets = [
-  Color(0xFF2F6FEB),
-  Color(0xFF5588FF),
-  Color(0xFF0EA884),
-  Color(0xFF1FD6A8),
-  Color(0xFF6D5CE8),
-  Color(0xFF9585FF),
-  Color(0xFFC98A10),
-  Color(0xFFE0A83A),
-  Color(0xFF1FA76A),
-  Color(0xFF35C98A),
-  Color(0xFFE24B4A),
-  Color(0xFFD4537E),
+  Color(0xFFD4AF37), // gold
+  Color(0xFFA9821E), // antique gold
+  Color(0xFF167A55), // bottle green
+  Color(0xFF1C9C7C), // jade
+  Color(0xFF9B7FC7), // amethyst
+  Color(0xFF6C4F9E), // deep plum
+  Color(0xFFE3B34A), // amber
+  Color(0xFFB4811C), // bronze
+  Color(0xFF2FA872), // emerald
+  Color(0xFF1E7A4D), // forest
+  Color(0xFFB5453B), // oxblood
+  Color(0xFFC97A4A), // copper
+];
+
+// Surface/text tones for Custom theme's bg/card/txt pickers -- muted and
+// neutral by design, unlike the vivid brand-accent presets above, since
+// these are meant to sit *behind* content, not draw attention to themselves.
+const List<Color> _kSurfaceColorPresets = [
+  Color(0xFFFFFCF5), // ivory
+  Color(0xFFF6F1E4), // warm cream
+  Color(0xFFEFE7D2), // parchment
+  Color(0xFFE1D6B8), // pale tan
+  Color(0xFF9C9284), // warm grey
+  Color(0xFF4A473F), // charcoal
+  Color(0xFF17150C), // near-black
+  Color(0xFF0A0D0A), // ink
+  Color(0xFF141810), // bottle-green-black
+  Color(0xFF1D2317), // deep bottle green
 ];
 
 String _updateErrorMessage(AppLocalizations t, UpdateCheckError error) {
@@ -351,16 +367,17 @@ class _AppearanceSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(t.labelDarkMode, style: Theme.of(context).textTheme.headlineMedium),
-                    ),
-                    Switch(
-                      value: theme.isDark,
-                      onChanged: (_) => context.read<ThemeProvider>().toggle(),
-                    ),
+                Text(t.labelThemeMode, style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 10),
+                SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(value: 'light', label: Text(t.themeModeLight)),
+                    ButtonSegment(value: 'dark', label: Text(t.themeModeDark)),
+                    ButtonSegment(value: 'custom', label: Text(t.themeModeCustom)),
                   ],
+                  selected: {theme.mode},
+                  onSelectionChanged: (s) =>
+                      context.read<ThemeProvider>().setMode(s.first),
                 ),
                 const Divider(height: 24),
                 Text(t.labelPrimaryColor, style: Theme.of(context).textTheme.headlineMedium),
@@ -376,6 +393,32 @@ class _AppearanceSection extends StatelessWidget {
                   selected: appearance.secondary ?? colors.secondary,
                   onSelect: (c) => context.read<AppearanceProvider>().setSecondary(c),
                 ),
+                if (theme.isCustom) ...[
+                  const SizedBox(height: 20),
+                  Text(t.labelBackground, style: Theme.of(context).textTheme.headlineMedium),
+                  const SizedBox(height: 10),
+                  _ColorSwatchRow(
+                    selected: appearance.bg ?? colors.bg,
+                    presets: _kSurfaceColorPresets,
+                    onSelect: (c) => context.read<AppearanceProvider>().setBg(c),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(t.labelCardColor, style: Theme.of(context).textTheme.headlineMedium),
+                  const SizedBox(height: 10),
+                  _ColorSwatchRow(
+                    selected: appearance.card ?? colors.card,
+                    presets: _kSurfaceColorPresets,
+                    onSelect: (c) => context.read<AppearanceProvider>().setCard(c),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(t.labelTextColor, style: Theme.of(context).textTheme.headlineMedium),
+                  const SizedBox(height: 10),
+                  _ColorSwatchRow(
+                    selected: appearance.txt ?? colors.txt,
+                    presets: _kSurfaceColorPresets,
+                    onSelect: (c) => context.read<AppearanceProvider>().setTxt(c),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => context.read<AppearanceProvider>().reset(),
@@ -391,20 +434,25 @@ class _AppearanceSection extends StatelessWidget {
 }
 
 class _ColorSwatchRow extends StatelessWidget {
-  const _ColorSwatchRow({required this.selected, required this.onSelect});
+  const _ColorSwatchRow({
+    required this.selected,
+    required this.onSelect,
+    this.presets = _kColorPresets,
+  });
 
   final Color selected;
   final ValueChanged<Color> onSelect;
+  final List<Color> presets;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
-    final isPreset = _kColorPresets.any((c) => c.toARGB32() == selected.toARGB32());
+    final isPreset = presets.any((c) => c.toARGB32() == selected.toARGB32());
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       children: [
-        for (final c in _kColorPresets)
+        for (final c in presets)
           _Swatch(color: c, selected: selected.toARGB32() == c.toARGB32(), onTap: () => onSelect(c)),
         // The currently-active color, when it's a custom pick rather than
         // one of the fixed presets -- otherwise picking a custom color

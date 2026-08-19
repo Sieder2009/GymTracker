@@ -224,7 +224,7 @@ class _MuscleChip extends StatelessWidget {
     final colors = Theme.of(context).extension<AppColors>()!;
     final bg =
         selected ? colors.accent : (active ? colors.accentSoft : colors.card2);
-    final fg = selected ? Colors.white : (active ? colors.accent : colors.txt);
+    final fg = selected ? colors.onAccent : (active ? colors.accent : colors.txt);
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,

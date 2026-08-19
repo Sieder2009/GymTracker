@@ -50,7 +50,7 @@ class DayPillSelector extends StatelessWidget {
               child: Text(
                 weekdaysShort[i],
                 style: TextStyle(
-                  color: isSelected ? Colors.white : colors.txt,
+                  color: isSelected ? colors.onAccent : colors.txt,
                   fontWeight: FontWeight.w600,
                 ),
               ),

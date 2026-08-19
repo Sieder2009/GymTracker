@@ -14,6 +14,7 @@ import 'state/appearance_provider.dart';
 import 'state/athlete_settings_provider.dart';
 import 'state/bar_weight_provider.dart';
 import 'state/big_lifts_provider.dart';
+import 'state/body_measurements_provider.dart';
 import 'state/body_weight_provider.dart';
 import 'state/custom_exercises_provider.dart';
 import 'state/exercise_database_provider.dart';
@@ -58,6 +59,7 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TrainStateProvider(storage)),
         ChangeNotifierProvider(create: (_) => BigLiftsProvider(storage)),
         ChangeNotifierProvider(create: (_) => BodyWeightProvider(storage)),
+        ChangeNotifierProvider(create: (_) => BodyMeasurementsProvider(storage)),
         ChangeNotifierProvider(create: (_) => AthleteSettingsProvider(storage)),
         ChangeNotifierProvider(create: (_) => BarWeightProvider(storage)),
         ChangeNotifierProvider(create: (_) => WorkoutHistoryProvider(storage)),
@@ -79,18 +81,38 @@ class IronpeakApp extends StatelessWidget {
       ],
       child: Consumer3<ThemeProvider, AppearanceProvider, LocaleProvider>(
         builder: (context, theme, appearance, localeProvider, _) {
+          // Custom mode always applies every override (including bg/card/
+          // txt) on top of whichever brightness the user was in when they
+          // switched to Custom, and forces both theme slots to the same
+          // ThemeData -- one fixed palette, nothing for OS brightness to
+          // pick between.
+          final customBuilder =
+              theme.customBase == 'dark' ? AppTheme.dark : AppTheme.light;
+          final customTheme = theme.isCustom
+              ? customBuilder(
+                  accentOverride: appearance.accent,
+                  secondaryOverride: appearance.secondary,
+                  bgOverride: appearance.bg,
+                  cardOverride: appearance.card,
+                  txtOverride: appearance.txt,
+                )
+              : null;
           return MaterialApp(
             title: 'Ironpeak Fitness',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.light(
-              accentOverride: appearance.accent,
-              secondaryOverride: appearance.secondary,
-            ),
-            darkTheme: AppTheme.dark(
-              accentOverride: appearance.accent,
-              secondaryOverride: appearance.secondary,
-            ),
-            themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
+            theme: customTheme ??
+                AppTheme.light(
+                  accentOverride: appearance.accent,
+                  secondaryOverride: appearance.secondary,
+                ),
+            darkTheme: customTheme ??
+                AppTheme.dark(
+                  accentOverride: appearance.accent,
+                  secondaryOverride: appearance.secondary,
+                ),
+            themeMode: theme.isCustom
+                ? ThemeMode.light
+                : (theme.isDark ? ThemeMode.dark : ThemeMode.light),
             locale: localeProvider.locale,
             supportedLocales: kSupportedLocales.map(Locale.new),
             localizationsDelegates: const [

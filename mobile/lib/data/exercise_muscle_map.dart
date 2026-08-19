@@ -19,7 +19,15 @@ Map<MuscleGroup, double> muscleActivationForExercise(ExerciseTemplate ex) {
 /// costs nothing extra.
 bool exerciseWorksMuscle(ExerciseTemplate ex, MuscleGroup target,
     {double threshold = 30}) {
-  return (muscleActivationForExercise(ex)[target] ?? 0) >= threshold;
+  final activation = muscleActivationForExercise(ex);
+  // Every entry here is tagged at the coarse level only (re-tagging ~1300
+  // exercises to head-level granularity is out of scope -- see
+  // MuscleGroup's doc comment), so a head-level filter tap (e.g. "triceps
+  // long head") falls back to its parent's value: tapping a specific head
+  // returns the same exercises as tapping its coarse muscle would.
+  final direct = activation[target];
+  final value = direct ?? activation[muscleGroupParent(target)] ?? 0;
+  return value >= threshold;
 }
 
 Map<MuscleGroup, double> _categoryDefault(String category) {

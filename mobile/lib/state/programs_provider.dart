@@ -68,6 +68,17 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Moves an exercise from [oldIndex] to [newIndex] within the same
+  /// resolved list (a day's exercises, or `dailyExercises`) -- the caller
+  /// (a `ReorderableListView.onReorder`) has already done the standard
+  /// `newIndex > oldIndex` correction, so this just does the move.
+  void reorderExercise(List<Exercise> exercises, int oldIndex, int newIndex) {
+    final item = exercises.removeAt(oldIndex);
+    exercises.insert(newIndex, item);
+    _persist();
+    notifyListeners();
+  }
+
   void setMuscle(List<Exercise> exercises, int exIdx, String muscle) {
     exercises[exIdx].muscle = muscle;
     _persist();

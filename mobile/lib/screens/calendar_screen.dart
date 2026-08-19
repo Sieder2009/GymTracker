@@ -153,7 +153,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           Text(
                             '$dayNum',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : colors.txt,
+                              color: isSelected ? colors.onAccent : colors.txt,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -164,7 +164,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               height: 5,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isSelected ? Colors.white : colors.accent,
+                                color: isSelected ? colors.onAccent : colors.accent,
                               ),
                             ),
                         ],

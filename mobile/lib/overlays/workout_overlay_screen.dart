@@ -54,6 +54,12 @@ String _pathLabel(AppLocalizations t, AchievementPathId id) {
       return t.achievementPathTotalVolume;
     case AchievementPathId.prCount:
       return t.achievementPathPrCount;
+    case AchievementPathId.totalSets:
+      return t.achievementPathTotalSets;
+    case AchievementPathId.totalWorkoutMinutes:
+      return t.achievementPathTotalWorkoutMinutes;
+    case AchievementPathId.distinctExercises:
+      return t.achievementPathDistinctExercises;
   }
 }
 

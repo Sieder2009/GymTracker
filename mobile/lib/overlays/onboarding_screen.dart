@@ -159,7 +159,7 @@ class _WelcomeStep extends StatelessWidget {
             width: 84,
             height: 84,
             decoration: BoxDecoration(color: colors.accent, shape: BoxShape.circle),
-            child: const Icon(Icons.fitness_center_rounded, color: Colors.white, size: 40),
+            child: Icon(Icons.fitness_center_rounded, color: colors.onAccent, size: 40),
           ),
           const SizedBox(height: 28),
           Text(

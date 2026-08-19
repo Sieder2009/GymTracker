@@ -1,7 +1,16 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/program.dart';
+import '../services/plan_share_codec.dart';
+import '../state/programs_provider.dart';
+import '../state/toast_provider.dart';
 import '../theme/app_colors.dart';
 
 /// Shared "choose a plan" list, used both for the forced plan-choice prompt
@@ -30,6 +39,50 @@ class PlanPickerSheet extends StatelessWidget {
   /// zero-plans empty state, unreachable once any plan already exists).
   final VoidCallback? onNewPlan;
   final VoidCallback? onLoadPpl;
+
+  Future<void> _sharePlan(BuildContext context, Program p) async {
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/ironpeak-plan-${slugify(p.name)}.json');
+    await file.writeAsString(buildPlanSharePayload(p));
+    if (!context.mounted) return;
+    await Share.shareXFiles([XFile(file.path)]);
+  }
+
+  Future<void> _importPlan(BuildContext context) async {
+    final t = AppLocalizations.of(context)!;
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json', 'txt'],
+    );
+    final path = result?.files.single.path;
+    if (path == null) return;
+    final content = await File(path).readAsString();
+    final imported = parseSharedPlanPayload(content);
+    if (!context.mounted) return;
+    if (imported == null) {
+      context.read<ToastProvider>().show(t.toastImportPlanInvalid);
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.importPlanConfirmTitle),
+        content: Text(t.importPlanConfirmBody(imported.name)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(t.actionCancel)),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(t.actionImportPlan)),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    context.read<ProgramsProvider>().addProgram(imported);
+    context.read<ToastProvider>().show(t.toastPlanImported);
+  }
 
   Future<void> _confirmDelete(BuildContext context, Program p) async {
     final t = AppLocalizations.of(context)!;
@@ -90,6 +143,11 @@ class PlanPickerSheet extends StatelessWidget {
                       icon: const Icon(Icons.fitness_center, size: 18),
                       label: Text(t.actionLoadPplExample),
                     ),
+                  OutlinedButton.icon(
+                    onPressed: () => _importPlan(context),
+                    icon: const Icon(Icons.file_download_outlined, size: 18),
+                    label: Text(t.actionImportPlan),
+                  ),
                 ],
               ),
             ],
@@ -110,6 +168,11 @@ class PlanPickerSheet extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 4),
                           child: Icon(Icons.check_circle, color: colors.accent),
                         ),
+                      IconButton(
+                        icon: const Icon(Icons.ios_share, size: 20),
+                        tooltip: t.actionSharePlan,
+                        onPressed: () => _sharePlan(context, p),
+                      ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline),
                         tooltip: t.actionDelete,

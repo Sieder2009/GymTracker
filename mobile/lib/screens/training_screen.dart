@@ -300,11 +300,31 @@ class _TrainingScreenState extends State<TrainingScreen> {
             Text(t.headerTodaysDay,
                 style: Theme.of(context).textTheme.labelSmall),
             const SizedBox(height: 8),
-            for (var i = 0; i < exercises.length; i++)
-              ExerciseCard(
-                exercise: exercises[i],
-                onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
-              ),
+            // Long-press a card to start dragging it -- ReorderableListView
+            // nested (shrinkWrap + no own scrolling) inside this screen's
+            // outer ListView, same nesting workout_overlay_screen.dart's
+            // reorder sheet already uses.
+            ReorderableListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              onReorder: (oldIndex, newIndex) {
+                if (newIndex > oldIndex) newIndex -= 1;
+                context
+                    .read<ProgramsProvider>()
+                    .reorderExercise(exercises, oldIndex, newIndex);
+              },
+              children: [
+                for (var i = 0; i < exercises.length; i++)
+                  ReorderableDelayedDragStartListener(
+                    key: ObjectKey(exercises[i]),
+                    index: i,
+                    child: ExerciseCard(
+                      exercise: exercises[i],
+                      onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
+                    ),
+                  ),
+              ],
+            ),
             TextButton(
               onPressed: () => _addExercise(plan.id, dayIdx),
               child: Text(t.actionAddExercise),
@@ -313,11 +333,27 @@ class _TrainingScreenState extends State<TrainingScreen> {
             Text(t.headerEveryTrainingDay,
                 style: Theme.of(context).textTheme.labelSmall),
             const SizedBox(height: 8),
-            for (var i = 0; i < dailyExercises.length; i++)
-              ExerciseCard(
-                exercise: dailyExercises[i],
-                onTapName: () => _openExerciseDetail(plan.id, null, i),
-              ),
+            ReorderableListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              onReorder: (oldIndex, newIndex) {
+                if (newIndex > oldIndex) newIndex -= 1;
+                context
+                    .read<ProgramsProvider>()
+                    .reorderExercise(dailyExercises, oldIndex, newIndex);
+              },
+              children: [
+                for (var i = 0; i < dailyExercises.length; i++)
+                  ReorderableDelayedDragStartListener(
+                    key: ObjectKey(dailyExercises[i]),
+                    index: i,
+                    child: ExerciseCard(
+                      exercise: dailyExercises[i],
+                      onTapName: () => _openExerciseDetail(plan.id, null, i),
+                    ),
+                  ),
+              ],
+            ),
             TextButton(
               onPressed: () => _addExercise(plan.id, null),
               child: Text(t.actionAddExercise),
@@ -462,8 +498,8 @@ class _UpdateAvailableCard extends StatelessWidget {
                     color: colors.accent,
                     borderRadius: BorderRadius.circular(AppRadii.sm),
                   ),
-                  child: const Icon(Icons.arrow_circle_up_rounded,
-                      color: Colors.white, size: 20),
+                  child: Icon(Icons.arrow_circle_up_rounded,
+                      color: colors.onAccent, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

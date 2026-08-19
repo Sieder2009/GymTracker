@@ -4,10 +4,6 @@ import 'package:flutter/material.dart';
 /// [ThemeExtension] so screens can read
 /// `Theme.of(context).extension<AppColors>()!` for tokens that don't map
 /// onto a standard Material [ColorScheme] slot (teal/purple/yellow/green).
-///
-/// Palette language: deep bottle-green/near-black surfaces with a warm
-/// metallic-gold accent and ivory text — a boutique/horology look rather
-/// than a stock Material blue app.
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
@@ -35,9 +31,11 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color mut;
   final Color accent;
   final Color accentSoft;
-  // Text/icon color for content painted on top of a solid [accent] fill.
-  // Gold reads too light for white-on-accent contrast, so this is its own
-  // token instead of assuming Colors.white like the old blue accent did.
+  // Text/icon color for content painted on top of a solid [accent] fill --
+  // white by default (matches this palette's saturated accent blues), but
+  // its own token rather than a hardcoded Colors.white so a custom accent
+  // color (Settings > Appearance) can still get readable contrast even if
+  // the user picks something too light for white text.
   final Color onAccent;
   final Color secondary;
   final Color teal;
@@ -46,37 +44,37 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color green;
 
   static const AppColors light = AppColors(
-    bg: Color(0xFFF6F1E4),
-    card: Color(0xFFFFFCF5),
-    card2: Color(0xFFEFE7D2),
-    line: Color(0xFFE1D6B8),
-    txt: Color(0xFF17150C),
-    mut: Color(0xFF86795C),
-    accent: Color(0xFFA9821E),
-    accentSoft: Color(0x22A9821E), // rgba(169,130,30,.13)
-    onAccent: Color(0xFFFFFBF0),
-    secondary: Color(0xFF0B5C3F),
-    teal: Color(0xFF0E7F63),
-    purple: Color(0xFF6C4F9E),
-    yellow: Color(0xFFB4811C),
-    green: Color(0xFF1E7A4D),
+    bg: Color(0xFFF5F5F7),
+    card: Color(0xFFFFFFFF),
+    card2: Color(0xFFEEEEF1),
+    line: Color(0xFFE3E3E8),
+    txt: Color(0xFF16171B),
+    mut: Color(0xFF84848C),
+    accent: Color(0xFF2F6FEB),
+    accentSoft: Color(0x1A2F6FEB), // rgba(47,111,235,.10)
+    onAccent: Color(0xFFFFFFFF),
+    secondary: Color(0xFF0EA884),
+    teal: Color(0xFF0EA884),
+    purple: Color(0xFF6D5CE8),
+    yellow: Color(0xFFC98A10),
+    green: Color(0xFF1FA76A),
   );
 
   static const AppColors dark = AppColors(
-    bg: Color(0xFF0A0D0A),
-    card: Color(0xFF141810),
-    card2: Color(0xFF1D2317),
-    line: Color(0xFF332E1D),
-    txt: Color(0xFFF4EEDD),
-    mut: Color(0xFFA79878),
-    accent: Color(0xFFD4AF37),
-    accentSoft: Color(0x29D4AF37), // rgba(212,175,55,.16)
-    onAccent: Color(0xFF191307),
-    secondary: Color(0xFF167A55),
-    teal: Color(0xFF1C9C7C),
-    purple: Color(0xFF9B7FC7),
-    yellow: Color(0xFFE3B34A),
-    green: Color(0xFF2FA872),
+    bg: Color(0xFF101114),
+    card: Color(0xFF1A1B1F),
+    card2: Color(0xFF232428),
+    line: Color(0xFF2D2E34),
+    txt: Color(0xFFF2F2F4),
+    mut: Color(0xFF8D8D96),
+    accent: Color(0xFF5588FF),
+    accentSoft: Color(0x295588FF), // rgba(85,136,255,.16)
+    onAccent: Color(0xFFFFFFFF),
+    secondary: Color(0xFF1FD6A8),
+    teal: Color(0xFF1FD6A8),
+    purple: Color(0xFF9585FF),
+    yellow: Color(0xFFE0A83A),
+    green: Color(0xFF35C98A),
   );
 
   @override

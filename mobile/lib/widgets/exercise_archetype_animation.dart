@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../data/exercise_archetype.dart';
 import '../theme/app_colors.dart';
 
-/// One joint-angle pose for the shared stick-figure rig -- all angles are
+/// One joint-angle pose for the shared figure rig -- all angles are
 /// radians in a "hangs down, rotates" convention (0 = pointing straight
 /// down/up along the limb's resting direction; see [_ArchetypeAnimationPainter]
 /// for how each is turned into a point). [elbowBend]/[kneeBend] are
@@ -108,11 +108,13 @@ const Map<ExerciseArchetype, _ArchetypeSpec> _kSpecs = {
   ),
 };
 
-/// A small looping stick-figure illustration of one [ExerciseArchetype]'s
-/// general rep motion -- an ORIGINAL drawing (this app's own house line-art
-/// style, procedurally posed), never footage or a scraped image of any real
-/// exercise. See `exercises_screen.dart`'s existing top-of-file comment on
-/// why: this app never redistributes third-party exercise media.
+/// A small looping illustration of one [ExerciseArchetype]'s general rep
+/// motion -- a filled, rounded-capsule silhouette figure (soft drop shadow,
+/// highlighted head), not a bare wireframe stick figure. ORIGINAL and
+/// procedurally posed/rendered by this app, never footage or a scraped
+/// image of any real exercise. See `exercises_screen.dart`'s existing
+/// top-of-file comment on why: this app never redistributes third-party
+/// exercise media.
 class ExerciseArchetypeAnimation extends StatefulWidget {
   const ExerciseArchetypeAnimation({
     super.key,
@@ -164,9 +166,9 @@ class _ExerciseArchetypeAnimationState extends State<ExerciseArchetypeAnimation>
               pulse: widget.archetype == ExerciseArchetype.core
                   ? 1.0 + phase * 0.04
                   : 1.0,
-              lineColor: colors.line,
+              bodyColor: colors.mut,
               accent: colors.accent,
-              headColor: colors.mut,
+              headColor: colors.txt,
             ),
           );
         },
@@ -180,7 +182,7 @@ class _ArchetypeAnimationPainter extends CustomPainter {
     required this.pose,
     required this.emphasis,
     required this.pulse,
-    required this.lineColor,
+    required this.bodyColor,
     required this.accent,
     required this.headColor,
   });
@@ -188,36 +190,47 @@ class _ArchetypeAnimationPainter extends CustomPainter {
   final _Pose pose;
   final _Emphasis emphasis;
   final double pulse;
-  final Color lineColor;
+  final Color bodyColor;
   final Color accent;
   final Color headColor;
 
   static Offset _limb(Offset from, double angle, double len) =>
       Offset(from.dx + math.sin(angle) * len, from.dy + math.cos(angle) * len);
 
+  /// A filled "stadium" (rounded rectangle) between [a] and [b] -- a solid
+  /// rounded-capsule limb segment rather than a bare stroked line, which is
+  /// what actually gives this a designed, illustrated look instead of a
+  /// wireframe stick figure.
+  static void _drawCapsule(Canvas canvas, Offset a, Offset b, double radius, Paint paint) {
+    final angle = math.atan2(b.dy - a.dy, b.dx - a.dx);
+    final length = (b - a).distance;
+    canvas.save();
+    canvas.translate((a.dx + b.dx) / 2, (a.dy + b.dy) / 2);
+    canvas.rotate(angle);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset.zero, width: length + radius * 2, height: radius * 2),
+        Radius.circular(radius),
+      ),
+      paint,
+    );
+    canvas.restore();
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final unit = size.shortestSide;
-    final strokeW = unit * 0.045;
-    final neutral = Paint()
-      ..color = lineColor
-      ..strokeWidth = strokeW
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-    final active = Paint()
-      ..color = accent
-      ..strokeWidth = strokeW
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
 
-    canvas.save();
-    canvas.translate(size.width / 2, size.height / 2 + unit * 0.28 * pose.verticalShift);
-    if (pulse != 1.0) canvas.scale(pulse, pulse);
+    final neutral = Paint()..color = bodyColor;
+    final active = Paint()..color = accent;
 
-    final hip = Offset(0, unit * 0.08);
+    final origin =
+        Offset(size.width / 2, size.height / 2 + unit * 0.28 * pose.verticalShift);
+
+    final hip = origin + Offset(0, unit * 0.08);
     final torsoLen = unit * 0.28;
     final shoulder = _limb(hip, math.pi + pose.lean, torsoLen);
-    final headCenter = _limb(shoulder, math.pi + pose.lean, unit * 0.1);
+    final headCenter = _limb(shoulder, math.pi + pose.lean, unit * 0.13);
 
     final upperArmLen = unit * 0.16;
     final forearmLen = unit * 0.15;
@@ -229,17 +242,67 @@ class _ArchetypeAnimationPainter extends CustomPainter {
     final knee = _limb(hip, pose.hipAngle, thighLen);
     final ankle = _limb(knee, pose.hipAngle + pose.kneeBend, shinLen);
 
-    final torsoPaint = emphasis == _Emphasis.torso ? active : neutral;
-    final armPaint = emphasis == _Emphasis.arm ? active : neutral;
-    final legPaint = emphasis == _Emphasis.leg ? active : neutral;
+    final headRadius = unit * 0.1;
+    void drawFigure(Canvas c, {required bool asShadow}) {
+      final legR = unit * 0.05;
+      final thighR = unit * 0.055;
+      final torsoR = unit * 0.075;
+      final armR = unit * 0.04;
+      if (asShadow) {
+        final shadow = Paint()
+          ..color = Colors.black.withValues(alpha: 0.2)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, unit * 0.018);
+        _drawCapsule(c, hip, knee, thighR, shadow);
+        _drawCapsule(c, knee, ankle, legR, shadow);
+        _drawCapsule(c, hip, shoulder, torsoR, shadow);
+        _drawCapsule(c, shoulder, elbow, armR, shadow);
+        _drawCapsule(c, elbow, wrist, armR * 0.85, shadow);
+        c.drawCircle(headCenter, headRadius, shadow);
+        return;
+      }
+      final legPaint = emphasis == _Emphasis.leg ? active : neutral;
+      final torsoPaint = emphasis == _Emphasis.torso ? active : neutral;
+      final armPaint = emphasis == _Emphasis.arm ? active : neutral;
+      _drawCapsule(c, hip, knee, thighR, legPaint);
+      _drawCapsule(c, knee, ankle, legR, legPaint);
+      _drawCapsule(c, hip, shoulder, torsoR, torsoPaint);
+      _drawCapsule(c, shoulder, elbow, armR, armPaint);
+      _drawCapsule(c, elbow, wrist, armR * 0.85, armPaint);
+      c.drawCircle(headCenter, headRadius, Paint()..color = headColor);
+      // Small offset highlight for a touch of roundness on the head,
+      // cheaper and more robust than a per-shape gradient shader.
+      c.drawCircle(
+        headCenter + Offset(-headRadius * 0.3, -headRadius * 0.35),
+        headRadius * 0.35,
+        Paint()..color = Colors.white.withValues(alpha: 0.22),
+      );
+    }
 
-    canvas.drawLine(hip, shoulder, torsoPaint);
-    canvas.drawLine(shoulder, elbow, armPaint);
-    canvas.drawLine(elbow, wrist, armPaint);
-    canvas.drawLine(hip, knee, legPaint);
-    canvas.drawLine(knee, ankle, legPaint);
-    canvas.drawCircle(headCenter, unit * 0.09, Paint()..color = headColor);
-
+    canvas.save();
+    if (pulse != 1.0) {
+      canvas.translate(origin.dx, origin.dy);
+      canvas.scale(pulse, pulse);
+      canvas.translate(-origin.dx, -origin.dy);
+    }
+    // Ground shadow first (soft, offset down-right), then the shadow pass
+    // of the figure itself (a second, subtler blurred silhouette directly
+    // beneath), then the real figure on top -- cheap depth without
+    // per-limb gradients.
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(origin.dx, ankle.dy + unit * 0.02),
+        width: unit * 0.34,
+        height: unit * 0.05,
+      ),
+      Paint()
+        ..color = bodyColor.withValues(alpha: 0.35)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, unit * 0.012),
+    );
+    canvas.save();
+    canvas.translate(unit * 0.012, unit * 0.016);
+    drawFigure(canvas, asShadow: true);
+    canvas.restore();
+    drawFigure(canvas, asShadow: false);
     canvas.restore();
   }
 
@@ -252,7 +315,7 @@ class _ArchetypeAnimationPainter extends CustomPainter {
         old.pose.kneeBend != pose.kneeBend ||
         old.pose.verticalShift != pose.verticalShift ||
         old.pulse != pulse ||
-        old.lineColor != lineColor ||
+        old.bodyColor != bodyColor ||
         old.accent != accent;
   }
 }

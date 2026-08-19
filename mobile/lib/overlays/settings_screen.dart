@@ -26,34 +26,34 @@ import '../widgets/health_connect_feedback.dart';
 import '../widgets/language_picker_sheet.dart';
 
 const List<Color> _kColorPresets = [
-  Color(0xFFD4AF37), // gold
-  Color(0xFFA9821E), // antique gold
-  Color(0xFF167A55), // bottle green
-  Color(0xFF1C9C7C), // jade
-  Color(0xFF9B7FC7), // amethyst
-  Color(0xFF6C4F9E), // deep plum
-  Color(0xFFE3B34A), // amber
-  Color(0xFFB4811C), // bronze
-  Color(0xFF2FA872), // emerald
-  Color(0xFF1E7A4D), // forest
-  Color(0xFFB5453B), // oxblood
-  Color(0xFFC97A4A), // copper
+  Color(0xFF2F6FEB),
+  Color(0xFF5588FF),
+  Color(0xFF0EA884),
+  Color(0xFF1FD6A8),
+  Color(0xFF6D5CE8),
+  Color(0xFF9585FF),
+  Color(0xFFC98A10),
+  Color(0xFFE0A83A),
+  Color(0xFF1FA76A),
+  Color(0xFF35C98A),
+  Color(0xFFE24B4A),
+  Color(0xFFD4537E),
 ];
 
 // Surface/text tones for Custom theme's bg/card/txt pickers -- muted and
 // neutral by design, unlike the vivid brand-accent presets above, since
 // these are meant to sit *behind* content, not draw attention to themselves.
 const List<Color> _kSurfaceColorPresets = [
-  Color(0xFFFFFCF5), // ivory
-  Color(0xFFF6F1E4), // warm cream
-  Color(0xFFEFE7D2), // parchment
-  Color(0xFFE1D6B8), // pale tan
-  Color(0xFF9C9284), // warm grey
-  Color(0xFF4A473F), // charcoal
-  Color(0xFF17150C), // near-black
-  Color(0xFF0A0D0A), // ink
-  Color(0xFF141810), // bottle-green-black
-  Color(0xFF1D2317), // deep bottle green
+  Color(0xFFFFFFFF), // white
+  Color(0xFFF5F5F7), // off-white
+  Color(0xFFEEEEF1), // light grey
+  Color(0xFFE3E3E8), // pale grey
+  Color(0xFF84848C), // mid grey
+  Color(0xFF44444A), // charcoal
+  Color(0xFF16171B), // near-black
+  Color(0xFF101114), // ink
+  Color(0xFF1A1B1F), // dark card
+  Color(0xFF232428), // dark card 2
 ];
 
 String _updateErrorMessage(AppLocalizations t, UpdateCheckError error) {

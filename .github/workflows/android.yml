@@ -39,6 +39,36 @@ jobs:
       # which a fresh `flutter create` on every run would silently wipe.
       - run: flutter pub get
 
+      # Reconstructs the persistent release keystore from repo secrets --
+      # without this, `flutter build apk --release` falls back to signing
+      # with a debug key, and every CI runner starts with no persistent
+      # ~/.android/debug.keystore (fresh VM each run), so every such build
+      # would get a *different* random signature. That silently breaks the
+      # in-app updater: Android refuses to install an update signed with a
+      # different key than what's already on the phone ("package conflicts
+      # with an existing package"). Missing secrets (e.g. a fork without
+      # them configured) leaves key.properties absent, and the Gradle
+      # config falls back to the debug key exactly as it did before this
+      # was added -- the build still succeeds, it just won't cleanly
+      # update an install signed with the real release key.
+      - name: Set up release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No ANDROID_KEYSTORE_BASE64 secret configured -- falling back to debug signing (see build.gradle.kts)."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=release-keystore.jks
+          EOF
+
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - run: flutter test

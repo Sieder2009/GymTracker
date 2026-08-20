@@ -1,0 +1,8 @@
+# Copy this file to key.properties (same directory) and fill in real values
+# to build a release APK signed with a persistent key instead of a fresh
+# random debug key -- see mobile/android/app/build.gradle.kts and
+# https://flutter.dev/to/reference-keystore.
+storePassword=
+keyPassword=
+keyAlias=ironpeak
+storeFile=release-keystore.jks

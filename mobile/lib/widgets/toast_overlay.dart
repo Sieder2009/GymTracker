@@ -28,15 +28,29 @@ class ToastOverlay extends StatelessWidget {
               curve: Curves.ease,
               child: Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
+                child: ConstrainedBox(
+                  // MaterialApp.builder sits above the app's own Scaffold
+                  // tree, so this has no ambient DefaultTextStyle to inherit
+                  // a sane font size from -- an explicit style (plus a width
+                  // cap so a long message wraps into a pill instead of
+                  // stretching edge-to-edge) is required here, unlike every
+                  // other Text in the app that can just rely on the theme.
+                  constraints: const BoxConstraints(maxWidth: 320),
+                  child: Material(
                     color: colors.txt,
                     borderRadius: BorderRadius.circular(AppRadii.md),
-                  ),
-                  child: Text(
-                    toast.message,
-                    style: TextStyle(color: colors.bg, fontWeight: FontWeight.w600),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      child: Text(
+                        toast.message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colors.bg,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13.5,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -20,8 +20,10 @@ import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/body_shape_diagram.dart';
 import '../widgets/chart_card.dart';
+import '../widgets/kpi_tile.dart';
 import '../widgets/plateau_notice.dart';
 import '../widgets/strength_line_chart.dart';
+import '../widgets/training_calendar_heatmap.dart';
 import '../widgets/trend_value.dart';
 
 class _ProgressRow {
@@ -113,15 +115,64 @@ class _OverviewTab extends StatelessWidget {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
     final sessions = context.watch<WorkoutHistoryProvider>().sessions;
+    final lifts = context.watch<BigLiftsProvider>().lifts;
 
     final buckets = weeklyBuckets(sessions);
     final volumePoints = [
       for (final b in buckets) ChartPoint(b.weekStart, b.totalVolumeKg),
     ];
+    final totalVolume =
+        sessions.fold<double>(0, (sum, s) => sum + s.totalVolumeKg);
+    final currentStreak = computeConsistency(sessions).currentStreakDays;
+    final recentPrs = countRecentLiftPrs(lifts);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
       children: [
+        Row(
+          children: [
+            Expanded(
+              child: KpiTile(
+                icon: Icons.fitness_center_rounded,
+                value: '${sessions.length}',
+                label: t.labelWorkouts,
+                color: colors.accent,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: KpiTile(
+                icon: Icons.monitor_weight_rounded,
+                value: '${fmt(totalVolume)} kg',
+                label: t.labelVolume,
+                color: colors.teal,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: KpiTile(
+                icon: Icons.local_fire_department_rounded,
+                value: t.unitDays(currentStreak),
+                label: t.labelCurrentStreak,
+                color: colors.purple,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: KpiTile(
+                icon: Icons.emoji_events_rounded,
+                value: '$recentPrs',
+                label: t.labelPRs,
+                color: colors.yellow,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         const _YourProgressCard(),
         const SizedBox(height: 16),
         const _BodyMeasurementsCard(),
@@ -486,28 +537,35 @@ class _ConsistencyTab extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: _StatTile(
-                label: t.labelCurrentStreak,
+              child: KpiTile(
+                icon: Icons.local_fire_department_rounded,
                 value: t.unitDays(consistency.currentStreakDays),
-                colors: colors,
+                label: t.labelCurrentStreak,
+                color: colors.accent,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
-              child: _StatTile(
-                label: t.labelBestStreak,
+              child: KpiTile(
+                icon: Icons.military_tech_rounded,
                 value: t.unitDays(consistency.bestStreakDays),
-                colors: colors,
+                label: t.labelBestStreak,
+                color: colors.yellow,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: KpiTile(
+                icon: Icons.event_available_rounded,
+                value: '${consistency.workoutsThisMonth}',
+                label: t.labelWorkoutsThisMonth,
+                color: colors.teal,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        _StatTile(
-            label: t.labelWorkoutsThisMonth,
-            value: '${consistency.workoutsThisMonth}',
-            colors: colors,
-            fullWidth: true),
+        const SizedBox(height: 16),
+        TrainingCalendarHeatmap(sessions: sessions),
         const SizedBox(height: 16),
         BarChartCard(
           title: t.chartTitleWorkoutsPerWeek,
@@ -813,45 +871,6 @@ class _TierBadge extends StatelessWidget {
                 color: unlocked ? colors.yellow : colors.mut,
               )),
         ],
-      ),
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
-  const _StatTile(
-      {required this.label,
-      required this.value,
-      required this.colors,
-      this.fullWidth = false});
-
-  final String label;
-  final String value;
-  final AppColors colors;
-  final bool fullWidth;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment:
-              fullWidth ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-          children: [
-            Text(label,
-                style: TextStyle(
-                    color: colors.mut,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            Text(value,
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: colors.txt)),
-          ],
-        ),
       ),
     );
   }

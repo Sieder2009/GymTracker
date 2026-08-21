@@ -46,6 +46,15 @@ class DayPillSelector extends StatelessWidget {
                 border: isToday && !isSelected
                     ? Border.all(color: colors.accent, width: 1.5)
                     : null,
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: colors.accent.withValues(alpha: 0.4),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
+                        ),
+                      ]
+                    : null,
               ),
               child: Text(
                 weekdaysShort[i],

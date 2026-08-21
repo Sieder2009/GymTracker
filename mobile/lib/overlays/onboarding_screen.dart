@@ -450,9 +450,19 @@ class _FinishStep extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(healthBrandName(), style: Theme.of(context).textTheme.headlineMedium),
+                                  Text(
+                                    healthBrandName(),
+                                    style: Theme.of(context).textTheme.headlineMedium,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                   const SizedBox(height: 2),
-                                  Text(t.titleHealthSync, style: TextStyle(color: colors.mut, fontSize: 13)),
+                                  Text(
+                                    t.titleHealthSync,
+                                    style: TextStyle(color: colors.mut, fontSize: 13),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ],
                               ),
                             ),

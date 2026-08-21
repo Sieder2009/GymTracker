@@ -266,7 +266,12 @@ class _DetailedBodyDiagramState extends State<DetailedBodyDiagram> {
 /// Full-screen pinch-zoom-pan presentation of the same diagram, opened by
 /// tapping a [DetailedBodyDiagram] built with `enableZoom: true`. Keeps its
 /// own front/back toggle so exploring the illustration here never mutates
-/// the small card that opened it.
+/// the small card that opened it. Tapping a muscle here (not on the small
+/// card, where a tap already means "open this view") selects it via the
+/// same [ParsedBodyAtlas.hitTest] the tappable `MuscleActivationEditor`
+/// uses, and shows its name + activation -- "detailliert alles zeigen" for
+/// heads/regions too fine to label individually in the legend below the
+/// small card.
 class _ZoomedBodyDiagram extends StatefulWidget {
   const _ZoomedBodyDiagram({
     required this.activation,
@@ -284,11 +289,29 @@ class _ZoomedBodyDiagram extends StatefulWidget {
 
 class _ZoomedBodyDiagramState extends State<_ZoomedBodyDiagram> {
   late bool _front = widget.initialFront;
+  MuscleGroup? _selected;
+
+  void _handleTap(TapUpDetails details, Size diagramSize) {
+    final hit = ParsedBodyAtlas.get(widget.gender, _front, diagramSize)
+        .hitTest(details.localPosition);
+    setState(() => _selected = (hit == null || hit == _selected) ? null : hit);
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
+    final width = MediaQuery.of(context).size.width * 0.85;
+    final diagramSize = Size(width, width / kBodyDiagramAspect);
+    final selected = _selected;
+    // A coarse-tagged exercise has no entry for a head-level key -- same
+    // parent fallback [BodyDiagramPainter] already applies when coloring
+    // the region itself, so the label always matches what's on screen.
+    final selectedValue = selected == null
+        ? null
+        : widget.activation[selected] ??
+            widget.activation[muscleGroupParent(selected)] ??
+            0;
     return Scaffold(
       appBar: AppBar(
         title: SegmentedButton<bool>(
@@ -297,7 +320,10 @@ class _ZoomedBodyDiagramState extends State<_ZoomedBodyDiagram> {
             ButtonSegment(value: false, label: Text(t.actionBack)),
           ],
           selected: {_front},
-          onSelectionChanged: (s) => setState(() => _front = s.first),
+          onSelectionChanged: (s) => setState(() {
+            _front = s.first;
+            _selected = null;
+          }),
         ),
         actions: [
           IconButton(
@@ -305,34 +331,63 @@ class _ZoomedBodyDiagramState extends State<_ZoomedBodyDiagram> {
               onPressed: () => Navigator.of(context).pop()),
         ],
       ),
-      body: Center(
-        child: InteractiveViewer(
-          minScale: 1,
-          maxScale: 5,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 280),
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: ScaleTransition(
-                scale: Tween(begin: 0.94, end: 1.0).animate(animation),
-                child: child,
-              ),
-            ),
-            child: SizedBox(
-              key: ValueKey(_front),
-              width: MediaQuery.of(context).size.width * 0.85,
-              height:
-                  MediaQuery.of(context).size.width * 0.85 / kBodyDiagramAspect,
-              child: CustomPaint(
-                painter: BodyDiagramPainter(
-                  front: _front,
-                  gender: widget.gender,
-                  activation: widget.activation,
-                  accent: colors.accent,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 5,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 280),
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(
+                        scale: Tween(begin: 0.94, end: 1.0).animate(animation),
+                        child: child,
+                      ),
+                    ),
+                    child: GestureDetector(
+                      key: ValueKey(_front),
+                      onTapUp: (details) => _handleTap(details, diagramSize),
+                      child: SizedBox(
+                        width: diagramSize.width,
+                        height: diagramSize.height,
+                        child: CustomPaint(
+                          painter: BodyDiagramPainter(
+                            front: _front,
+                            gender: widget.gender,
+                            activation: widget.activation,
+                            selected: _selected,
+                            accent: colors.accent,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              child: selected == null
+                  ? const SizedBox(height: 48)
+                  : Padding(
+                      key: ValueKey(selected),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: Text(
+                        '${muscleGroupLabel(t, selected)} · ${selectedValue!.round()}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          color: colors.txt,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );

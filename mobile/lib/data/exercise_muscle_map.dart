@@ -2092,4 +2092,28 @@ const Map<String, Map<MuscleGroup, double>> _byId = {
     MuscleGroup.frontDelts: 30,
     MuscleGroup.abs: 30
   },
+  // Neck training has no illustrated region of its own -- MuscleGroup.traps
+  // (already drawn, on the back view) sits right where the neck attaches
+  // and is the closest real muscle these exercises actually recruit, same
+  // honest-approximation spirit as the geometric head/region splits noted
+  // on MuscleGroup itself.
+  'neck_curl': {MuscleGroup.traps: 70},
+  'neck_extension': {MuscleGroup.traps: 80, MuscleGroup.upperBack: 20},
+  'lateral_neck_flexion': {MuscleGroup.traps: 70},
+  'neck_rotation': {MuscleGroup.traps: 60},
+  'neck_harness_flexion': {MuscleGroup.traps: 75},
+  'neck_harness_extension': {MuscleGroup.traps: 80, MuscleGroup.upperBack: 15},
+  'four_way_neck_machine': {MuscleGroup.traps: 85},
+  'wrestlers_bridge': {
+    MuscleGroup.traps: 60,
+    MuscleGroup.upperBack: 20,
+    MuscleGroup.abs: 15
+  },
+  'single_leg_extension': {MuscleGroup.quads: 100},
+  'reverse_hack_squat': {
+    MuscleGroup.quads: 75,
+    MuscleGroup.glutes: 55,
+    MuscleGroup.hamstrings: 20
+  },
+  'single_arm_cable_curl': {MuscleGroup.biceps: 100, MuscleGroup.forearms: 20},
 };

@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "exercises": [
     {
       "id": "bench_press",
@@ -2467,6 +2467,46 @@
       "category": "shoulders"
     },
     {
+      "id": "neck_curl",
+      "name": "Nackencurls (Nackenbeugung)",
+      "category": "shoulders"
+    },
+    {
+      "id": "neck_extension",
+      "name": "Nackenstrecker (Nackenstreckung)",
+      "category": "shoulders"
+    },
+    {
+      "id": "lateral_neck_flexion",
+      "name": "Seitliche Nackenbeugung",
+      "category": "shoulders"
+    },
+    {
+      "id": "neck_rotation",
+      "name": "Nackenrotation",
+      "category": "shoulders"
+    },
+    {
+      "id": "neck_harness_flexion",
+      "name": "Nackenübung mit Nackengeschirr (Flexion)",
+      "category": "shoulders"
+    },
+    {
+      "id": "neck_harness_extension",
+      "name": "Nackenübung mit Nackengeschirr (Extension)",
+      "category": "shoulders"
+    },
+    {
+      "id": "four_way_neck_machine",
+      "name": "4-Wege-Nackenmaschine",
+      "category": "shoulders"
+    },
+    {
+      "id": "wrestlers_bridge",
+      "name": "Ringerbrücke (Nackenbrücke)",
+      "category": "shoulders"
+    },
+    {
       "id": "tuck_jump",
       "name": "Tuck Jump",
       "category": "legs"
@@ -2552,6 +2592,16 @@
       "category": "legs"
     },
     {
+      "id": "single_leg_extension",
+      "name": "Beinstrecker (einbeinig)",
+      "category": "legs"
+    },
+    {
+      "id": "reverse_hack_squat",
+      "name": "Reverse Hack Squat",
+      "category": "legs"
+    },
+    {
       "id": "band_bicep_curl",
       "name": "Bizepscurls mit Widerstandsband",
       "category": "arms"
@@ -2599,6 +2649,11 @@
     {
       "id": "band_hammer_curl",
       "name": "Hammercurls mit Widerstandsband",
+      "category": "arms"
+    },
+    {
+      "id": "single_arm_cable_curl",
+      "name": "Bizepscurls am Kabelzug (einarmig)",
       "category": "arms"
     },
     {

@@ -165,6 +165,39 @@ class _TrainingScreenState extends State<TrainingScreen> {
     if (exercise != null) programs.addExercise(exercises, exercise);
   }
 
+  /// Removes one exercise from an already-saved plan, same list-resolution
+  /// as [_openExerciseDetail] -- confirms first since it takes the
+  /// exercise's whole logged history with it, same reasoning as
+  /// [_deletePlan].
+  Future<void> _removeExercise(
+      String programId, int? dayIdx, int exIdx, Exercise exercise) async {
+    final t = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.deleteExerciseTitle),
+        content: Text(t.deleteExerciseBody(exercise.name)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(t.actionCancel)),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(t.actionDelete,
+                style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final programs = context.read<ProgramsProvider>();
+    final plan = programs.byId(programId)!;
+    final exercises =
+        dayIdx == null ? plan.dailyExercises : plan.days[dayIdx].exercises;
+    programs.removeExercise(exercises, exIdx);
+    context.read<ToastProvider>().show(t.toastExerciseDeleted);
+  }
+
   @override
   Widget build(BuildContext context) {
     final programsProvider = context.watch<ProgramsProvider>();
@@ -321,6 +354,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     child: ExerciseCard(
                       exercise: exercises[i],
                       onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
+                      onDelete: () =>
+                          _removeExercise(plan.id, dayIdx, i, exercises[i]),
                     ),
                   ),
               ],
@@ -350,6 +385,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     child: ExerciseCard(
                       exercise: dailyExercises[i],
                       onTapName: () => _openExerciseDetail(plan.id, null, i),
+                      onDelete: () => _removeExercise(
+                          plan.id, null, i, dailyExercises[i]),
                     ),
                   ),
               ],

@@ -179,6 +179,19 @@ void main() {
       expect(ex.history.single.reps, [8, 6]);
     });
 
+    test('removeExercise deletes only the exercise at the given index',
+        () async {
+      final storage = await freshStorage();
+      final provider = ProgramsProvider(storage);
+      final a = Exercise.fresh('Squat', '', 90, [ExerciseSet(w: 100, r: '5')]);
+      final b = Exercise.fresh('Bench', '', 90, [ExerciseSet(w: 60, r: '8')]);
+      final exercises = [a, b];
+
+      provider.removeExercise(exercises, 0);
+
+      expect(exercises, [b]);
+    });
+
     test('removeProgram deletes only the matching id', () async {
       final storage = await freshStorage();
       final provider = ProgramsProvider(storage);

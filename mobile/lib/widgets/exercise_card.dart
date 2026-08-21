@@ -20,16 +20,20 @@ String _setsRepsLabel(Exercise exercise) {
 /// current weight, target sets×reps, and a technique note, nothing else.
 /// Sets are logged and weight is adjusted exclusively in the exercise
 /// detail screen (tap to open); this card is read-only, deliberately
-/// without a per-set confirm button or its own weight steppers.
+/// without a per-set confirm button or its own weight steppers. [onDelete]
+/// is the one exception -- a whole-exercise removal, not a per-set edit --
+/// and only shows its trailing button when the caller passes one.
 class ExerciseCard extends StatelessWidget {
   const ExerciseCard({
     super.key,
     required this.exercise,
     required this.onTapName,
+    this.onDelete,
   });
 
   final Exercise exercise;
   final VoidCallback onTapName;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +84,13 @@ class ExerciseCard extends StatelessWidget {
                     .bodyLarge
                     ?.copyWith(fontWeight: FontWeight.w700),
               ),
+              if (onDelete != null)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  tooltip: t.actionDelete,
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onDelete,
+                ),
             ],
           ),
         ),

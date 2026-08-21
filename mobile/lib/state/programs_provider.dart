@@ -68,6 +68,15 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Removes one exercise from an already-saved plan's day (or its
+  /// `dailyExercises`) -- the inverse of [addExercise]. Takes its logged
+  /// history with it, which is why the caller confirms first.
+  void removeExercise(List<Exercise> exercises, int exIdx) {
+    exercises.removeAt(exIdx);
+    _persist();
+    notifyListeners();
+  }
+
   /// Moves an exercise from [oldIndex] to [newIndex] within the same
   /// resolved list (a day's exercises, or `dailyExercises`) -- the caller
   /// (a `ReorderableListView.onReorder`) has already done the standard

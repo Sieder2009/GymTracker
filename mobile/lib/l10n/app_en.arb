@@ -63,6 +63,7 @@
   "toastNameRequired": "Please enter a name",
   "toastPlanSaved": "Training plan saved",
   "toastPlanDeleted": "Plan deleted",
+  "toastExerciseDeleted": "Exercise deleted",
   "toastLogImported": "Log imported",
   "toastLogRequired": "Please paste a log first.",
   "toastHistoryImported": "History imported",
@@ -363,10 +364,19 @@
   "categoryAll": "All",
   "deletePlanTitle": "Delete plan?",
   "deletePlanBody": "\"{name}\" and its whole logged history will be permanently deleted. This can't be undone.",
+  "deleteExerciseTitle": "Delete exercise?",
+  "deleteExerciseBody": "\"{name}\" and its whole logged history will be permanently deleted. This can't be undone.",
   "titleExitWorkout": "Exit workout?",
   "bodyExitWorkoutConfirm": "Your progress in this workout will be lost and won't count toward your stats.",
   "actionExitWorkout": "Exit",
   "@deletePlanBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteExerciseBody": {
     "placeholders": {
       "name": {
         "type": "String"

@@ -72,6 +72,33 @@ class _BackupSheetState extends State<_BackupSheet> {
     await Share.shareXFiles([XFile(file.path)]);
   }
 
+  /// Writes straight into the public Downloads folder -- unlike
+  /// [_shareAsFile]'s temp-dir + share-sheet round trip, no destination
+  /// picker, so this is the fast one-tap option right before uninstalling
+  /// the app (a mismatched-signature update can't install over an existing
+  /// one -- see build.gradle.kts). Downloads survives an uninstall because
+  /// it's genuine shared storage, unlike the app's own temp/data dirs.
+  /// getDownloadsDirectory() isn't guaranteed to resolve on every Android
+  /// version/OEM (scoped storage varies) -- falls back to the proven share
+  /// sheet on any failure instead of silently losing the backup.
+  Future<void> _saveToDownloads() async {
+    final storage = context.read<StorageService>();
+    final t = AppLocalizations.of(context)!;
+    final toast = context.read<ToastProvider>();
+    final date = DateTime.now().toIso8601String().split('T').first;
+    final fileName = 'ironpeak-backup-$date.json';
+    try {
+      final dir = await getDownloadsDirectory();
+      if (dir == null) throw StateError('no public downloads directory');
+      await File('${dir.path}/$fileName').writeAsString(_payload(storage));
+      if (!mounted) return;
+      toast.show(t.toastBackupSavedToDownloads(fileName));
+    } catch (_) {
+      if (!mounted) return;
+      await _shareAsFile();
+    }
+  }
+
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -167,6 +194,18 @@ class _BackupSheetState extends State<_BackupSheet> {
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _saveToDownloads,
+                  icon: const Icon(Icons.download_outlined, size: 18),
+                  label: Text(t.actionSaveToDownloads),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(t.backupDownloadsHint,
+                  style: TextStyle(color: colors.mut, fontSize: 12)),
               const SizedBox(height: 24),
               Text(t.backupImportHint, style: TextStyle(color: colors.mut)),
               const SizedBox(height: 8),

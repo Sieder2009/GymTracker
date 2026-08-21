@@ -568,6 +568,16 @@
   "actionImportFromFile": "Choose file",
   "backupFileHint": "Save the exported file to e.g. iCloud Drive or Google Drive to import it on another device later — there's no server of ours involved, the file only goes wherever you choose to put it.",
   "toastFileImported": "File loaded",
+  "actionSaveToDownloads": "Save to Downloads automatically",
+  "backupDownloadsHint": "Survives uninstalling the app -- handy right before reinstalling an update.",
+  "toastBackupSavedToDownloads": "Saved to Downloads: {fileName}",
+  "@toastBackupSavedToDownloads": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
   "actionSkip": "Skip",
   "titleOnboardingWelcome": "Welcome to Ironpeak Fitness",
   "bodyOnboardingWelcome": "Training plans, strength progress, and muscle-group balance — all stored locally on your device, no account needed.",

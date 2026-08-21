@@ -31,6 +31,7 @@ import '../widgets/backup_sheet.dart';
 import '../widgets/day_pill_selector.dart';
 import '../widgets/exercise_card.dart';
 import '../widgets/health_connect_feedback.dart';
+import '../widgets/kpi_tile.dart';
 import '../widgets/language_picker_sheet.dart';
 import '../widgets/plan_picker_sheet.dart';
 import '../state/theme_provider.dart';
@@ -454,16 +455,25 @@ class _HomeDashboardStats extends StatelessWidget {
         Row(
           children: [
             Expanded(
-                child: _QuickStatTile(
-                    label: t.labelWorkouts, value: '${week.workoutCount}')),
+                child: KpiTile(
+                    icon: Icons.fitness_center_rounded,
+                    label: t.labelWorkouts,
+                    value: '${week.workoutCount}',
+                    color: colors.accent)),
             const SizedBox(width: 10),
             Expanded(
-                child: _QuickStatTile(
+                child: KpiTile(
+                    icon: Icons.monitor_weight_rounded,
                     label: t.labelVolume,
-                    value: '${fmt(week.totalVolumeKg)} kg')),
+                    value: '${fmt(week.totalVolumeKg)} kg',
+                    color: colors.teal)),
             const SizedBox(width: 10),
             Expanded(
-                child: _QuickStatTile(label: t.labelPRs, value: '$recentPrs')),
+                child: KpiTile(
+                    icon: Icons.emoji_events_rounded,
+                    label: t.labelPRs,
+                    value: '$recentPrs',
+                    color: colors.yellow)),
           ],
         ),
         const _HealthCard(),
@@ -624,12 +634,18 @@ class _HealthCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(brandName,
-                          style: Theme.of(context).textTheme.headlineMedium),
+                      Text(
+                        brandName,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         health.isLoading ? t.actionConnectHealth : t.titleHealthSync,
                         style: TextStyle(color: colors.mut, fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -647,37 +663,6 @@ class _HealthCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _QuickStatTile extends StatelessWidget {
-  const _QuickStatTile({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppColors>()!;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(label, style: TextStyle(color: colors.mut, fontSize: 11.5)),
-          ],
         ),
       ),
     );

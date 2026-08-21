@@ -170,8 +170,19 @@ class LineChartCard extends StatelessWidget {
             color: lineColor,
             barWidth: 2.5,
             dotData: FlDotData(
-              getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                  radius: 3, color: lineColor, strokeColor: lineColor),
+              // The most recent point gets a bigger dot with a soft halo
+              // ring around it (fl_chart has no built-in glow), so "where
+              // are we now" reads instantly instead of blending into the
+              // rest of the line.
+              getDotPainter: (spot, percent, bar, index) => index == sorted.length - 1
+                  ? FlDotCirclePainter(
+                      radius: 5,
+                      color: lineColor,
+                      strokeColor: lineColor.withValues(alpha: 0.35),
+                      strokeWidth: 6,
+                    )
+                  : FlDotCirclePainter(
+                      radius: 3, color: lineColor, strokeColor: lineColor),
             ),
             belowBarData: BarAreaData(
               show: true,
@@ -179,7 +190,7 @@ class LineChartCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  lineColor.withValues(alpha: 0.18),
+                  lineColor.withValues(alpha: 0.32),
                   lineColor.withValues(alpha: 0.0)
                 ],
               ),
@@ -321,7 +332,11 @@ class BarChartCard extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: bars[i].value,
-                  color: barColor,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [barColor, barColor.withValues(alpha: 0.55)],
+                  ),
                   width: 16,
                   borderRadius: BorderRadius.circular(AppRadii.xs),
                 ),

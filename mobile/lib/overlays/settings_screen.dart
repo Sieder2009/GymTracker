@@ -789,7 +789,12 @@ class _HealthSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(brandName, style: Theme.of(context).textTheme.headlineMedium),
+                      Text(
+                        brandName,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 2),
                       Text(
                         health.isConnected ? t.labelHealthConnected : t.labelHealthNotConnected,
@@ -798,6 +803,8 @@ class _HealthSection extends StatelessWidget {
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

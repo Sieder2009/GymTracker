@@ -6,13 +6,16 @@ import '../l10n/app_localizations.dart';
 import '../models/workout_session.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_radii.dart';
+import '../widgets/contribution_heatmap.dart';
 
-/// Month-grid view of logged workouts, ported to the same design language
-/// as the rest of the app (cards, accent dots) rather than a generic
-/// calendar-package look. Tapping a day shows that day's sessions below
-/// the grid — total time comes straight from [WorkoutHistoryProvider],
-/// which every finished [WorkoutOverlayScreen] session feeds.
+const int _kHeatmapWeeks = 53;
+
+/// GitHub-contribution-graph-style view of logged workouts (see
+/// [ContributionHeatmap]) instead of a single-month grid — the whole
+/// trailing year is visible at a glance, scrollable back further. Tapping a
+/// day shows that day's sessions below the grid — total time comes
+/// straight from [WorkoutHistoryProvider], which every finished
+/// [WorkoutOverlayScreen] session feeds.
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
@@ -21,22 +24,13 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  late DateTime _visibleMonth;
-  DateTime? _selectedDate;
+  late DateTime _selectedDate;
 
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
-    _visibleMonth = DateTime(now.year, now.month);
     _selectedDate = DateTime(now.year, now.month, now.day);
-  }
-
-  void _shiftMonth(int delta) {
-    setState(() {
-      _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + delta);
-      _selectedDate = null;
-    });
   }
 
   String _iso(DateTime d) =>
@@ -54,24 +48,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
       byDate.putIfAbsent(s.date, () => []).add(s);
     }
 
-    final monthSessions = sessions.where((s) {
+    final today = DateTime.now();
+    final currentWeekMonday = DateTime(today.year, today.month, today.day)
+        .subtract(Duration(days: today.weekday - 1));
+    final rangeStart = currentWeekMonday.subtract(const Duration(days: 7 * (_kHeatmapWeeks - 1)));
+    final rangeSessions = sessions.where((s) {
       final d = DateTime.tryParse(s.date);
-      return d != null && d.year == _visibleMonth.year && d.month == _visibleMonth.month;
+      return d != null && !d.isBefore(rangeStart);
     }).toList();
-    final monthMinutes = monthSessions.fold<int>(0, (sum, s) => sum + s.durationMinutes);
+    final rangeMinutes = rangeSessions.fold<int>(0, (sum, s) => sum + s.durationMinutes);
 
-    final weekdaysShort = [
-      t.weekdayMonShort, t.weekdayTueShort, t.weekdayWedShort, t.weekdayThuShort,
-      t.weekdayFriShort, t.weekdaySatShort, t.weekdaySunShort,
-    ];
-
-    final firstOfMonth = DateTime(_visibleMonth.year, _visibleMonth.month);
-    final daysInMonth = DateTime(_visibleMonth.year, _visibleMonth.month + 1, 0).day;
-    final leadingBlanks = firstOfMonth.weekday - 1; // Monday=1 -> 0 blanks
-    final cellCount = leadingBlanks + daysInMonth;
-    final rowCount = (cellCount / 7).ceil();
-
-    final selectedSessions = _selectedDate == null ? null : byDate[_iso(_selectedDate!)];
+    final selectedSessions = byDate[_iso(_selectedDate)];
 
     return Scaffold(
       appBar: AppBar(title: Text(t.titleCalendar)),
@@ -79,102 +66,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  tooltip: t.calendarPrevMonth,
-                  onPressed: () => _shiftMonth(-1),
-                ),
-                Text(
-                  DateFormat.yMMMM(localeName).format(_visibleMonth),
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  tooltip: t.calendarNextMonth,
-                  onPressed: () => _shiftMonth(1),
-                ),
-              ],
+            Text(
+              '${DateFormat.yMMM(localeName).format(rangeStart)} '
+              '– ${DateFormat.yMMM(localeName).format(today)}',
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
-            Center(
-              child: Text(
-                t.calendarMonthSummary(monthSessions.length, (monthMinutes / 60).toStringAsFixed(1)),
-                style: TextStyle(color: colors.mut),
-              ),
+            const SizedBox(height: 2),
+            Text(
+              t.calendarMonthSummary(rangeSessions.length, (rangeMinutes / 60).toStringAsFixed(1)),
+              style: TextStyle(color: colors.mut),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                for (final w in weekdaysShort)
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        w,
-                        style: TextStyle(color: colors.mut, fontSize: 11, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: rowCount * 7,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
-              itemBuilder: (context, i) {
-                final dayNum = i - leadingBlanks + 1;
-                if (dayNum < 1 || dayNum > daysInMonth) return const SizedBox.shrink();
-                final date = DateTime(_visibleMonth.year, _visibleMonth.month, dayNum);
-                final hasSession = byDate.containsKey(_iso(date));
-                final isSelected = _selectedDate != null &&
-                    _selectedDate!.year == date.year &&
-                    _selectedDate!.month == date.month &&
-                    _selectedDate!.day == date.day;
-                final isToday = _iso(date) == _iso(DateTime.now());
-
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedDate = date),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: isSelected ? colors.accent : colors.card2,
-                        borderRadius: BorderRadius.circular(AppRadii.sm),
-                        border: isToday && !isSelected
-                            ? Border.all(color: colors.accent, width: 1.5)
-                            : null,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$dayNum',
-                            style: TextStyle(
-                              color: isSelected ? colors.onAccent : colors.txt,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (hasSession)
-                            Container(
-                              margin: const EdgeInsets.only(top: 2),
-                              width: 5,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isSelected ? colors.onAccent : colors.accent,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+            ContributionHeatmap(
+              sessionsByDate: byDate,
+              selectedDate: _selectedDate,
+              onSelectDate: (d) => setState(() => _selectedDate = d),
+              weeks: _kHeatmapWeeks,
             ),
             const SizedBox(height: 20),
+            Text(
+              DateFormat.yMMMMEEEEd(localeName).format(_selectedDate),
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
             if (selectedSessions == null || selectedSessions.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),

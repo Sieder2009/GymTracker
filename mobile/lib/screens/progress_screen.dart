@@ -299,13 +299,19 @@ class _BodyMeasurementsCardState extends State<_BodyMeasurementsCard> {
                 child: Text(t.emptyNoEntries, style: TextStyle(color: colors.mut)),
               )
             else ...[
-              StrengthLineChart(
-                points: points,
-                pr: 0,
-                color: colors.accent,
-                lineColor: colors.line,
-              ),
-              const SizedBox(height: 8),
+              // Same fix as _BodyWeightCard's chart in strength_screen.dart:
+              // a single point has nothing to connect to, so it just centers
+              // one dot in an otherwise blank frame -- reads as broken, not
+              // "not enough data yet". Skip straight to the value.
+              if (points.length > 1) ...[
+                StrengthLineChart(
+                  points: points,
+                  pr: 0,
+                  color: colors.accent,
+                  lineColor: colors.line,
+                ),
+                const SizedBox(height: 8),
+              ],
               Text('${t.labelCurrent}: ${fmt1(latest!)} cm',
                   style: TextStyle(color: colors.mut)),
             ],

@@ -33,6 +33,12 @@ void main() {
       final rows = parseCsvRows('a,b\n1,2\n\n');
       expect(rows.length, 2);
     });
+
+    test('strips a leading UTF-8 byte-order mark from Excel-exported files', () {
+      final bom = String.fromCharCode(0xFEFF);
+      final rows = parseCsvRows('$bom' 'Date,Exercise\n2024-01-01,Bench\n');
+      expect(rows.first, ['Date', 'Exercise']);
+    });
   });
 
   group('detectCsvFormat', () {
@@ -98,6 +104,13 @@ void main() {
     test('every distinct exercise becomes its own entry', () {
       final parsed = parseFitNotesCsv(csv);
       expect(parsed.dailyExercises.map((e) => e.name).toSet(), {'Bench Press', 'Squat'});
+    });
+
+    test('still parses (and still finds a date) when the file starts with a BOM', () {
+      final bom = String.fromCharCode(0xFEFF);
+      final parsed = parseFitNotesCsv('$bom' '$csv');
+      final bench = parsed.dailyExercises.firstWhere((e) => e.name == 'Bench Press');
+      expect(bench.history.first.date, '2026-01-05');
     });
   });
 

@@ -68,6 +68,7 @@
   "toastPlanDeleted": "План удалён",
   "toastExerciseDeleted": "Упражнение удалено",
   "toastLogImported": "Журнал импортирован",
+  "toastCsvImportFailed": "Не удалось прочитать файл.",
   "toastLogRequired": "Сначала вставьте журнал.",
   "toastHistoryImported": "История импортирована",
   "toastWorkoutFinished": "Тренировка завершена",

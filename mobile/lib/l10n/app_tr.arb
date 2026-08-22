@@ -68,6 +68,7 @@
   "toastPlanDeleted": "Plan silindi",
   "toastExerciseDeleted": "Egzersiz silindi",
   "toastLogImported": "Günlük içe aktarıldı",
+  "toastCsvImportFailed": "Dosya okunamadı.",
   "toastLogRequired": "Önce bir günlük yapıştır.",
   "toastHistoryImported": "Geçmiş içe aktarıldı",
   "toastWorkoutFinished": "Antrenman tamamlandı",

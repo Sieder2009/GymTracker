@@ -14,6 +14,13 @@ enum CsvImportFormat { fitnotes, strong, hevy }
 /// sheet files, and one small, testable tokenizer is worth less than a new
 /// package for it.
 List<List<String>> parseCsvRows(String text) {
+  // Excel's "CSV UTF-8" export -- the option most spreadsheet-savvy users
+  // reach for -- prepends a byte-order mark (U+FEFF). Left in place it
+  // glues itself onto the first header name, which silently breaks either
+  // format detection or that one column's lookups depending on which
+  // field happens to be first.
+  final bom = String.fromCharCode(0xFEFF);
+  if (text.startsWith(bom)) text = text.substring(1);
   final rows = <List<String>>[];
   var row = <String>[];
   final field = StringBuffer();

@@ -68,6 +68,7 @@
   "toastPlanDeleted": "Plan supprimé",
   "toastExerciseDeleted": "Exercice supprimé",
   "toastLogImported": "Journal importé",
+  "toastCsvImportFailed": "Impossible de lire ce fichier.",
   "toastLogRequired": "Colle d'abord un journal.",
   "toastHistoryImported": "Historique importé",
   "toastWorkoutFinished": "Séance terminée",

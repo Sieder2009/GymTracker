@@ -69,6 +69,7 @@
   "toastPlanDeleted": "Plan deleted",
   "toastExerciseDeleted": "Exercise deleted",
   "toastLogImported": "Log imported",
+  "toastCsvImportFailed": "Couldn't read that file.",
   "toastLogRequired": "Please paste a log first.",
   "toastHistoryImported": "History imported",
   "toastWorkoutFinished": "Workout finished",

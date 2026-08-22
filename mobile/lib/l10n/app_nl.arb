@@ -68,6 +68,7 @@
   "toastPlanDeleted": "Trainingsschema verwijderd",
   "toastExerciseDeleted": "Oefening verwijderd",
   "toastLogImported": "Logboek geïmporteerd",
+  "toastCsvImportFailed": "Kan dit bestand niet lezen.",
   "toastLogRequired": "Plak eerst een logboek.",
   "toastHistoryImported": "Geschiedenis geïmporteerd",
   "toastWorkoutFinished": "Training afgerond",

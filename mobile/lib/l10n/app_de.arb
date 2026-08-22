@@ -69,6 +69,7 @@
   "toastPlanDeleted": "Trainingsplan gelöscht",
   "toastExerciseDeleted": "Übung gelöscht",
   "toastLogImported": "Log importiert",
+  "toastCsvImportFailed": "Datei konnte nicht gelesen werden.",
   "toastLogRequired": "Bitte zuerst ein Log einfügen.",
   "toastHistoryImported": "Verlauf übernommen",
   "toastWorkoutFinished": "Workout abgeschlossen",

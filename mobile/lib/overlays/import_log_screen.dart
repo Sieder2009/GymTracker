@@ -74,7 +74,16 @@ class _ImportLogScreenState extends State<ImportLogScreen> {
     );
     final path = result?.files.single.path;
     if (path == null || !mounted) return;
-    final content = await File(path).readAsString();
+    final String content;
+    try {
+      content = await File(path).readAsString();
+    } catch (_) {
+      if (!mounted) return;
+      context
+          .read<ToastProvider>()
+          .show(AppLocalizations.of(context)!.toastCsvImportFailed);
+      return;
+    }
     if (!mounted) return;
     setState(() => _parsed = parseImportedWorkoutCsv(content));
   }

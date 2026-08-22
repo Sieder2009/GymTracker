@@ -12,6 +12,7 @@ class Exercise {
     List<HistoryEntry>? history,
     this.note = '',
     Map<String, double>? muscleActivation,
+    this.supersetWithNext = false,
   })  : done = done ?? [],
         history = history ?? [],
         startW = startW ?? _maxWeight(sets),
@@ -25,6 +26,14 @@ class Exercise {
   double startW; // baseline weight for progress deltas
   List<HistoryEntry> history;
   String note;
+
+  /// True when this exercise is chained into a superset with whichever
+  /// exercise immediately follows it in the same day's list -- a whole
+  /// superset group is just a run of consecutive exercises each with this
+  /// set to true (see `data/superset_steps.dart`), so grouping never needs
+  /// its own id, and a plain, non-superset plan (every existing saved plan,
+  /// since this defaults false) walks exactly as it always did.
+  bool supersetWithNext;
 
   /// [MuscleGroup.name] -> activation intensity 0-100, set via
   /// [MuscleActivationEditor] on a user-authored custom exercise. Empty
@@ -79,6 +88,7 @@ class Exercise {
         'history': history.map((h) => h.toJson()).toList(),
         'note': note,
         'muscleActivation': muscleActivation,
+        'supersetWithNext': supersetWithNext,
       };
 
   factory Exercise.fromJson(Map<String, dynamic> json) => Exercise(
@@ -96,5 +106,6 @@ class Exercise {
         note: json['note'] as String? ?? '',
         muscleActivation: (json['muscleActivation'] as Map<String, dynamic>? ?? {})
             .map((k, v) => MapEntry(k, (v as num).toDouble())),
+        supersetWithNext: json['supersetWithNext'] as bool? ?? false,
       );
 }

@@ -100,6 +100,16 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Chains/unchains [exercises][exIdx] with whichever exercise immediately
+  /// follows it into a superset (see `data/superset_steps.dart`) -- a no-op
+  /// on the list's last exercise, since there's nothing after it to link to.
+  void toggleSuperset(List<Exercise> exercises, int exIdx) {
+    if (exIdx >= exercises.length - 1) return;
+    exercises[exIdx].supersetWithNext = !exercises[exIdx].supersetWithNext;
+    _persist();
+    notifyListeners();
+  }
+
   void adjustWeight(
     List<Exercise> exercises,
     int exIdx,

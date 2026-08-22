@@ -8,6 +8,7 @@ import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
 import '../data/constants.dart';
 import '../data/lift_categories.dart';
+import '../data/superset_steps.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../services/notification_service.dart';
@@ -94,8 +95,15 @@ class WorkoutOverlayScreen extends StatefulWidget {
 
 class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     with WidgetsBindingObserver {
-  int _exIdx = 0;
-  int _setIdx = 0;
+  /// The literal walk order of sets for this session -- see
+  /// `data/superset_steps.dart`. Rebuilt whenever [_order] changes (session
+  /// reorder); for a plan with no superset pairs this is just one step per
+  /// set in [_exIdx]/[_setIdx] order, exactly how this screen always walked
+  /// before supersets existed.
+  late List<WorkoutStep> _steps;
+  int _stepIdx = 0;
+  int get _exIdx => _steps[_stepIdx].exerciseIndex;
+  int get _setIdx => _steps[_stepIdx].setIndex;
   DateTime? _restEndsAt;
   int _restTotal = 0;
   int? _rpe;
@@ -127,6 +135,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     WidgetsBinding.instance.addObserver(this);
     final raw = _rawExercises();
     _order = List.generate(raw.length, (i) => i);
+    _steps = buildWorkoutSteps(_ordered(raw));
     // A repeating weekday plan comes back around every week -- without
     // this, every set from last time would still show as "done" the
     // moment this screen opens, since Exercise.done is otherwise one-way.
@@ -161,28 +170,16 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     if (!mounted) return;
     final restEndsAt = _restEndsAt;
     if (restEndsAt != null && !DateTime.now().isBefore(restEndsAt)) {
-      _advance(_ordered(_rawExercises()));
+      _advance();
       return;
     }
     setState(
         () {}); // just re-render the live clock / rest ring off DateTime.now()
   }
 
-  int _totalSets(List<Exercise> exercises) {
-    var total = 0;
-    for (final e in exercises) {
-      total += e.sets.length;
-    }
-    return total < 1 ? 1 : total;
-  }
+  int _totalSets(List<Exercise> exercises) => _steps.isEmpty ? 1 : _steps.length;
 
-  int _doneBefore(List<Exercise> exercises) {
-    var done = 0;
-    for (var i = 0; i < _exIdx; i++) {
-      done += exercises[i].sets.length;
-    }
-    return done + _setIdx;
-  }
+  int _doneBefore(List<Exercise> exercises) => _stepIdx;
 
   void _step(List<Exercise> exercises, double delta) {
     _programs.adjustWeight(exercises, _exIdx, _setIdx, delta);
@@ -205,7 +202,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
 
     final currentSets = ex.sets.length;
     final isLastSetOfExercise = _setIdx >= currentSets - 1;
-    final isLastExercise = _exIdx >= exercises.length - 1;
+    final isLastStep = _stepIdx >= _steps.length - 1;
 
     // Feeds the guided workout's actual performance into the same
     // Exercise.history the manual "save exercise log" flow already writes
@@ -237,7 +234,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
       }
     }
 
-    if (isLastSetOfExercise && isLastExercise) {
+    if (isLastStep) {
       final plan = _programs.byId(widget.programId)!;
       _programs.finishWorkout(plan);
       final minutes = DateTime.now().difference(_startedAt).inMinutes;
@@ -284,6 +281,16 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
 
     if (prMessage != null) {
       context.read<ToastProvider>().show(prMessage);
+    }
+
+    // A superset's non-final step in its round (see superset_steps.dart) --
+    // straight to the partner exercise's matching set, no rest in between.
+    if (!_steps[_stepIdx].restAfter) {
+      setState(() {
+        _stepIdx += 1;
+        _rpe = null;
+      });
+      return;
     }
 
     final restSeconds = exercises[_exIdx].rest;
@@ -344,17 +351,11 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     if (confirmed == true && mounted) Navigator.of(context).pop();
   }
 
-  void _advance(List<Exercise> exercises) {
-    final currentSets = exercises[_exIdx].sets.length;
+  void _advance() {
     setState(() {
       _restEndsAt = null;
       _rpe = null;
-      if (_setIdx < currentSets - 1) {
-        _setIdx += 1;
-      } else {
-        _exIdx += 1;
-        _setIdx = 0;
-      }
+      _stepIdx += 1;
     });
     // Covers both "rest actually elapsed" (harmless no-op cancel, it
     // already fired) and "skipped/advanced early" (the whole reason this
@@ -364,6 +365,13 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     unawaited(context.read<NotificationService>().cancelRestOver());
   }
 
+  // Position-based (everything before _exIdx's slot in _order is
+  // "completed"), same as before supersets existed -- exactly right for a
+  // plain sequential walk. Mid-superset, a partner exercise can show as
+  // "completed" here a round or two before its own last set is actually
+  // done (its later rounds are still ahead, interleaved with the exercise
+  // that's genuinely current) -- a cosmetic quirk of this one secondary
+  // view, not the actual set-by-set walk order (_steps), which is correct.
   Future<void> _openSessionOverview() async {
     final completed = _order.sublist(0, _exIdx);
     final current = _order[_exIdx];
@@ -379,7 +387,20 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
       ),
     );
     if (reordered != null) {
-      setState(() => _order.replaceRange(_exIdx + 1, _order.length, reordered));
+      // The step the user is mid-set on right now, identified by (exercise,
+      // set) rather than by position -- reordering only ever touches
+      // exercises strictly after the current one, so that identity is
+      // stable across the rebuild and lets this find its new position in
+      // the freshly-built step list without having to reason about how
+      // many superset rounds have already been walked.
+      final currentStep = _steps[_stepIdx];
+      setState(() {
+        _order.replaceRange(_exIdx + 1, _order.length, reordered);
+        _steps = buildWorkoutSteps(_ordered(_rawExercises()));
+        _stepIdx = _steps.indexWhere(
+          (s) => s.exerciseIndex == currentStep.exerciseIndex && s.setIndex == currentStep.setIndex,
+        );
+      });
     }
   }
 
@@ -412,8 +433,9 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     final weight = sets[_setIdx].w;
     final targetReps = sets[_setIdx].r;
     final actualReps = sets[_setIdx].actualReps ?? _lowRepBound(targetReps);
-    final isLast = _exIdx == exercises.length - 1 && _setIdx == sets.length - 1;
+    final isLast = _stepIdx == _steps.length - 1;
     final progress = _doneBefore(exercises) / _totalSets(exercises);
+    final inSuperset = ex.supersetWithNext || (_exIdx > 0 && exercises[_exIdx - 1].supersetWithNext);
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -461,6 +483,20 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
             ),
           ),
           const SizedBox(height: 16),
+          if (inSuperset)
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.link_rounded, size: 14, color: colors.accent),
+                  const SizedBox(width: 4),
+                  Text(
+                    t.labelSuperset,
+                    style: TextStyle(color: colors.accent, fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
           Text(
             ex.name,
             style: Theme.of(context).textTheme.headlineLarge,
@@ -591,7 +627,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
           Text(t.secondsPause, style: TextStyle(color: colors.mut)),
           const SizedBox(height: 24),
           TextButton(
-            onPressed: () => _advance(_ordered(_rawExercises())),
+            onPressed: _advance,
             child: Text(t.actionSkipRest),
           ),
         ],

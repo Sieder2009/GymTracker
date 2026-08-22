@@ -357,6 +357,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
                       onDelete: () =>
                           _removeExercise(plan.id, dayIdx, i, exercises[i]),
+                      onToggleSuperset: i < exercises.length - 1
+                          ? () => context.read<ProgramsProvider>().toggleSuperset(exercises, i)
+                          : null,
                     ),
                   ),
               ],
@@ -388,6 +391,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       onTapName: () => _openExerciseDetail(plan.id, null, i),
                       onDelete: () => _removeExercise(
                           plan.id, null, i, dailyExercises[i]),
+                      onToggleSuperset: i < dailyExercises.length - 1
+                          ? () => context.read<ProgramsProvider>().toggleSuperset(dailyExercises, i)
+                          : null,
                     ),
                   ),
               ],

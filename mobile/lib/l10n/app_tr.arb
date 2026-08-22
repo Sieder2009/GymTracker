@@ -12,6 +12,7 @@
   "actionDarkMode": "Karanlık Mod",
   "actionAnalyze": "Analiz et",
   "actionAddExercise": "+ Egzersiz ekle",
+  "actionImportCsvFile": "Dosyadan içe aktar (FitNotes, Strong, Hevy)",
   "actionToggleSuperset": "Sonraki egzersizle bağla (süperset)",
   "labelSupersetWithNext": "Sonraki egzersizle süperset",
   "labelSuperset": "Süperset",

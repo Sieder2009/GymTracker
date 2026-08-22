@@ -1,9 +1,13 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/constants.dart';
 import '../l10n/app_localizations.dart';
 import '../models/program.dart';
+import '../services/csv_import_parser.dart';
 import '../services/log_parser.dart';
 import '../state/big_lifts_provider.dart';
 import '../state/programs_provider.dart';
@@ -12,11 +16,10 @@ import '../state/train_state_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 
-/// "Log importieren" — paste-in log parsing + preview + save.
-/// [initialText]/[initialName] pre-fill and auto-analyze immediately, so the
-/// bundled "Beispielplan laden" example loads without any user action. v1
-/// has no file picker here (paste-only) — more natural on a phone, and one
-/// less dependency.
+/// "Log importieren" — paste-in log parsing, or a CSV export from FitNotes/
+/// Strong/Hevy (see `services/csv_import_parser.dart`, which produces the
+/// exact same [ParsedLog] shape [parseLog] does) — then the same preview +
+/// save flow either way.
 class ImportLogScreen extends StatefulWidget {
   const ImportLogScreen({
     super.key,
@@ -64,11 +67,23 @@ class _ImportLogScreenState extends State<ImportLogScreen> {
     setState(() => _parsed = parseLog(text));
   }
 
+  Future<void> _pickCsvFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    final path = result?.files.single.path;
+    if (path == null || !mounted) return;
+    final content = await File(path).readAsString();
+    if (!mounted) return;
+    setState(() => _parsed = parseImportedWorkoutCsv(content));
+  }
+
   void _back() => setState(() => _parsed = null);
 
   void _savePlan() {
     final parsed = _parsed;
-    if (parsed == null || parsed.days.isEmpty) return;
+    if (parsed == null || (parsed.days.isEmpty && parsed.dailyExercises.isEmpty)) return;
 
     final program = Program(
       id: 'imported_${DateTime.now().millisecondsSinceEpoch}',
@@ -177,12 +192,25 @@ class _ImportLogScreenState extends State<ImportLogScreen> {
           child:
               ElevatedButton(onPressed: _analyze, child: Text(t.actionAnalyze)),
         ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _pickCsvFile,
+            icon: const Icon(Icons.file_upload_outlined, size: 18),
+            label: Text(t.actionImportCsvFile),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildPreviewView(ParsedLog parsed, AppLocalizations t) {
-    if (parsed.days.isEmpty) {
+    // A CSV import never populates `days` (see csv_import_parser.dart --
+    // everything goes into dailyExercises), so "nothing was found" has to
+    // check both, not just days -- days-only also missed a hand-typed log
+    // that's nothing but preamble exercises with no day headers at all.
+    if (parsed.days.isEmpty && parsed.dailyExercises.isEmpty) {
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [

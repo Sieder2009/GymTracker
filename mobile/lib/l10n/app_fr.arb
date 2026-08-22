@@ -12,6 +12,7 @@
   "actionDarkMode": "Mode sombre",
   "actionAnalyze": "Analyser",
   "actionAddExercise": "+ Ajouter un exercice",
+  "actionImportCsvFile": "Importer depuis un fichier (FitNotes, Strong, Hevy)",
   "actionToggleSuperset": "Lier à l'exercice suivant (superset)",
   "labelSupersetWithNext": "Superset avec l'exercice suivant",
   "labelSuperset": "Superset",

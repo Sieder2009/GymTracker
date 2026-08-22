@@ -12,6 +12,7 @@
   "actionDarkMode": "Тёмная тема",
   "actionAnalyze": "Анализировать",
   "actionAddExercise": "+ Добавить упражнение",
+  "actionImportCsvFile": "Импортировать из файла (FitNotes, Strong, Hevy)",
   "actionToggleSuperset": "Связать со следующим упражнением (суперсет)",
   "labelSupersetWithNext": "Суперсет со следующим упражнением",
   "labelSuperset": "Суперсет",

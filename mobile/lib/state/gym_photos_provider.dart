@@ -17,7 +17,13 @@ import '../services/storage_service.dart';
 /// available for some reason — fail-soft, matching [StorageService], so a
 /// resolution problem never blocks app startup (worst case: photos don't
 /// survive a reinstall on that one platform, the app still opens).
+///
+/// Flutter Web has no filesystem at all -- `path_provider` and `dart:io`'s
+/// `Directory` both throw there (this app isn't shipped on web; this guard
+/// just keeps a stray web build from crashing at launch instead of showing
+/// a blank screen). Photos are simply unavailable on that platform.
 Future<Directory> resolveGymPhotosDir() async {
+  if (kIsWeb) return Directory('gym_photos');
   try {
     final docs = await getApplicationDocumentsDirectory();
     final dir = Directory(p.join(docs.path, 'gym_photos'));

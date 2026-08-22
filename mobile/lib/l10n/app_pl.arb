@@ -68,7 +68,7 @@
   "toastPlanDeleted": "Plan usunięty",
   "toastExerciseDeleted": "Ćwiczenie usunięte",
   "toastLogImported": "Dziennik zaimportowany",
-  "toastCsvImportFailed": "Nie można odczytać tego pliku.",
+  "toastFileReadFailed": "Nie można odczytać tego pliku.",
   "toastLogRequired": "Najpierw wklej dziennik.",
   "toastHistoryImported": "Historia zaimportowana",
   "toastWorkoutFinished": "Trening zakończony",

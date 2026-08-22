@@ -81,7 +81,7 @@ class _ImportLogScreenState extends State<ImportLogScreen> {
       if (!mounted) return;
       context
           .read<ToastProvider>()
-          .show(AppLocalizations.of(context)!.toastCsvImportFailed);
+          .show(AppLocalizations.of(context)!.toastFileReadFailed);
       return;
     }
     if (!mounted) return;

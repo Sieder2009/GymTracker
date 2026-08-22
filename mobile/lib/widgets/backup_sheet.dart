@@ -106,7 +106,16 @@ class _BackupSheetState extends State<_BackupSheet> {
     );
     final path = result?.files.single.path;
     if (path == null) return;
-    final content = await File(path).readAsString();
+    final String content;
+    try {
+      content = await File(path).readAsString();
+    } catch (_) {
+      if (!mounted) return;
+      context
+          .read<ToastProvider>()
+          .show(AppLocalizations.of(context)!.toastFileReadFailed);
+      return;
+    }
     if (!mounted) return;
     setState(() => _importController.text = content);
     context

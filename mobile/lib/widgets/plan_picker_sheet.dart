@@ -56,7 +56,14 @@ class PlanPickerSheet extends StatelessWidget {
     );
     final path = result?.files.single.path;
     if (path == null) return;
-    final content = await File(path).readAsString();
+    final String content;
+    try {
+      content = await File(path).readAsString();
+    } catch (_) {
+      if (!context.mounted) return;
+      context.read<ToastProvider>().show(t.toastFileReadFailed);
+      return;
+    }
     final imported = parseSharedPlanPayload(content);
     if (!context.mounted) return;
     if (imported == null) {

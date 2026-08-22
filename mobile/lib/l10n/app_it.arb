@@ -68,7 +68,7 @@
   "toastPlanDeleted": "Piano eliminato",
   "toastExerciseDeleted": "Esercizio eliminato",
   "toastLogImported": "Registro importato",
-  "toastCsvImportFailed": "Impossibile leggere il file.",
+  "toastFileReadFailed": "Impossibile leggere il file.",
   "toastLogRequired": "Incolla prima un registro.",
   "toastHistoryImported": "Cronologia importata",
   "toastWorkoutFinished": "Allenamento terminato",

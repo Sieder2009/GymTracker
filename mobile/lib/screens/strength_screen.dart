@@ -470,13 +470,21 @@ class _BodyWeightCardState extends State<_BodyWeightCard> {
                 child: Text(t.emptyNoEntries, style: TextStyle(color: colors.mut)),
               )
             else ...[
-              StrengthLineChart(
-                points: points.map((e) => e.weight).toList(),
-                pr: 0,
-                color: colors.accent,
-                lineColor: colors.line,
-              ),
-              const SizedBox(height: 8),
+              // A single point has nothing to connect to -- StrengthLineChart
+              // would just center one dot in an otherwise blank frame with no
+              // axis to give it context, which reads as broken rather than
+              // "not enough data yet". Skip straight to the value; the chart
+              // earns its place once there's a second entry to draw a trend
+              // between.
+              if (points.length > 1) ...[
+                StrengthLineChart(
+                  points: points.map((e) => e.weight).toList(),
+                  pr: 0,
+                  color: colors.accent,
+                  lineColor: colors.line,
+                ),
+                const SizedBox(height: 8),
+              ],
               Text('${t.labelCurrent}: $latestLabel', style: TextStyle(color: colors.mut)),
             ],
             const SizedBox(height: 12),

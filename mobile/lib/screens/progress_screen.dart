@@ -118,9 +118,16 @@ class _OverviewTab extends StatelessWidget {
     final lifts = context.watch<BigLiftsProvider>().lifts;
 
     final buckets = weeklyBuckets(sessions);
-    final volumePoints = [
-      for (final b in buckets) ChartPoint(b.weekStart, b.totalVolumeKg),
-    ];
+    // weeklyBuckets deliberately zero-fills a week with no sessions (see its
+    // own doc comment) -- real signal for someone who trained earlier and
+    // tapered off. But with *zero sessions ever* (a fresh install), every
+    // one of the 8 buckets is trivially zero and carries no information;
+    // charting that renders LineChartCard's fake-padded ±1 axis around a
+    // flat line instead of the honest "not enough data" state it was built
+    // to show for exactly this case.
+    final volumePoints = sessions.isEmpty
+        ? const <ChartPoint>[]
+        : [for (final b in buckets) ChartPoint(b.weekStart, b.totalVolumeKg)];
     final totalVolume =
         sessions.fold<double>(0, (sum, s) => sum + s.totalVolumeKg);
     final currentStreak = computeConsistency(sessions).currentStreakDays;

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -111,6 +113,147 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+/// One native-style settings row: a solid-colored icon badge (the same
+/// language iOS Settings uses -- the green Phone square, the blue Safari
+/// square) plus a label and a trailing control. The shared building block
+/// every grouped list in this screen is made of, so the whole screen reads
+/// as one consistent list instead of a stack of differently-shaped cards.
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    this.subtitle,
+    this.subtitleColor,
+    this.trailing,
+    this.onTap,
+    this.showChevron = true,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String? subtitle;
+  final Color? subtitleColor;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final bool showChevron;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          _IconBadge(icon: icon, color: iconColor),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: Theme.of(context).textTheme.headlineMedium),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      color: subtitleColor ?? colors.mut,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (trailing != null) trailing!,
+          if (trailing == null && onTap != null && showChevron)
+            Icon(Icons.chevron_right_rounded, color: colors.mut),
+        ],
+      ),
+    );
+    if (onTap == null) return row;
+    return InkWell(onTap: onTap, child: row);
+  }
+}
+
+class _IconBadge extends StatelessWidget {
+  const _IconBadge({required this.icon, required this.color, this.size = 30});
+
+  final IconData icon;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(AppRadii.sm)),
+      child: Icon(icon, color: Colors.white, size: size * 0.58),
+    );
+  }
+}
+
+/// Hairline divider inset to align under the row label rather than running
+/// full-width under the icon too -- the detail that makes a grouped list
+/// read as one continuous list instead of stacked rows (iOS Settings does
+/// the same: 16 padding + 30 icon + 12 gap).
+class _RowDivider extends StatelessWidget {
+  const _RowDivider();
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+        padding: EdgeInsets.only(left: 58),
+        child: Divider(height: 1),
+      );
+}
+
+/// A group of [_SettingsRow]s in one rounded, bordered container -- the
+/// grouped-list pattern from iOS Settings, in place of one shadowed [Card]
+/// per individual setting.
+class _SettingsGroup extends StatelessWidget {
+  const _SettingsGroup({required this.header, required this.children});
+
+  final String header;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(header, style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: 8),
+        Card(
+          margin: EdgeInsets.zero,
+          child: Column(children: children),
+        ),
+      ],
+    );
+  }
+}
+
+/// A pill-shaped label for [CupertinoSlidingSegmentedControl] children --
+/// explicit colors rather than relying on Cupertino's platform-brightness
+/// default, since this app's theme mode (light/dark/custom) can differ from
+/// the OS's own brightness.
+Widget _segmentLabel(BuildContext context, String text) {
+  final colors = Theme.of(context).extension<AppColors>()!;
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Text(
+      text,
+      style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w600, color: colors.txt),
+    ),
+  );
+}
+
 /// Modeled on iOS Settings' own "Allgemein > Info" row: a plain version
 /// line up top (with a quiet manual-refresh affordance, not a permanent
 /// button demanding attention) and one status area below that cross-fades
@@ -139,6 +282,8 @@ class _UpdateSection extends StatelessWidget {
               children: [
                 Row(
                   children: [
+                    _IconBadge(icon: Icons.arrow_circle_up_rounded, color: colors.accent, size: 36),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         version == null ? '…' : t.labelInstalledVersion(version),
@@ -180,7 +325,7 @@ class _UpdateSection extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Switch(
+                    Switch.adaptive(
                       value: update.autoInstall,
                       onChanged: (v) => update.setAutoInstall(v),
                     ),
@@ -369,15 +514,18 @@ class _AppearanceSection extends StatelessWidget {
               children: [
                 Text(t.labelThemeMode, style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 10),
-                SegmentedButton<String>(
-                  segments: [
-                    ButtonSegment(value: 'light', label: Text(t.themeModeLight)),
-                    ButtonSegment(value: 'dark', label: Text(t.themeModeDark)),
-                    ButtonSegment(value: 'custom', label: Text(t.themeModeCustom)),
-                  ],
-                  selected: {theme.mode},
-                  onSelectionChanged: (s) =>
-                      context.read<ThemeProvider>().setMode(s.first),
+                CupertinoSlidingSegmentedControl<String>(
+                  backgroundColor: colors.card2,
+                  thumbColor: colors.card,
+                  groupValue: theme.mode,
+                  children: {
+                    'light': _segmentLabel(context, t.themeModeLight),
+                    'dark': _segmentLabel(context, t.themeModeDark),
+                    'custom': _segmentLabel(context, t.themeModeCustom),
+                  },
+                  onValueChanged: (v) {
+                    if (v != null) context.read<ThemeProvider>().setMode(v);
+                  },
                 ),
                 const Divider(height: 24),
                 Text(t.labelPrimaryColor, style: Theme.of(context).textTheme.headlineMedium),
@@ -575,33 +723,29 @@ class _AthleteProfileSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
     final athlete = context.watch<AthleteSettingsProvider>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _SettingsGroup(
+      header: t.headerAthleteProfile,
       children: [
-        Text(t.headerAthleteProfile, style: Theme.of(context).textTheme.labelSmall),
-        const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(t.labelGenderForFormulas, style: Theme.of(context).textTheme.headlineMedium),
-                ),
-                ChoiceChip(
-                  label: const Text('M'),
-                  selected: athlete.isMale,
-                  onSelected: (_) => athlete.setIsMale(true),
-                ),
-                const SizedBox(width: 6),
-                ChoiceChip(
-                  label: const Text('F'),
-                  selected: !athlete.isMale,
-                  onSelected: (_) => athlete.setIsMale(false),
-                ),
-              ],
+        _SettingsRow(
+          icon: Icons.accessibility_new_rounded,
+          iconColor: colors.secondary,
+          label: t.labelGenderForFormulas,
+          trailing: SizedBox(
+            width: 96,
+            child: CupertinoSlidingSegmentedControl<bool>(
+              backgroundColor: colors.card2,
+              thumbColor: colors.card,
+              groupValue: athlete.isMale,
+              children: {
+                true: _segmentLabel(context, 'M'),
+                false: _segmentLabel(context, 'F'),
+              },
+              onValueChanged: (v) {
+                if (v != null) athlete.setIsMale(v);
+              },
             ),
           ),
         ),
@@ -643,36 +787,28 @@ class _EquipmentSectionState extends State<_EquipmentSection> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
     final barWeight = context.watch<BarWeightProvider>();
     if (_controller.text.isEmpty) {
       _controller.text = fmt1(barWeight.barWeightKg);
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _SettingsGroup(
+      header: t.headerEquipment,
       children: [
-        Text(t.headerEquipment, style: Theme.of(context).textTheme.labelSmall),
-        const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(t.labelBarWeight, style: Theme.of(context).textTheme.headlineMedium),
-                ),
-                SizedBox(
-                  width: 90,
-                  child: TextField(
-                    controller: _controller,
-                    textAlign: TextAlign.end,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(suffixText: 'kg', isDense: true),
-                    onEditingComplete: () => _submit(barWeight),
-                    onTapOutside: (_) => _submit(barWeight),
-                  ),
-                ),
-              ],
+        _SettingsRow(
+          icon: Icons.fitness_center_rounded,
+          iconColor: colors.yellow,
+          label: t.labelBarWeight,
+          trailing: SizedBox(
+            width: 90,
+            child: TextField(
+              controller: _controller,
+              textAlign: TextAlign.end,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(suffixText: 'kg', isDense: true),
+              onEditingComplete: () => _submit(barWeight),
+              onTapOutside: (_) => _submit(barWeight),
             ),
           ),
         ),
@@ -696,52 +832,41 @@ class _ReminderSection extends StatelessWidget {
     final colors = Theme.of(context).extension<AppColors>()!;
     final reminder = context.watch<ReminderProvider>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _SettingsGroup(
+      header: t.headerReminders,
       children: [
-        Text(t.headerReminders, style: Theme.of(context).textTheme.labelSmall),
-        const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        _SettingsRow(
+          icon: Icons.notifications_rounded,
+          iconColor: colors.green,
+          label: t.labelDailyReminder,
+          trailing: Switch.adaptive(
+            value: reminder.enabled,
+            onChanged: reminder.isSupportedPlatform
+                ? (v) => reminder.setEnabled(v, title: t.notificationTitle, body: t.notificationBody)
+                : null,
+          ),
+        ),
+        if (!reminder.isSupportedPlatform)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(58, 0, 16, 12),
+            child: Text(t.reminderNotSupported, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+          ),
+        if (reminder.enabled && reminder.isSupportedPlatform) ...[
+          const _RowDivider(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(58, 10, 16, 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(t.labelDailyReminder, style: Theme.of(context).textTheme.headlineMedium),
-                    ),
-                    Switch(
-                      value: reminder.enabled,
-                      onChanged: reminder.isSupportedPlatform
-                          ? (v) => reminder.setEnabled(v, title: t.notificationTitle, body: t.notificationBody)
-                          : null,
-                    ),
-                  ],
+                Text(t.labelReminderTime, style: TextStyle(color: colors.mut, fontWeight: FontWeight.w600)),
+                TextButton(
+                  onPressed: () => _pickTime(context, reminder, t),
+                  child: Text(reminder.time.format(context)),
                 ),
-                if (!reminder.isSupportedPlatform)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(t.reminderNotSupported, style: TextStyle(color: colors.mut, fontSize: 12.5)),
-                  ),
-                if (reminder.enabled && reminder.isSupportedPlatform) ...[
-                  const Divider(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(t.labelReminderTime, style: TextStyle(color: colors.mut)),
-                      TextButton(
-                        onPressed: () => _pickTime(context, reminder, t),
-                        child: Text(reminder.time.format(context)),
-                      ),
-                    ],
-                  ),
-                ],
               ],
             ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -767,65 +892,28 @@ class _HealthSection extends StatelessWidget {
     final brandColor = healthBrandColor();
     final brandName = healthBrandName();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _SettingsGroup(
+      header: t.titleHealthSync,
       children: [
-        Text(t.titleHealthSync, style: Theme.of(context).textTheme.labelSmall),
-        const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(color: brandColor, borderRadius: BorderRadius.circular(AppRadii.sm)),
-                  child: const Icon(Icons.favorite_rounded, color: Colors.white, size: 20),
+        _SettingsRow(
+          icon: Icons.favorite_rounded,
+          iconColor: brandColor,
+          label: brandName,
+          subtitle: health.isConnected ? t.labelHealthConnected : t.labelHealthNotConnected,
+          subtitleColor: health.isConnected ? colors.green : colors.mut,
+          trailing: health.isLoading
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : Switch.adaptive(
+                  value: health.isConnected,
+                  onChanged: (v) {
+                    if (v) {
+                      unawaited(connectHealthWithFeedback(context, health, t));
+                    } else {
+                      health.disconnect();
+                      context.read<ToastProvider>().show(t.toastHealthDisconnected);
+                    }
+                  },
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        brandName,
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        health.isConnected ? t.labelHealthConnected : t.labelHealthNotConnected,
-                        style: TextStyle(
-                          color: health.isConnected ? colors.green : colors.mut,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                if (health.isLoading)
-                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                else
-                  Switch(
-                    value: health.isConnected,
-                    onChanged: (v) {
-                      if (v) {
-                        unawaited(connectHealthWithFeedback(context, health, t));
-                      } else {
-                        health.disconnect();
-                        context.read<ToastProvider>().show(t.toastHealthDisconnected);
-                      }
-                    },
-                  ),
-              ],
-            ),
-          ),
         ),
       ],
     );
@@ -838,30 +926,22 @@ class _GeneralSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final colors = Theme.of(context).extension<AppColors>()!;
+    return _SettingsGroup(
+      header: t.headerGeneral,
       children: [
-        Text(t.headerGeneral, style: Theme.of(context).textTheme.labelSmall),
-        const SizedBox(height: 8),
-        Card(
-          margin: EdgeInsets.zero,
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: Text(t.settingsLanguage),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => showLanguagePicker(context),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.import_export),
-                title: Text(t.titleBackup),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => showBackupSheet(context),
-              ),
-            ],
-          ),
+        _SettingsRow(
+          icon: Icons.language_rounded,
+          iconColor: colors.accent,
+          label: t.settingsLanguage,
+          onTap: () => showLanguagePicker(context),
+        ),
+        const _RowDivider(),
+        _SettingsRow(
+          icon: Icons.import_export_rounded,
+          iconColor: colors.purple,
+          label: t.titleBackup,
+          onTap: () => showBackupSheet(context),
         ),
       ],
     );
@@ -877,37 +957,33 @@ class _HelpSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
     final hasEmail = AppConfig.supportEmail.isNotEmpty;
     final hasPhone = AppConfig.supportPhone.isNotEmpty;
     if (!hasEmail && !hasPhone) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _SettingsGroup(
+      header: t.headerHelp,
       children: [
-        Text(t.headerHelp, style: Theme.of(context).textTheme.labelSmall),
-        const SizedBox(height: 8),
-        Card(
-          margin: EdgeInsets.zero,
-          child: Column(
-            children: [
-              if (hasEmail)
-                ListTile(
-                  leading: const Icon(Icons.mail_outline),
-                  title: Text(t.actionEmail),
-                  subtitle: Text(AppConfig.supportEmail),
-                  onTap: _sendEmail,
-                ),
-              if (hasEmail && hasPhone) const Divider(height: 1),
-              if (hasPhone)
-                ListTile(
-                  leading: const Icon(Icons.call_outlined),
-                  title: Text(t.actionCall),
-                  subtitle: Text(AppConfig.supportPhone),
-                  onTap: _call,
-                ),
-            ],
+        if (hasEmail)
+          _SettingsRow(
+            icon: Icons.mail_outline_rounded,
+            iconColor: colors.accent,
+            label: t.actionEmail,
+            subtitle: AppConfig.supportEmail,
+            showChevron: false,
+            onTap: _sendEmail,
           ),
-        ),
+        if (hasEmail && hasPhone) const _RowDivider(),
+        if (hasPhone)
+          _SettingsRow(
+            icon: Icons.call_rounded,
+            iconColor: colors.green,
+            label: t.actionCall,
+            subtitle: AppConfig.supportPhone,
+            showChevron: false,
+            onTap: _call,
+          ),
       ],
     );
   }

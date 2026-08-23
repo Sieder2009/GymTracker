@@ -335,6 +335,31 @@
       }
     }
   },
+  "labelProgressionSuggestion": "SUGGESTED NEXT SESSION",
+  "progressionIncreaseWeight": "Full clear on your reps — try {weight} next session.",
+  "@progressionIncreaseWeight": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "progressionIncreaseReps": "Same weight next session ({weight}) — aim for one more rep.",
+  "@progressionIncreaseReps": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "progressionDeload": "Two tough sessions in a row — consider dropping to {weight} to rebuild momentum.",
+  "@progressionDeload": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
   "titleGallery": "Gallery",
   "actionChooseFromGallery": "Choose from gallery",
   "actionTakePhoto": "Take photo",

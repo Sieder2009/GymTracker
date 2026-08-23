@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../analytics/analytics_engine.dart';
+import '../analytics/progression_engine.dart';
 import '../data/constants.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../theme/app_colors.dart';
 import 'chart_card.dart';
 import 'plateau_notice.dart';
+import 'progression_notice.dart';
 import 'trend_value.dart';
 
 /// Per-exercise analytics — every exercise gets the same trend/e1RM/chart
@@ -28,6 +30,7 @@ class ExerciseAnalyticsSection extends StatelessWidget {
     final trend = computeExerciseTrend(exercise);
     final bestE1rm = bestEstimatedOneRepMax(exercise);
     final plateaued = isExercisePlateaued(exercise);
+    final progression = suggestNextSession(exercise);
     final points = exerciseHistoryPoints(exercise)
         .map((p) => ChartPoint(p.date, p.e1rm ?? p.topWeight))
         .toList();
@@ -86,6 +89,10 @@ class ExerciseAnalyticsSection extends StatelessWidget {
           color: colors.accent,
           height: 160,
         ),
+        if (progression != null) ...[
+          const SizedBox(height: 12),
+          ProgressionNotice(suggestion: progression),
+        ],
         if (plateaued == true) ...[
           const SizedBox(height: 12),
           PlateauNotice(label: exercise.name),

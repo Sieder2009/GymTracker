@@ -97,6 +97,14 @@ phone screen. One tap is enough to find everything.
   phone was locked.
 - Enter weight with a **slider or the keyboard** (comma or dot as the
   decimal separator).
+- **Progressive overload suggestions.** Every exercise with logged history
+  gets a plain-language nudge for what to try next session — double
+  progression within its configured rep range: a full clear on reps bumps
+  the weight (+2.5kg, +5kg for leg exercises), landing short of the top
+  holds the weight and chases one more rep, and two missed sessions in a
+  row suggest a deload instead of grinding at a stuck weight
+  (`analytics/progression_engine.dart`). Built only from real numeric reps
+  you logged — never a guess when a set only carries a '✓'/'x'/'m' marker.
 - A training calendar with a monthly view and workout history, plus a
   photo gallery for your progress.
 - Swipe between the four main tabs, or use the tab bar at the bottom.
@@ -279,11 +287,12 @@ flutter test
 Every push runs through `flutter analyze` and `flutter test` in all four
 platform workflows, before anything gets built. The calculation engines
 behind the Analytics tab (`lib/analytics/analytics_engine.dart`,
-`lib/analytics/achievements_engine.dart`) and the Strength tab
-(`lib/data/dots_score.dart`, `lib/data/strength_standards.dart`,
-`lib/data/plate_calculator.dart`) all have their own dedicated test files
-under `mobile/test/` — pure calculations, not just UI, so every number
-you see on either tab traces back to a tested function.
+`lib/analytics/achievements_engine.dart`, `lib/analytics/progression_engine.dart`)
+and the Strength tab (`lib/data/dots_score.dart`,
+`lib/data/strength_standards.dart`, `lib/data/plate_calculator.dart`) all
+have their own dedicated test files under `mobile/test/` — pure
+calculations, not just UI, so every number you see on either tab traces
+back to a tested function.
 
 ## <img src="https://api.iconify.design/lucide:folder-tree.svg?color=%231fa76a" width="20" height="20" alt=""/> Project structure
 

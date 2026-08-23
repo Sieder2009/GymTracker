@@ -9,10 +9,11 @@ on:
 permissions:
   contents: write
 
-# Shared across all four platform workflows on purpose -- see android.yml's
-# comment on this same block for why.
+# Scoped per platform on purpose -- see android.yml's comment on this same
+# block for why (a shared group across all four cancelled two of them on
+# every release instead of just serializing the shared-release upload).
 concurrency:
-  group: release-${{ github.ref_name }}
+  group: release-macos-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:

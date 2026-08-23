@@ -9,16 +9,26 @@ on:
 permissions:
   contents: write
 
-# Shared across all four platform workflows on purpose (same group name in
-# android/ios/windows/macos.yml): all four trigger on the same tag push and
-# each ends by uploading its own asset to that one shared GitHub Release
-# via softprops/action-gh-release. Running unserialized, two of them
-# racing to create/update the same release at once reliably fails one or
-# two of the four with a conflict -- queuing them one at a time (not
-# cancel-in-progress, every platform's build still has to actually run)
-# fixes that instead of leaving it to chance on every release.
+# Used to share ONE group name across all four platform workflows
+# (android/ios/windows/macos.yml) on purpose, to serialize their shared
+# GitHub Release upload (via softprops/action-gh-release) and avoid two
+# of them racing to create/update it at once.
+#
+# That backfired: a concurrency group cancels any run that's merely
+# *pending* (queued, not yet started) as soon as a newer run for the same
+# group is queued -- cancel-in-progress: false only protects a run
+# that's already *in_progress*. With all four workflows firing within
+# the same second for one tag push, that deterministically cancelled two
+# of the four on every single release (confirmed on the v2.9.0 tag:
+# Windows and macOS were both cancelled before they ever started, while
+# Android and iOS ran). Scoping the group per platform fixes that -- each
+# workflow now only ever collides with an earlier run of *itself* (e.g. a
+# manual re-run while the previous attempt is still going), so all four
+# actually run in parallel. softprops/action-gh-release already reuses an
+# existing release for the tag rather than failing when one's already
+# there, which is the only cross-workflow coordination this needs.
 concurrency:
-  group: release-${{ github.ref_name }}
+  group: release-android-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -70,7 +80,14 @@ jobs:
           # base64 dump. Fail loudly with a specific reason instead of a
           # bare exit code, so this is diagnosable from the Actions summary
           # without needing to sign in to view raw logs.
-          if ! echo "$KEYSTORE_BASE64" | base64 -d > android/app/release-keystore.jks; then
+          #
+          # `tr -d '[:space:]'` first: pasting the secret via the GitHub
+          # web UI (or a Windows-generated source file) can carry a
+          # trailing/embedded \r or \n that isn't part of the base64
+          # alphabet -- strip all whitespace unconditionally rather than
+          # failing on an artifact that has nothing to do with whether the
+          # underlying keystore data is actually valid.
+          if ! echo "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > android/app/release-keystore.jks; then
             echo "::error::ANDROID_KEYSTORE_BASE64 secret is set but isn't valid base64 (decode failed). Regenerate it from the keystore file with a plain base64 dump -- e.g. in PowerShell: [Convert]::ToBase64String([IO.File]::ReadAllBytes('release-keystore.jks')) | Set-Content -NoNewline keystore_base64.txt -- and NOT with certutil -encode, which wraps the output in -----BEGIN/END CERTIFICATE----- lines that aren't valid base64. Paste the resulting file's contents into the secret."
             exit 1
           fi

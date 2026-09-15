@@ -100,6 +100,90 @@ void main() {
     });
   });
 
+  group('computeMuscleProgress', () {
+    test('returns one path per muscle category, all zero with no programs', () {
+      final paths = computeMuscleProgress([]);
+      expect(paths.length, kMuscleVolumeCategories.length);
+      for (final p in paths) {
+        expect(p.currentValue, 0);
+      }
+    });
+
+    test('sums weight x numeric reps into the matching category only', () {
+      final chest = Exercise.fresh('Bankdrücken', 'chest', 90, [ExerciseSet(w: 60, r: '8')],
+          history: [HistoryEntry(weight: 100, reps: const [10], date: '2026-07-01')]);
+      final legs = Exercise.fresh('Kniebeuge', 'legs', 120, [ExerciseSet(w: 80, r: '8')],
+          history: [HistoryEntry(weight: 100, reps: const [5], date: '2026-07-01')]);
+      final program = Program(
+        id: 'p1',
+        name: 'Test',
+        mode: 'weekday',
+        startDate: '2026-01-01',
+        days: [
+          Day(label: 'Montag', rest: false, exercises: [chest, legs])
+        ],
+      );
+
+      final paths = computeMuscleProgress([program]);
+      expect(paths.firstWhere((p) => p.id == AchievementPathId.chestVolume).currentValue, 1000);
+      expect(paths.firstWhere((p) => p.id == AchievementPathId.legsVolume).currentValue, 500);
+      expect(paths.firstWhere((p) => p.id == AchievementPathId.backVolume).currentValue, 0);
+    });
+
+    test('marker-only sets contribute no volume, undated entries still count', () {
+      final ex = Exercise.fresh('Klimmzug', 'back', 90, [ExerciseSet(w: 0, r: '✓')], history: [
+        HistoryEntry(weight: 20, reps: const ['✓', '✓'], date: '2026-07-01'), // 0 volume
+        HistoryEntry(weight: 20, reps: const [10], date: null), // undated, still counted
+      ]);
+      final program = Program(
+        id: 'p1',
+        name: 'Test',
+        mode: 'weekday',
+        startDate: '2026-01-01',
+        days: [
+          Day(label: 'Montag', rest: false, exercises: [ex])
+        ],
+      );
+
+      final paths = computeMuscleProgress([program]);
+      expect(paths.firstWhere((p) => p.id == AchievementPathId.backVolume).currentValue, 200);
+    });
+
+    test('exercises outside the tracked categories (e.g. cardio) are ignored', () {
+      final ex = Exercise.fresh('Laufen', 'cardio', 0, [],
+          history: [HistoryEntry(weight: 999, reps: const [999], date: '2026-07-01')]);
+      final program = Program(
+        id: 'p1',
+        name: 'Test',
+        mode: 'weekday',
+        startDate: '2026-01-01',
+        days: [
+          Day(label: 'Montag', rest: false, exercises: [ex])
+        ],
+      );
+
+      final paths = computeMuscleProgress([program]);
+      expect(paths.fold<double>(0, (sum, p) => sum + p.currentValue), 0);
+    });
+
+    test('is excluded from computeRank (does not double-count volume)', () {
+      final ex = Exercise.fresh('Bankdrücken', 'chest', 90, [ExerciseSet(w: 60, r: '8')],
+          history: [HistoryEntry(weight: 500, reps: const [100], date: '2026-07-01')]);
+      final program = Program(
+        id: 'p1',
+        name: 'Test',
+        mode: 'weekday',
+        startDate: '2026-01-01',
+        days: [
+          Day(label: 'Montag', rest: false, exercises: [ex])
+        ],
+      );
+
+      final withMuscleHistory = computeAchievements(sessions: [], programs: [program], now: now);
+      expect(withMuscleHistory.any((p) => p.id == AchievementPathId.chestVolume), isFalse);
+    });
+  });
+
   group('newlyUnlockedTiers', () {
     test('reports only paths whose tier index increased', () {
       final before = computeAchievements(sessions: [], programs: [], now: now);

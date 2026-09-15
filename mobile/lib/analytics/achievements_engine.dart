@@ -15,6 +15,12 @@ enum AchievementPathId {
   totalSets,
   totalWorkoutMinutes,
   distinctExercises,
+  chestVolume,
+  backVolume,
+  shouldersVolume,
+  legsVolume,
+  armsVolume,
+  coreVolume,
 }
 
 const List<int> kConsistencyTiers = [3, 7, 14, 30, 60, 100];
@@ -31,6 +37,13 @@ const List<int> kPrCountTiers = [1, 3, 5, 10, 20, 35];
 const List<int> kTotalSetsTiers = [50, 150, 400, 1000, 2500, 5000];
 const List<int> kTotalWorkoutMinutesTiers = [60, 300, 900, 2400, 6000, 12000];
 const List<int> kDistinctExercisesTiers = [3, 8, 15, 25, 40, 60];
+
+/// The coarse categories [Exercise.muscle] actually holds (see
+/// `kExerciseCategories`) -- minus 'cardio', which isn't a muscle group
+/// [computeMuscleProgress] should score.
+const List<String> kMuscleVolumeCategories = ['chest', 'back', 'shoulders', 'legs', 'arms', 'core'];
+
+const List<double> kMuscleVolumeTiers = [250, 1000, 3000, 8000, 20000, 40000];
 
 class AchievementPathResult {
   AchievementPathResult({
@@ -112,6 +125,65 @@ int _distinctExercisesTrained(List<Program> programs) {
     if (ex.history.isNotEmpty) names.add(ex.name.trim().toLowerCase());
   }
   return names.length;
+}
+
+/// Sum of the numeric rep entries in one history record -- markers
+/// ('✓'/'x'/'m') carry no known rep count, same rule
+/// `analytics_engine.dart`'s `_maxIntReps` uses, just summed instead of
+/// maxed since this feeds total volume, not a single best set.
+int _numericRepsSum(List<Object> reps) {
+  var sum = 0;
+  for (final r in reps) {
+    if (r is int) sum += r;
+  }
+  return sum;
+}
+
+/// All-time logged volume for one exercise, every dated *and* undated
+/// history entry included (unlike `exerciseHistoryPoints`) -- a pasted-log
+/// import with no per-session date is still real training that happened,
+/// and dropping it would make a muscle group with years of imported
+/// history look barely trained.
+double _historyVolumeKg(Exercise ex) {
+  var total = 0.0;
+  for (final h in ex.history) {
+    if (h.weight <= 0) continue;
+    total += h.weight * _numericRepsSum(h.reps);
+  }
+  return total;
+}
+
+AchievementPathId _muscleVolumePathId(String category) => switch (category) {
+      'chest' => AchievementPathId.chestVolume,
+      'back' => AchievementPathId.backVolume,
+      'shoulders' => AchievementPathId.shouldersVolume,
+      'legs' => AchievementPathId.legsVolume,
+      'arms' => AchievementPathId.armsVolume,
+      'core' => AchievementPathId.coreVolume,
+      _ => throw ArgumentError('not a muscle-volume category: $category'),
+    };
+
+/// One volume-based path per coarse muscle category (see [Exercise.muscle],
+/// the same category the "Muskelgruppe" picker in ExerciseDetailScreen
+/// writes) -- a breakdown of the same logged history [computeAchievements]'s
+/// totalVolume path already sums, split by body area instead of lumped into
+/// one number. Deliberately kept out of [computeRank]'s score: these are a
+/// different view of volume already counted there, not new information, so
+/// including them too would double-weight volume against every other path.
+List<AchievementPathResult> computeMuscleProgress(List<Program> programs) {
+  final totals = {for (final c in kMuscleVolumeCategories) c: 0.0};
+  for (final ex in _allExercises(programs)) {
+    if (!totals.containsKey(ex.muscle)) continue;
+    totals[ex.muscle] = totals[ex.muscle]! + _historyVolumeKg(ex);
+  }
+  return [
+    for (final category in kMuscleVolumeCategories)
+      AchievementPathResult(
+        id: _muscleVolumePathId(category),
+        currentValue: totals[category]!,
+        thresholds: kMuscleVolumeTiers,
+      ),
+  ];
 }
 
 List<AchievementPathResult> computeAchievements({

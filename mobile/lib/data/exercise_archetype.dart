@@ -1,10 +1,11 @@
 import '../models/exercise_template.dart';
 
-/// Movement-pattern archetypes for [ExerciseArchetypeAnimation] -- a small,
-/// reusable set of ORIGINAL animated illustrations (see that widget) rather
-/// than one bespoke animation per exercise, which hundreds of exercises
-/// makes infeasible. [core] is also the fallback for anything that isn't a
-/// push/pull/squat/hinge rep pattern (ab work, cardio).
+/// Movement-pattern archetypes shared by exercises -- used to pick a
+/// generic form-tips text (`exercise_guides.dart`) instead of writing
+/// bespoke coaching copy for every one of the 535+ exercises in 10
+/// languages, which is infeasible. [core] is also the fallback for
+/// anything that isn't a push/pull/squat/hinge rep pattern (ab work,
+/// cardio).
 enum ExerciseArchetype {
   verticalPush,
   horizontalPush,

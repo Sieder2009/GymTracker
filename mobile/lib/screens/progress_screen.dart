@@ -20,6 +20,7 @@ import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/body_shape_diagram.dart';
 import '../widgets/chart_card.dart';
+import '../widgets/exercise_list_view.dart' show categoryLabel;
 import '../widgets/kpi_tile.dart';
 import '../widgets/plateau_notice.dart';
 import '../widgets/strength_line_chart.dart';
@@ -615,6 +616,18 @@ class _AchievementsTab extends StatelessWidget {
         return t.achievementPathTotalWorkoutMinutes;
       case AchievementPathId.distinctExercises:
         return t.achievementPathDistinctExercises;
+      case AchievementPathId.chestVolume:
+        return categoryLabel(t, 'chest');
+      case AchievementPathId.backVolume:
+        return categoryLabel(t, 'back');
+      case AchievementPathId.shouldersVolume:
+        return categoryLabel(t, 'shoulders');
+      case AchievementPathId.legsVolume:
+        return categoryLabel(t, 'legs');
+      case AchievementPathId.armsVolume:
+        return categoryLabel(t, 'arms');
+      case AchievementPathId.coreVolume:
+        return categoryLabel(t, 'core');
     }
   }
 
@@ -634,6 +647,18 @@ class _AchievementsTab extends StatelessWidget {
         return Icons.timer_outlined;
       case AchievementPathId.distinctExercises:
         return Icons.grid_view;
+      case AchievementPathId.chestVolume:
+        return Icons.accessibility_new;
+      case AchievementPathId.backVolume:
+        return Icons.rowing;
+      case AchievementPathId.shouldersVolume:
+        return Icons.sports_gymnastics;
+      case AchievementPathId.legsVolume:
+        return Icons.directions_walk;
+      case AchievementPathId.armsVolume:
+        return Icons.sports_martial_arts;
+      case AchievementPathId.coreVolume:
+        return Icons.self_improvement;
     }
   }
 
@@ -642,6 +667,12 @@ class _AchievementsTab extends StatelessWidget {
       case AchievementPathId.consistency:
         return t.unitDays(value.round());
       case AchievementPathId.totalVolume:
+      case AchievementPathId.chestVolume:
+      case AchievementPathId.backVolume:
+      case AchievementPathId.shouldersVolume:
+      case AchievementPathId.legsVolume:
+      case AchievementPathId.armsVolume:
+      case AchievementPathId.coreVolume:
         return '${fmt(value)} kg';
       case AchievementPathId.totalWorkouts:
       case AchievementPathId.prCount:
@@ -655,6 +686,20 @@ class _AchievementsTab extends StatelessWidget {
     }
   }
 
+  Widget _pathCard(AppLocalizations t, AppColors colors, AchievementPathResult path) {
+    return _AchievementPathCard(
+      label: _pathLabel(t, path.id),
+      icon: _pathIcon(path.id),
+      path: path,
+      valueLabel: _formatValue(t, path.id, path.currentValue),
+      nextLabel: path.hasNextTier
+          ? t.achievementProgressToNext(
+              _formatValue(t, path.id, path.nextThreshold! - path.currentValue))
+          : t.achievementAllTiersUnlocked,
+      colors: colors,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -663,26 +708,20 @@ class _AchievementsTab extends StatelessWidget {
     final programs = context.watch<ProgramsProvider>().programs;
     final paths = computeAchievements(sessions: sessions, programs: programs);
     final rank = computeRank(paths);
+    final musclePaths = computeMuscleProgress(programs);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
       children: [
         _RankCard(rank: rank, colors: colors, t: t),
         const SizedBox(height: 16),
-        for (final path in paths) ...[
-          _AchievementPathCard(
-            label: _pathLabel(t, path.id),
-            icon: _pathIcon(path.id),
-            path: path,
-            valueLabel: _formatValue(t, path.id, path.currentValue),
-            nextLabel: path.hasNextTier
-                ? t.achievementProgressToNext(_formatValue(
-                    t, path.id, path.nextThreshold! - path.currentValue))
-                : t.achievementAllTiersUnlocked,
-            colors: colors,
-          ),
-          const SizedBox(height: 12),
-        ],
+        for (final path in paths) ...[_pathCard(t, colors, path), const SizedBox(height: 12)],
+        const SizedBox(height: 8),
+        Text(t.headerMuscleProgress, style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 4),
+        Text(t.captionMuscleProgress, style: TextStyle(color: colors.mut, fontSize: 12)),
+        const SizedBox(height: 12),
+        for (final path in musclePaths) ...[_pathCard(t, colors, path), const SizedBox(height: 12)],
       ],
     );
   }

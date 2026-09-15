@@ -19,6 +19,7 @@ import '../state/toast_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
+import '../widgets/exercise_list_view.dart' show categoryLabel;
 import '../widgets/rest_ring.dart';
 
 String _formatElapsed(Duration d) {
@@ -61,6 +62,21 @@ String _pathLabel(AppLocalizations t, AchievementPathId id) {
       return t.achievementPathTotalWorkoutMinutes;
     case AchievementPathId.distinctExercises:
       return t.achievementPathDistinctExercises;
+    // Never actually produced by computeAchievements (only by the separate
+    // computeMuscleProgress, which newlyUnlockedTiers here is never fed) --
+    // handled anyway because the switch is exhaustive over the whole enum.
+    case AchievementPathId.chestVolume:
+      return categoryLabel(t, 'chest');
+    case AchievementPathId.backVolume:
+      return categoryLabel(t, 'back');
+    case AchievementPathId.shouldersVolume:
+      return categoryLabel(t, 'shoulders');
+    case AchievementPathId.legsVolume:
+      return categoryLabel(t, 'legs');
+    case AchievementPathId.armsVolume:
+      return categoryLabel(t, 'arms');
+    case AchievementPathId.coreVolume:
+      return categoryLabel(t, 'core');
   }
 }
 

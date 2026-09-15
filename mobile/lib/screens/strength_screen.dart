@@ -16,6 +16,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../overlays/settings_screen.dart';
 import '../widgets/app_shell.dart';
+import '../widgets/calorie_calculator_sheet.dart';
 import '../widgets/chart_card.dart';
 import '../widgets/one_rep_max_sheet.dart';
 import '../widgets/plate_calculator_sheet.dart';
@@ -60,6 +61,11 @@ class StrengthScreen extends StatelessWidget {
                     icon: const Icon(Icons.calculate_outlined),
                     tooltip: t.title1rmCalculator,
                     onPressed: () => showOneRepMaxCalculator(context),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.local_fire_department_outlined),
+                    tooltip: t.titleCalorieCalculator,
+                    onPressed: () => showCalorieCalculator(context),
                   ),
                 ],
               ),
@@ -824,6 +830,13 @@ class _ToolsTab extends StatelessWidget {
           title: t.titlePlateCalculator,
           description: t.infoToolPlateDescription,
           onTap: () => showPlateCalculator(context),
+        ),
+        const SizedBox(height: 12),
+        _ToolCard(
+          icon: Icons.local_fire_department_outlined,
+          title: t.titleCalorieCalculator,
+          description: t.infoToolCalorieDescription,
+          onTap: () => showCalorieCalculator(context),
         ),
       ],
     );

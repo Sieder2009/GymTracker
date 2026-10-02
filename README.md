@@ -316,6 +316,10 @@ mobile/
     widgets/              Reusable UI building blocks (charts, editors, …)
   test/                  Unit/widget tests
   tool/seed_demo_data.dart  Developer script: fills demo data into the local DB
+  tool/generate_icons.dart  Developer script: re-renders every app icon (Android
+                             adaptive + animated launch icon, web, Windows .ico)
+                             from lib/widgets/ironpeak_logo.dart
+                             (`flutter test tool/generate_icons.dart`)
 ```
 
 ## <img src="https://api.iconify.design/lucide:shield-check.svg?color=%231fa76a" width="20" height="20" alt=""/> Privacy

@@ -25,6 +25,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/health_connect_feedback.dart';
+import '../widgets/ironpeak_logo.dart';
 import '../widgets/language_picker_sheet.dart';
 
 const List<Color> _kColorPresets = [
@@ -91,6 +92,8 @@ class SettingsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: const [
+            _BrandHeader(),
+            SizedBox(height: 24),
             _UpdateSection(),
             SizedBox(height: 24),
             _AppearanceSection(),
@@ -109,6 +112,24 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The app's mark, alive. A home-screen icon itself can't move -- neither
+/// Android nor iOS lets a third-party icon animate -- so this badge plays the
+/// same animation as the Android 12+ launch icon right here. Tap to replay.
+class _BrandHeader extends StatelessWidget {
+  const _BrandHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const AnimatedIronpeakLogo(size: 88, replayOnTap: true),
+        const SizedBox(height: 10),
+        Text('Ironpeak Fitness', style: Theme.of(context).textTheme.headlineMedium),
+      ],
     );
   }
 }

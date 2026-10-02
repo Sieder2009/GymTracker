@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ (light mode): the system splash screen plays our animated
+         icon (drawable/ic_splash_animated.xml) on the app's own background
+         color, so there is no flash between splash and first Flutter frame.
+         Redeclares LaunchTheme completely: a styles.xml in a more specific
+         resource folder replaces the base style, it doesn't merge with it.
+         Dark mode needs its own copy in values-night-v31, because night
+         outranks the API level when Android picks resources. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">#F5F5F7</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_animated</item>
+    </style>
+</resources>

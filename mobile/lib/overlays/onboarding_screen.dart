@@ -17,6 +17,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/health_connect_feedback.dart';
+import '../widgets/ironpeak_logo.dart';
 import 'plan_editor_screen.dart';
 
 const String kOnboardingCompleteKey = 'ironpeak:onboardingComplete';
@@ -155,12 +156,8 @@ class _WelcomeStep extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(color: colors.accent, shape: BoxShape.circle),
-            child: Icon(Icons.fitness_center_rounded, color: colors.onAccent, size: 40),
-          ),
+          // The app's mark, alive -- tap it to replay the intro.
+          const AnimatedIronpeakLogo(size: 112, replayOnTap: true),
           const SizedBox(height: 28),
           Text(
             t.titleOnboardingWelcome,

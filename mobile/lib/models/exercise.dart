@@ -1,3 +1,4 @@
+import 'exercise_log_mode.dart';
 import 'exercise_set.dart';
 import 'history_entry.dart';
 
@@ -13,6 +14,8 @@ class Exercise {
     this.note = '',
     Map<String, double>? muscleActivation,
     this.supersetWithNext = false,
+    this.unilateral = false,
+    this.logMode = ExerciseLogMode.reps,
   })  : done = done ?? [],
         history = history ?? [],
         startW = startW ?? _maxWeight(sets),
@@ -35,6 +38,24 @@ class Exercise {
   /// since this defaults false) walks exactly as it always did.
   bool supersetWithNext;
 
+  /// True when this exercise is logged per side (unilateral) -- lunges,
+  /// single-arm rows, and similar movements where the user still logs the
+  /// TOTAL reps across both sides on [ExerciseSet] exactly as today, but
+  /// the app additionally derives and shows the per-side split (see
+  /// `data/rep_side_split.dart`) and steps any rep stepper/suggestion for
+  /// this exercise by 2 instead of 1, so its total can never drift to a
+  /// number that can't split evenly across both sides. Off by default for
+  /// every existing and new exercise -- a per-plan-entry logging property,
+  /// not exercise identity (see the architecture note on
+  /// `exercise_template.dart`).
+  bool unilateral;
+
+  /// How this plan entry's sets are logged -- see [ExerciseLogMode]. Off
+  /// (i.e. [ExerciseLogMode.reps]) by default for every existing and new
+  /// exercise, a per-plan-entry choice made in the exercise editor(s), not
+  /// exercise identity.
+  ExerciseLogMode logMode;
+
   /// [MuscleGroup.name] -> activation intensity 0-100, set via
   /// [MuscleActivationEditor] on a user-authored custom exercise. Empty
   /// (never null) when the user hasn't configured it — a broad, missing
@@ -51,6 +72,8 @@ class Exercise {
     List<HistoryEntry>? history,
     String note = '',
     Map<String, double>? muscleActivation,
+    bool unilateral = false,
+    ExerciseLogMode logMode = ExerciseLogMode.reps,
   }) {
     return Exercise(
       name: name,
@@ -60,6 +83,8 @@ class Exercise {
       history: history ?? [],
       note: note,
       muscleActivation: muscleActivation,
+      unilateral: unilateral,
+      logMode: logMode,
     );
   }
 
@@ -89,6 +114,8 @@ class Exercise {
         'note': note,
         'muscleActivation': muscleActivation,
         'supersetWithNext': supersetWithNext,
+        'unilateral': unilateral,
+        'logMode': exerciseLogModeToJson(logMode),
       };
 
   factory Exercise.fromJson(Map<String, dynamic> json) => Exercise(
@@ -107,5 +134,7 @@ class Exercise {
         muscleActivation: (json['muscleActivation'] as Map<String, dynamic>? ?? {})
             .map((k, v) => MapEntry(k, (v as num).toDouble())),
         supersetWithNext: json['supersetWithNext'] as bool? ?? false,
+        unilateral: json['unilateral'] as bool? ?? false,
+        logMode: exerciseLogModeFromJson(json['logMode'] as String?),
       );
 }

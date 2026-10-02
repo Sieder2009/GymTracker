@@ -1,14 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ironpeak_mobile/data/superset_steps.dart';
 import 'package:ironpeak_mobile/models/exercise.dart';
+import 'package:ironpeak_mobile/models/exercise_log_mode.dart';
 import 'package:ironpeak_mobile/models/exercise_set.dart';
 
-Exercise _ex(int setCount, {bool supersetWithNext = false}) => Exercise(
+Exercise _ex(int setCount,
+        {bool supersetWithNext = false,
+        ExerciseLogMode logMode = ExerciseLogMode.reps}) =>
+    Exercise(
       name: 'ex',
       muscle: '',
       rest: 90,
       sets: List.generate(setCount, (_) => ExerciseSet(w: 20, r: '8-10')),
       supersetWithNext: supersetWithNext,
+      logMode: logMode,
     );
 
 void main() {
@@ -106,6 +111,22 @@ void main() {
         const WorkoutStep(exerciseIndex: 1, setIndex: 1, restAfter: false),
         const WorkoutStep(exerciseIndex: 2, setIndex: 1, restAfter: true),
         const WorkoutStep(exerciseIndex: 3, setIndex: 0, restAfter: true),
+      ]);
+    });
+
+    test('a superset mixing a Reps exercise with a Timed exercise still interleaves rounds correctly '
+        '(buildWorkoutSteps is a pure set-index walk, mode-blind by design)', () {
+      final steps = buildWorkoutSteps([
+        _ex(3, supersetWithNext: true), // Reps
+        _ex(3, logMode: ExerciseLogMode.timed), // Timed
+      ]);
+      expect(steps, [
+        const WorkoutStep(exerciseIndex: 0, setIndex: 0, restAfter: false),
+        const WorkoutStep(exerciseIndex: 1, setIndex: 0, restAfter: true),
+        const WorkoutStep(exerciseIndex: 0, setIndex: 1, restAfter: false),
+        const WorkoutStep(exerciseIndex: 1, setIndex: 1, restAfter: true),
+        const WorkoutStep(exerciseIndex: 0, setIndex: 2, restAfter: false),
+        const WorkoutStep(exerciseIndex: 1, setIndex: 2, restAfter: true),
       ]);
     });
 

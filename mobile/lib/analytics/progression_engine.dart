@@ -1,4 +1,6 @@
+import '../data/rep_side_split.dart';
 import '../models/exercise.dart';
+import '../models/exercise_log_mode.dart';
 import '../models/history_entry.dart';
 
 /// What a [ProgressionSuggestion] recommends for the next session.
@@ -21,13 +23,25 @@ enum ProgressionAction {
 /// exercise -- never a command, same "nudge, not a diagnosis" tone as
 /// [PlateauNotice]. Built by [suggestNextSession].
 class ProgressionSuggestion {
-  const ProgressionSuggestion({required this.action, required this.weightKg});
+  const ProgressionSuggestion({
+    required this.action,
+    required this.weightKg,
+    this.nextReps,
+  });
 
   final ProgressionAction action;
 
   /// The weight to try next session, in kg -- unchanged from the last
   /// logged weight for [ProgressionAction.increaseReps].
   final double weightKg;
+
+  /// A concrete next-session TOTAL rep count, set only on an
+  /// [ProgressionAction.increaseReps] suggestion for a unilateral exercise
+  /// (see `Exercise.unilateral`) -- always even, via [nextEvenReps], so it
+  /// can split evenly across both sides. Null otherwise (every other
+  /// action, and the bilateral increaseReps case), which keeps that case's
+  /// existing plain-text "aim for one more rep" rendering unchanged.
+  final int? nextReps;
 }
 
 /// Numeric rep counts only. [HistoryEntry.reps] also carries non-numeric
@@ -95,6 +109,11 @@ bool? _missedFloor(HistoryEntry entry, _RepRange range) {
 /// suggest a deload instead of grinding at a stuck weight. A single missed
 /// session stays quiet rather than nagging after one off day.
 ProgressionSuggestion? suggestNextSession(Exercise exercise) {
+  // A Timed/Cardio exercise has no numeric weight x reps to progress --
+  // today this falls out naturally (no rep-range field to parse), but this
+  // makes the exclusion an explicit contract instead of an accident of
+  // string parsing.
+  if (exercise.logMode != ExerciseLogMode.reps) return null;
   if (exercise.history.isEmpty || exercise.sets.isEmpty) return null;
   final range = _parseRepRange(exercise.sets.first.r);
   if (range == null) return null;
@@ -122,5 +141,14 @@ ProgressionSuggestion? suggestNextSession(Exercise exercise) {
     );
   }
 
-  return ProgressionSuggestion(action: ProgressionAction.increaseReps, weightKg: last.weight);
+  int? nextReps;
+  if (exercise.unilateral) {
+    final maxLast = lastNumeric.reduce((a, b) => a > b ? a : b);
+    nextReps = nextEvenReps(maxLast + 1);
+  }
+  return ProgressionSuggestion(
+    action: ProgressionAction.increaseReps,
+    weightKg: last.weight,
+    nextReps: nextReps,
+  );
 }

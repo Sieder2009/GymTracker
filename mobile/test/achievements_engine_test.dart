@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ironpeak_mobile/analytics/achievements_engine.dart';
 import 'package:ironpeak_mobile/models/day.dart';
 import 'package:ironpeak_mobile/models/exercise.dart';
+import 'package:ironpeak_mobile/models/exercise_log_mode.dart';
 import 'package:ironpeak_mobile/models/exercise_set.dart';
 import 'package:ironpeak_mobile/models/history_entry.dart';
 import 'package:ironpeak_mobile/models/program.dart';
@@ -83,6 +84,50 @@ void main() {
       final prCount =
           paths.firstWhere((p) => p.id == AchievementPathId.prCount);
       expect(prCount.currentValue, 2);
+    });
+
+    test(
+        "a Timed exercise's history (added weight > 0) contributes 0 to muscle-volume/_prEventCount",
+        () {
+      final ex = Exercise.fresh('Weighted Plank', 'core', 60,
+          [ExerciseSet(w: 20, r: '')],
+          logMode: ExerciseLogMode.timed);
+      ex.history.addAll([
+        HistoryEntry(
+          weight: 20, // real, nonzero added weight
+          reps: const [],
+          date: '2026-07-01',
+          mode: ExerciseLogMode.timed,
+          durations: const [45, 40],
+        ),
+        HistoryEntry(
+          weight: 25,
+          reps: const [],
+          date: '2026-07-08',
+          mode: ExerciseLogMode.timed,
+          durations: const [50, 48],
+        ),
+      ]);
+      final program = Program(
+        id: 'p1',
+        name: 'Test',
+        mode: 'weekday',
+        startDate: '2026-01-01',
+        days: [
+          Day(label: 'Montag', rest: false, exercises: [ex])
+        ],
+      );
+
+      final paths =
+          computeAchievements(sessions: [], programs: [program], now: now);
+      final prCount =
+          paths.firstWhere((p) => p.id == AchievementPathId.prCount);
+      expect(prCount.currentValue, 0);
+
+      final muscleProgress = computeMuscleProgress([program]);
+      final coreVolume = muscleProgress
+          .firstWhere((p) => p.id == AchievementPathId.coreVolume);
+      expect(coreVolume.currentValue, 0);
     });
 
     test('progressToNext is 1 once every tier is unlocked', () {

@@ -1,19 +1,40 @@
 import 'package:flutter/material.dart';
 
 import '../data/constants.dart';
+import '../data/duration_format.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
+import '../models/exercise_log_mode.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 
-/// "3× 8-10" -- falls back to the first set's rep range when sets carry
-/// different targets (e.g. a pyramid scheme), rather than an unbounded
-/// concatenation that wouldn't fit this compact list row.
-String _setsRepsLabel(Exercise exercise) {
-  if (exercise.sets.isEmpty) return '';
-  final distinctReps = exercise.sets.map((s) => s.r).toSet();
-  final rep = distinctReps.length == 1 ? distinctReps.first : exercise.sets.first.r;
-  return '${exercise.sets.length}× $rep';
+/// The trailing badge -- weight/BW for Reps (unchanged, still driven by
+/// [Exercise.currentWeight]'s history-derived value), the added weight (if
+/// any) or else the target hold time for Timed, and the target speed for
+/// Cardio (target duration already shows in the sets summary line above).
+///
+/// Timed/Cardio deliberately read the added weight from the exercise's own
+/// LIVE set config (`sets.first.w`/`targetDurationSec`/`targetSpeedKmh`)
+/// rather than [Exercise.currentWeight] -- that getter is mode-unaware (it
+/// just returns whichever history entry was logged last, in whatever mode
+/// that was), so right after a Reps→Timed flip it would still show the
+/// stale Reps working weight as if it were an added weight.
+String _trailingLabel(AppLocalizations t, Exercise exercise) {
+  switch (exercise.logMode) {
+    case ExerciseLogMode.reps:
+      final weight = exercise.currentWeight;
+      return weight > 0 ? '${fmt1(weight)} kg' : t.labelBodyweightAbbr;
+    case ExerciseLogMode.timed:
+      final weight = exercise.sets.isNotEmpty ? exercise.sets.first.w : 0.0;
+      if (weight > 0) return '${fmt1(weight)} kg';
+      final seconds =
+          exercise.sets.isNotEmpty ? exercise.sets.first.targetDurationSec ?? 0 : 0;
+      return formatSeconds(seconds);
+    case ExerciseLogMode.cardio:
+      final speed =
+          exercise.sets.isNotEmpty ? exercise.sets.first.targetSpeedKmh ?? 0 : 0.0;
+      return '${fmt1(speed)} ${t.unitKmh}';
+  }
 }
 
 /// A single exercise's card in the Training screen's day list -- name,
@@ -46,7 +67,6 @@ class ExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
     final t = AppLocalizations.of(context)!;
-    final weight = exercise.currentWeight;
     final linked = exercise.supersetWithNext;
     return Card(
       child: InkWell(
@@ -72,7 +92,7 @@ class ExerciseCard extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              _setsRepsLabel(exercise),
+                              exerciseSetsSummaryLabel(t, exercise),
                               style: TextStyle(color: colors.mut, fontSize: 12.5),
                             ),
                           ),
@@ -89,7 +109,7 @@ class ExerciseCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    weight > 0 ? '${fmt1(weight)} kg' : t.labelBodyweightAbbr,
+                    _trailingLabel(t, exercise),
                     style: Theme.of(context)
                         .textTheme
                         .bodyLarge
@@ -122,6 +142,20 @@ class ExerciseCard extends StatelessWidget {
                     Text(
                       t.labelSupersetWithNext,
                       style: TextStyle(color: colors.accent, fontSize: 11.5, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ],
+              if (exercise.unilateral) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.swap_horiz_rounded, size: 14, color: colors.mut),
+                    const SizedBox(width: 4),
+                    Text(
+                      t.labelUnilateralTag,
+                      style: TextStyle(color: colors.mut, fontSize: 11.5, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),

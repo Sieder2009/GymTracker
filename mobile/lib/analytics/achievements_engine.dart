@@ -144,6 +144,14 @@ int _numericRepsSum(List<Object> reps) {
 /// import with no per-session date is still real training that happened,
 /// and dropping it would make a muscle group with years of imported
 /// history look barely trained.
+///
+/// A Timed/Cardio entry always nets 0 kg-volume here with no extra code:
+/// Timed entries write `reps: []` (their real seconds live on
+/// `HistoryEntry.durations` instead) and Cardio entries write `weight: 0`
+/// AND `reps: []` (see `ProgramsProvider.appendGuidedHistoryEntry`/
+/// `saveTimedExerciseLog`/`saveCardioExerciseLog`), so `_numericRepsSum`
+/// sums nothing and/or `h.weight * 0 == 0` -- a bodyweight hold or a
+/// treadmill session can never get credited as lifted-and-repped volume.
 double _historyVolumeKg(Exercise ex) {
   var total = 0.0;
   for (final h in ex.history) {

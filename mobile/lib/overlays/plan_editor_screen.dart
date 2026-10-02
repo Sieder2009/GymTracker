@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/constants.dart';
+import '../data/duration_format.dart';
 import '../l10n/app_localizations.dart';
 import '../models/day.dart';
 import '../models/exercise.dart';
+import '../models/exercise_log_mode.dart';
 import '../models/exercise_set.dart';
 import '../models/program.dart';
 import '../state/custom_exercises_provider.dart';
@@ -22,13 +24,33 @@ class _DraftExercise {
         sets = TextEditingController(text: '3'),
         reps = TextEditingController(text: '8'),
         weight = TextEditingController(text: '0'),
+        targetSeconds = TextEditingController(text: '30'),
+        cardioMinutes = TextEditingController(text: '20'),
+        cardioSpeed = TextEditingController(text: '6.0'),
         note = TextEditingController();
 
   final TextEditingController name;
   final TextEditingController sets;
   final TextEditingController reps;
+
+  /// Working weight in Reps mode, optional added weight in Timed mode
+  /// (unused/always 0 in Cardio mode, where the weight field is hidden).
   final TextEditingController weight;
+
+  /// Target hold seconds -- Timed mode only.
+  final TextEditingController targetSeconds;
+
+  /// Target cardio duration, in whole minutes for a friendlier input than
+  /// raw seconds -- Cardio mode only.
+  final TextEditingController cardioMinutes;
+
+  /// Target cardio speed in km/h -- Cardio mode only.
+  final TextEditingController cardioSpeed;
+
   final TextEditingController note;
+
+  /// See `Exercise.logMode` -- Reps by default for every new exercise.
+  ExerciseLogMode logMode = ExerciseLogMode.reps;
 
   /// Broad category dropdown -- see [kExerciseCategories]. Distinct from
   /// [muscleActivation] below, which is a much finer per-muscle breakdown.
@@ -39,11 +61,17 @@ class _DraftExercise {
   /// exercise database already provides for picked-from-list exercises.
   Map<String, double> muscleActivation = {};
 
+  /// See `Exercise.unilateral` -- off by default for every new exercise.
+  bool unilateral = false;
+
   void dispose() {
     name.dispose();
     sets.dispose();
     reps.dispose();
     weight.dispose();
+    targetSeconds.dispose();
+    cardioMinutes.dispose();
+    cardioSpeed.dispose();
     note.dispose();
   }
 }
@@ -64,6 +92,26 @@ class _DraftDay {
       e.dispose();
     }
   }
+}
+
+/// Parses [e]'s controllers (whichever ones matter for its current
+/// [_DraftExercise.logMode]) into [setCount] fresh [ExerciseSet]s -- see
+/// [buildLogModeSets].
+List<ExerciseSet> _buildDraftSets(_DraftExercise e, int setCount) {
+  final w = double.tryParse(e.weight.text.trim().replaceAll(',', '.')) ?? 0;
+  final targetSeconds = e.logMode == ExerciseLogMode.cardio
+      ? (int.tryParse(e.cardioMinutes.text.trim()) ?? 20) * 60
+      : int.tryParse(e.targetSeconds.text.trim()) ?? 30;
+  final targetSpeed =
+      double.tryParse(e.cardioSpeed.text.trim().replaceAll(',', '.')) ?? 6.0;
+  return buildLogModeSets(
+    mode: e.logMode,
+    setCount: setCount,
+    weightKg: w,
+    repsTarget: e.reps.text.trim(),
+    targetSeconds: targetSeconds,
+    targetSpeedKmh: targetSpeed,
+  );
 }
 
 /// "+ Neuer Plan" — full-screen plan builder.
@@ -141,17 +189,15 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
           : d.exercises.where((e) => e.name.text.trim().isNotEmpty).map((e) {
               final parsedSets = int.tryParse(e.sets.text.trim()) ?? 1;
               final setCount = parsedSets < 1 ? 1 : parsedSets;
-              final w =
-                  double.tryParse(e.weight.text.trim().replaceAll(',', '.')) ??
-                      0;
-              final r = e.reps.text.trim().isEmpty ? '—' : e.reps.text.trim();
               return Exercise.fresh(
                 e.name.text.trim(),
                 e.muscle,
                 90,
-                List.generate(setCount, (_) => ExerciseSet(w: w, r: r)),
+                _buildDraftSets(e, setCount),
                 note: e.note.text.trim(),
                 muscleActivation: e.muscleActivation,
+                unilateral: e.unilateral,
+                logMode: e.logMode,
               );
             }).toList();
       final label = d.labelController.text.trim().isEmpty
@@ -303,6 +349,77 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
     if (result != null) setState(() => ex.muscleActivation = result);
   }
 
+  /// The mode-dependent second row of an exercise's fields -- reps+weight
+  /// for Reps (byte-for-byte the same fields/hints as before this feature),
+  /// target-seconds+added-weight for Timed, minutes+speed (no weight) for
+  /// Cardio.
+  Widget _buildModeFieldsRow(_DraftExercise ex, AppLocalizations t) {
+    switch (ex.logMode) {
+      case ExerciseLogMode.reps:
+        return Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: ex.reps,
+                decoration: InputDecoration(hintText: t.hintReps),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                controller: ex.weight,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(hintText: t.hintWeightKg),
+              ),
+            ),
+          ],
+        );
+      case ExerciseLogMode.timed:
+        return Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: ex.targetSeconds,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(hintText: t.hintTargetSeconds),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                controller: ex.weight,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(hintText: t.hintAddedWeightKg),
+              ),
+            ),
+          ],
+        );
+      case ExerciseLogMode.cardio:
+        return Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: ex.cardioMinutes,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(hintText: t.hintCardioMinutes),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                controller: ex.cardioSpeed,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(hintText: t.hintCardioSpeedKmh),
+              ),
+            ),
+          ],
+        );
+    }
+  }
+
   Widget _buildExerciseRow(int dayIdx, int exIdx, AppLocalizations t) {
     final ex = _days[dayIdx].exercises[exIdx];
     final colors = Theme.of(context).extension<AppColors>()!;
@@ -336,22 +453,6 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                   decoration: InputDecoration(hintText: t.hintSets),
                 ),
               ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: TextField(
-                  controller: ex.reps,
-                  decoration: InputDecoration(hintText: t.hintReps),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: TextField(
-                  controller: ex.weight,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(hintText: t.hintWeightKg),
-                ),
-              ),
               IconButton(
                 icon: const Icon(Icons.close, size: 18),
                 onPressed: () => _removeExercise(dayIdx, exIdx),
@@ -359,11 +460,44 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
             ],
           ),
           const SizedBox(height: 6),
+          SegmentedButton<ExerciseLogMode>(
+            segments: [
+              ButtonSegment(
+                  value: ExerciseLogMode.reps, label: Text(t.logModeReps)),
+              ButtonSegment(
+                  value: ExerciseLogMode.timed, label: Text(t.logModeTimed)),
+              ButtonSegment(
+                  value: ExerciseLogMode.cardio, label: Text(t.logModeCardio)),
+            ],
+            selected: {ex.logMode},
+            onSelectionChanged: (s) => setState(() => ex.logMode = s.first),
+          ),
+          const SizedBox(height: 6),
+          _buildModeFieldsRow(ex, t),
+          const SizedBox(height: 6),
           TextField(
             controller: ex.note,
             decoration: InputDecoration(hintText: t.hintExerciseNote),
           ),
-          const SizedBox(height: 6),
+          Row(
+            children: [
+              Checkbox(
+                value: ex.unilateral,
+                onChanged: (v) => setState(() => ex.unilateral = v ?? false),
+              ),
+              Expanded(
+                child: Text(t.labelUnilateralToggle,
+                    style: const TextStyle(fontSize: 13)),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 12, bottom: 6),
+            child: Text(
+              t.hintUnilateralToggle,
+              style: TextStyle(color: colors.mut, fontSize: 11.5),
+            ),
+          ),
           DropdownButtonFormField<String>(
             initialValue: ex.muscle,
             decoration: InputDecoration(labelText: t.labelMuscleGroup),

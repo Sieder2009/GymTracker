@@ -2,6 +2,7 @@ import '../data/dots_score.dart';
 import '../models/big_lift.dart';
 import '../models/body_weight_entry.dart';
 import '../models/exercise.dart';
+import '../models/exercise_log_mode.dart';
 import '../models/workout_session.dart';
 
 /// How much a computed number should be trusted — every trend/percentage in
@@ -229,6 +230,15 @@ class ExerciseHistoryPoint {
 List<ExerciseHistoryPoint> exerciseHistoryPoints(Exercise exercise) {
   final points = <ExerciseHistoryPoint>[];
   for (final h in exercise.history) {
+    // A Timed exercise's added weight (real, nonzero kg) or a Cardio
+    // exercise's always-0 weight must never feed a weight-progress
+    // chart/e1RM/PR -- gated on the entry's OWN stamped mode (never
+    // `exercise.logMode`, which can have since been flipped -- see the doc
+    // comment on `HistoryEntry.mode`). This single choke point also fixes
+    // `computeExerciseTrend`, `bestEstimatedOneRepMax`, and transitively
+    // `achievements_engine.dart`'s `_prEventCount`, all three of which
+    // funnel through this function.
+    if (h.mode != ExerciseLogMode.reps) continue;
     final d = _parseIso(h.date);
     if (d == null || h.weight <= 0) continue;
     final reps = _maxIntReps(h.reps);
@@ -296,6 +306,80 @@ double? bestEstimatedOneRepMax(Exercise exercise) {
   for (final p in exerciseHistoryPoints(exercise)) {
     final v = p.e1rm;
     if (v != null && (best == null || v > best)) best = v;
+  }
+  return best;
+}
+
+/// One dated sample of a Timed exercise's progress: the most seconds held
+/// in that session (the max of [HistoryEntry.durations]). Only entries
+/// stamped [ExerciseLogMode.timed] (the entry's own stamped mode, never
+/// `exercise.logMode`) with a real date and at least one logged duration
+/// are included -- same "dated, gated on the entry's own mode" shape as
+/// [exerciseHistoryPoints].
+List<MapEntry<DateTime, double>> exerciseTimeHistoryPoints(Exercise exercise) {
+  final points = <MapEntry<DateTime, double>>[];
+  for (final h in exercise.history) {
+    if (h.mode != ExerciseLogMode.timed) continue;
+    final d = _parseIso(h.date);
+    final durations = h.durations;
+    if (d == null || durations == null || durations.isEmpty) continue;
+    final best = durations.reduce((a, b) => a > b ? a : b);
+    points.add(MapEntry(d, best.toDouble()));
+  }
+  points.sort((a, b) => a.key.compareTo(b.key));
+  return points;
+}
+
+/// Same shape as [exerciseTimeHistoryPoints] for a Cardio exercise's speed
+/// progress -- the fastest speed logged that session (the max of
+/// [HistoryEntry.speeds]).
+List<MapEntry<DateTime, double>> exerciseSpeedHistoryPoints(Exercise exercise) {
+  final points = <MapEntry<DateTime, double>>[];
+  for (final h in exercise.history) {
+    if (h.mode != ExerciseLogMode.cardio) continue;
+    final d = _parseIso(h.date);
+    final speeds = h.speeds;
+    if (d == null || speeds == null || speeds.isEmpty) continue;
+    final best = speeds.reduce((a, b) => a > b ? a : b);
+    points.add(MapEntry(d, best));
+  }
+  points.sort((a, b) => a.key.compareTo(b.key));
+  return points;
+}
+
+/// % change in a Timed exercise's held-seconds progress over [windowDays] --
+/// the Timed analogue of [computeExerciseTrend].
+TrendStat computeExerciseTimeTrend(Exercise exercise, {int windowDays = 30, DateTime? now}) {
+  final today = _dateOnly(now ?? DateTime.now());
+  final windowStart = today.subtract(Duration(days: windowDays));
+  return _trendFromDatedValues(exerciseTimeHistoryPoints(exercise), windowStart);
+}
+
+/// % change in a Cardio exercise's speed progress over [windowDays] -- the
+/// Cardio analogue of [computeExerciseTrend].
+TrendStat computeExerciseSpeedTrend(Exercise exercise, {int windowDays = 30, DateTime? now}) {
+  final today = _dateOnly(now ?? DateTime.now());
+  final windowStart = today.subtract(Duration(days: windowDays));
+  return _trendFromDatedValues(exerciseSpeedHistoryPoints(exercise), windowStart);
+}
+
+/// Highest seconds ever held for a Timed [exercise] from dated history --
+/// null when there's no dated Timed entry with a logged duration yet. Same
+/// max-scan shape as [bestEstimatedOneRepMax].
+double? bestHeldSeconds(Exercise exercise) {
+  double? best;
+  for (final p in exerciseTimeHistoryPoints(exercise)) {
+    if (best == null || p.value > best) best = p.value;
+  }
+  return best;
+}
+
+/// Highest speed ever logged for a Cardio [exercise] from dated history --
+/// null when there's no dated Cardio entry with a logged speed yet.
+double? bestSpeedKmh(Exercise exercise) {
+  double? best;
+  for (final p in exerciseSpeedHistoryPoints(exercise)) {
+    if (best == null || p.value > best) best = p.value;
   }
   return best;
 }

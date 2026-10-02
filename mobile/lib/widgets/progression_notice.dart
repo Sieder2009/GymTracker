@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../analytics/progression_engine.dart';
 import '../data/constants.dart';
+import '../data/rep_side_split.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
@@ -34,7 +35,11 @@ class ProgressionNotice extends StatelessWidget {
       case ProgressionAction.increaseReps:
         icon = Icons.repeat_rounded;
         color = colors.accent;
-        body = t.progressionIncreaseReps(weightLabel);
+        final nextReps = suggestion.nextReps;
+        body = nextReps != null
+            ? t.progressionIncreaseRepsUnilateral(
+                weightLabel, '$nextReps', fmt(repsPerSide(nextReps)))
+            : t.progressionIncreaseReps(weightLabel);
         break;
       case ProgressionAction.deload:
         icon = Icons.trending_down_rounded;

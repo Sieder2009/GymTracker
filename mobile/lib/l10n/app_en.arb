@@ -38,6 +38,9 @@
   "headerDays": "DAYS",
   "headerHistory": "HISTORY",
   "headerRpe": "RPE",
+  "headerRir": "RIR",
+  "headerEffortScale": "EFFORT SCALE",
+  "labelEffortScale": "Effort scale",
   "headerDetectedPrs": "Detected PRs",
   "labelPlanName": "Plan name",
   "labelDesignation": "Label",
@@ -718,5 +721,127 @@
   "labelFat": "Fat",
   "captionCalorieCalculator": "An estimate from standard formulas, not medical advice — actual needs vary by person.",
   "headerMuscleProgress": "Muscle groups",
-  "captionMuscleProgress": "Total logged training volume per muscle group — a rough sense of where your training focus has gone."
+  "captionMuscleProgress": "Total logged training volume per muscle group — a rough sense of where your training focus has gone.",
+  "labelUnilateralToggle": "Logged per side (unilateral)",
+  "hintUnilateralToggle": "Log the total reps across both sides — the app shows the per-side split and steps by two.",
+  "labelRepsPerSide": "{reps} per side",
+  "@labelRepsPerSide": {
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      }
+    }
+  },
+  "labelUnilateralTag": "Per side",
+  "progressionIncreaseRepsUnilateral": "Same weight next session ({weight}) — aim for {reps} reps total ({perSide} per side).",
+  "@progressionIncreaseRepsUnilateral": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      },
+      "perSide": {
+        "type": "String"
+      }
+    }
+  },
+  "actionMoveToAnotherDay": "Move to another day",
+  "titleMoveDay": "Reschedule this day",
+  "moveDaySheetIntro": "This won't change your saved weekly plan — only what shows on the date you pick.",
+  "moveDayCurrentlyShowing": "Currently showing: {day}",
+  "@moveDayCurrentlyShowing": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "moveDayRescheduledNote": "Rescheduled from {weekday}",
+  "@moveDayRescheduledNote": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "moveDayPickTargetPrompt": "Move it to:",
+  "moveDayTargetSubtitleWorkout": "Currently: {day}",
+  "@moveDayTargetSubtitleWorkout": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "moveDayTargetSubtitleRest": "Currently: Rest day",
+  "actionBackToWeeklyPlan": "Back to weekly plan",
+  "toastDayMoved": "Moved to {weekday}",
+  "@toastDayMoved": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "toastDayOverrideCleared": "Back to your normal weekly plan",
+  "emptyRestDayRescheduled": "This workout was moved to another day.",
+  "labelLogMode": "How this is logged",
+  "logModeReps": "Reps",
+  "logModeTimed": "Timed",
+  "logModeCardio": "Cardio",
+  "hintTargetSeconds": "Target seconds",
+  "hintAddedWeightKg": "Added weight (kg)",
+  "hintCardioMinutes": "Minutes",
+  "hintCardioSpeedKmh": "Speed (km/h)",
+  "actionStartHold": "Start hold",
+  "actionStopAndLog": "Stop & log",
+  "labelHoldTime": "Hold time",
+  "targetHoldSeconds": "Target: {seconds}s",
+  "@targetHoldSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "targetCardioPace": "Target: {minutes} min · {speed} km/h",
+  "@targetCardioPace": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "labelBestHold": "Best hold",
+  "labelBestPace": "Best pace",
+  "chartTitleHoldProgress": "Hold progress",
+  "chartTitlePaceProgress": "Pace progress",
+  "unitKmh": "km/h",
+  "unitMin": "min",
+  "holdSecondsLogged": "{seconds}s held",
+  "@holdSecondsLogged": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "cardioSetLogged": "{minutes} min · {speed} km/h",
+  "@cardioSetLogged": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "toastHoldLogged": "Hold logged",
+  "toastCardioLogged": "Cardio set logged"
 }

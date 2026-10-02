@@ -10,6 +10,7 @@ import '../data/example_ppl_plan.dart';
 import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
+import '../models/exercise_log_mode.dart';
 import '../models/program.dart';
 import '../overlays/exercise_detail_screen.dart';
 import '../overlays/import_log_screen.dart';
@@ -33,6 +34,7 @@ import '../widgets/exercise_card.dart';
 import '../widgets/health_connect_feedback.dart';
 import '../widgets/kpi_tile.dart';
 import '../widgets/language_picker_sheet.dart';
+import '../widgets/move_day_sheet.dart';
 import '../widgets/plan_picker_sheet.dart';
 import '../state/theme_provider.dart';
 import 'calendar_screen.dart';
@@ -47,13 +49,22 @@ String _greeting(AppLocalizations t) {
 
 /// Rough estimate only (no per-exercise timing data exists) — roughly 3
 /// minutes per set including rest, matching the guided workout's typical
-/// pace. Shown with a "~" prefix so it never reads as a precise number.
+/// pace, EXCEPT a Timed/Cardio exercise's sets, which instead each add
+/// their own planned `targetDurationSec` -- a flat 3-min/set constant would
+/// badly under-report a plan containing e.g. a 20-minute cardio bout. Shown
+/// with a "~" prefix so it never reads as a precise number.
 int _estimateWorkoutMinutes(List<Exercise> exercises) {
-  var sets = 0;
+  var minutes = 0.0;
   for (final e in exercises) {
-    sets += e.sets.length;
+    if (e.logMode == ExerciseLogMode.reps) {
+      minutes += e.sets.length * 3;
+    } else {
+      for (final s in e.sets) {
+        minutes += (s.targetDurationSec ?? 30) / 60;
+      }
+    }
   }
-  return sets * 3;
+  return minutes.round();
 }
 
 class TrainingScreen extends StatefulWidget {
@@ -122,6 +133,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     final trainState = context.read<TrainStateProvider>();
     final wasActive = trainState.activePlanId == p.id;
     programs.removeProgram(p.id);
+    trainState.dropOverridesForPlan(p.id);
     context.read<ToastProvider>().show(t.toastPlanDeleted);
     if (!wasActive) return;
     final remaining = programs.programs;
@@ -150,6 +162,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
         onMuscleChanged: (idx, muscle) =>
             programs.setMuscle(exercises, idx, muscle),
         onNoteChanged: (idx, note) => programs.setNote(exercises, idx, note),
+        onUnilateralChanged: (idx, unilateral) =>
+            programs.setUnilateral(exercises, idx, unilateral),
+        onLogModeChanged: (idx, mode) =>
+            programs.setLogMode(exercises, idx, mode),
+        onSaveTimed: (idx, addedWeightKg, durationsSec) => programs
+            .saveTimedExerciseLog(exercises, idx, addedWeightKg, durationsSec),
+        onSaveCardio: (idx, durationsSec, speedsKmh) => programs
+            .saveCardioExerciseLog(exercises, idx, durationsSec, speedsKmh),
       ),
     ));
   }
@@ -229,12 +249,41 @@ class _TrainingScreenState extends State<TrainingScreen> {
         programsProvider.byId(trainState.activePlanId) ?? programs.first;
     final todayIdx = todayIndexForProgram(
         mode: plan.mode, currentDayIdx: plan.currentDayIdx);
-    final dayIdx =
+    // The raw pill/weekday index -- mechanical browsing, independent of any
+    // override in effect for that date. This is what DayPillSelector tracks.
+    final rawViewedIdx =
         plan.mode == 'weekday' ? trainState.viewedDayIdx : plan.currentDayIdx;
-    final day = (plan.days.isNotEmpty && dayIdx < plan.days.length)
+    // Only a weekday-mode plan has a coherent calendar date per pill index
+    // (rotation mode's currentDayIdx never even advances anywhere in the
+    // app today), so overrides only apply there.
+    final viewedIso = plan.mode == 'weekday'
+        ? isoOf(dateForWeekdayIndex(rawViewedIdx))
+        : null;
+    final overrideIdx =
+        viewedIso == null ? null : trainState.dayOverride(plan.id, viewedIso);
+    // The resolved index -- what every downstream call site (exercise list,
+    // add/remove/reorder, ExerciseDetailScreen, WorkoutOverlayScreen) keys
+    // off of, so "Start workout" always launches the session actually shown
+    // on screen.
+    final dayIdx = plan.mode == 'weekday'
+        ? resolveDayOverride(
+            defaultIdx: rawViewedIdx,
+            daysLength: plan.days.length,
+            overrideIdx: overrideIdx,
+          )
+        : plan.currentDayIdx;
+    final day = (plan.days.isNotEmpty && dayIdx >= 0 && dayIdx < plan.days.length)
         ? plan.days[dayIdx]
         : null;
-    final isRestDay = day?.rest ?? true;
+    final isRestDay = dayIdx == -1 || (day?.rest ?? true);
+    // Falls back to the date's normal (un-overridden) Day for display when
+    // the viewed date was vacated by a move (dayIdx == -1, so `day` above
+    // is null) -- otherwise the header would show an empty day name
+    // ("· Rest day") instead of naming the day that's actually vacated.
+    final labelDay = day ??
+        ((rawViewedIdx >= 0 && rawViewedIdx < plan.days.length)
+            ? plan.days[rawViewedIdx]
+            : null);
     final exercises =
         isRestDay ? const <Exercise>[] : (day?.exercises ?? const <Exercise>[]);
     final dailyExercises = isRestDay ? const <Exercise>[] : plan.dailyExercises;
@@ -274,18 +323,57 @@ class _TrainingScreenState extends State<TrainingScreen> {
           Text(plan.name, style: Theme.of(context).textTheme.headlineMedium),
           Text(
             isRestDay
-                ? t.daySubtitleRest(day?.label ?? '')
-                : t.daySubtitleWorkouts(day?.label ?? '', plan.completed),
+                ? t.daySubtitleRest(labelDay?.label ?? '')
+                : t.daySubtitleWorkouts(labelDay?.label ?? '', plan.completed),
             style: TextStyle(color: colors.mut),
           ),
           const SizedBox(height: 12),
           if (plan.mode == 'weekday')
             DayPillSelector(
               todayIdx: todayIdx,
-              selectedIdx: dayIdx,
+              selectedIdx: rawViewedIdx,
               onSelect: (i) =>
                   context.read<TrainStateProvider>().setViewedDayIdx(i),
             ),
+          // Hidden for a plan-designed rest day with no override -- nothing
+          // to move away from it, and no override to clear either. Stays
+          // visible whenever there's real content to move OR an override
+          // (in-range or the vacated -1) is already in effect, so "Back to
+          // weekly plan" is always reachable from the sheet.
+          if (plan.mode == 'weekday' && (!isRestDay || overrideIdx != null)) ...[
+            const SizedBox(height: 8),
+            // Shown only when the resolved day actually differs from the
+            // date's own natural weekday -- moved-in content that happens
+            // to land back on its own natural weekday isn't "rescheduled",
+            // and a corrupt/out-of-range override that fell back to
+            // rawViewedIdx isn't either. The vacated (-1) case gets its own
+            // explanation via emptyRestDayRescheduled below instead of a
+            // badge here.
+            if (dayIdx >= 0 && dayIdx != rawViewedIdx)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  t.moveDayRescheduledNote(DateFormat.EEEE(localeName)
+                      .format(dateForWeekdayIndex(dayIdx))),
+                  style: TextStyle(color: colors.mut, fontStyle: FontStyle.italic),
+                ),
+              ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => showMoveDaySheet(
+                  context,
+                  plan: plan,
+                  viewedIso: viewedIso!,
+                  dayIdx: dayIdx,
+                  hasOverride: overrideIdx != null,
+                  localeName: localeName,
+                ),
+                icon: const Icon(Icons.event_repeat, size: 18),
+                label: Text(t.actionMoveToAnotherDay),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           _HomeDashboardStats(exercises: exercises, isRestDay: isRestDay),
           // Extra breathing room (not just the usual 16) before the "start
@@ -301,7 +389,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
               padding: const EdgeInsets.symmetric(vertical: 40),
               child: Center(
                 child: Text(
-                  t.emptyRestDay,
+                  // dayIdx == -1 means this date was deliberately vacated
+                  // by a move, not designed as a rest day in the plan
+                  // itself -- reads very differently, so it gets its own
+                  // string rather than the generic rest-day message.
+                  dayIdx == -1 ? t.emptyRestDayRescheduled : t.emptyRestDay,
                   style: TextStyle(color: colors.mut),
                 ),
               ),

@@ -10,12 +10,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
 import '../data/constants.dart';
+import '../data/effort_scale.dart';
 import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
 import '../state/athlete_settings_provider.dart';
 import '../state/bar_weight_provider.dart';
+import '../state/effort_scale_provider.dart';
 import '../state/health_provider.dart';
 import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
@@ -99,6 +101,8 @@ class SettingsScreen extends StatelessWidget {
             _AppearanceSection(),
             SizedBox(height: 24),
             _AthleteProfileSection(),
+            SizedBox(height: 24),
+            _EffortScaleSection(),
             SizedBox(height: 24),
             _EquipmentSection(),
             SizedBox(height: 24),
@@ -766,6 +770,47 @@ class _AthleteProfileSection extends StatelessWidget {
               },
               onValueChanged: (v) {
                 if (v != null) athlete.setIsMale(v);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Which scale (RPE or RIR -- see `data/effort_scale.dart`) the guided
+/// workout's per-set effort chip row collects for newly-logged sets. One
+/// global setting, matching the athlete-profile pattern right above it --
+/// not a per-exercise or per-plan override.
+class _EffortScaleSection extends StatelessWidget {
+  const _EffortScaleSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final effortScale = context.watch<EffortScaleProvider>();
+
+    return _SettingsGroup(
+      header: t.headerEffortScale,
+      children: [
+        _SettingsRow(
+          icon: Icons.speed_rounded,
+          iconColor: colors.secondary,
+          label: t.labelEffortScale,
+          trailing: SizedBox(
+            width: 110,
+            child: CupertinoSlidingSegmentedControl<EffortScale>(
+              backgroundColor: colors.card2,
+              thumbColor: colors.card,
+              groupValue: effortScale.scale,
+              children: {
+                EffortScale.rpe: _segmentLabel(context, t.headerRpe),
+                EffortScale.rir: _segmentLabel(context, t.headerRir),
+              },
+              onValueChanged: (v) {
+                if (v != null) effortScale.setScale(v);
               },
             ),
           ),

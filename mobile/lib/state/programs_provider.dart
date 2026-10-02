@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 
 import '../data/constants.dart';
+import '../data/effort_scale.dart';
 import '../models/exercise.dart';
+import '../models/exercise_log_mode.dart';
 import '../models/history_entry.dart';
 import '../models/program.dart';
 import '../services/storage_service.dart';
@@ -100,6 +102,48 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Flips `exercises[exIdx]`'s "logged per side (unilateral)" toggle -- see
+  /// `Exercise.unilateral`. Same shape as [setMuscle]/[setNote].
+  void setUnilateral(List<Exercise> exercises, int exIdx, bool unilateral) {
+    exercises[exIdx].unilateral = unilateral;
+    _persist();
+    notifyListeners();
+  }
+
+  /// Flips `exercises[exIdx]`'s "how this is logged" toggle (see
+  /// [Exercise.logMode]) and seeds sane defaults on every set of that
+  /// exercise for whichever target field the new mode needs but doesn't
+  /// have yet (`targetDurationSec ??= 30`, and `targetSpeedKmh ??= 6.0` for
+  /// Cardio) -- never overwriting an already-set value, and never touching
+  /// [ExerciseSet.r] (so switching back to Reps restores its original
+  /// target range/count untouched).
+  void setLogMode(List<Exercise> exercises, int exIdx, ExerciseLogMode mode) {
+    final ex = exercises[exIdx];
+    ex.logMode = mode;
+    if (mode == ExerciseLogMode.timed || mode == ExerciseLogMode.cardio) {
+      for (final s in ex.sets) {
+        s.targetDurationSec ??= 30;
+        if (mode == ExerciseLogMode.cardio) {
+          s.targetSpeedKmh ??= 6.0;
+        }
+      }
+    } else {
+      // Switching (back) into Reps: a set that was created directly as
+      // Timed/Cardio never had a target rep range/count typed in (r stays
+      // '' -- see the architecture note on ExerciseSet.r), so seed it with
+      // the same '8' default the exercise editors use for a brand-new Reps
+      // set, instead of leaving the guided workout's target-reps label (and
+      // the rep stepper's starting point) reading blank. Never touches an
+      // already-set r, so a set that started life in Reps mode still gets
+      // its original target restored untouched.
+      for (final s in ex.sets) {
+        if (s.r.isEmpty) s.r = '8';
+      }
+    }
+    _persist();
+    notifyListeners();
+  }
+
   /// Chains/unchains [exercises][exIdx] with whichever exercise immediately
   /// follows it into a superset (see `data/superset_steps.dart`) -- a no-op
   /// on the list's last exercise, since there's nothing after it to link to.
@@ -154,8 +198,58 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setRpe(List<Exercise> exercises, int exIdx, int setIdx, int? rpe) {
-    exercises[exIdx].sets[setIdx].rpe = rpe;
+  /// The Timed/Cardio analogue of [setActualReps] -- logs the actual
+  /// seconds held/elapsed for one set live during a guided workout.
+  void setActualSeconds(
+      List<Exercise> exercises, int exIdx, int setIdx, int seconds) {
+    exercises[exIdx].sets[setIdx].actualDurationSec = seconds < 0 ? 0 : seconds;
+    _persist();
+    notifyListeners();
+  }
+
+  /// Steps a Cardio set's actual duration by [deltaSeconds], starting from
+  /// whatever's already logged live or, failing that, the planned target --
+  /// never from 0, so the first tap on an untouched set nudges away from
+  /// its planned duration instead of starting a fresh countdown at 0. Same
+  /// clamp-at-zero shape as [adjustWeight].
+  void adjustCardioDuration(
+      List<Exercise> exercises, int exIdx, int setIdx, int deltaSeconds) {
+    final set = exercises[exIdx].sets[setIdx];
+    final current = set.actualDurationSec ?? set.targetDurationSec ?? 0;
+    var next = current + deltaSeconds;
+    if (next < 0) next = 0;
+    set.actualDurationSec = next;
+    _persist();
+    notifyListeners();
+  }
+
+  /// Steps a Cardio set's actual speed by [deltaKmh], same "start from
+  /// actual-or-target, never 0" and clamp-at-zero shape as
+  /// [adjustCardioDuration] -- rounded to the nearest 0.1 km/h step.
+  void adjustCardioSpeed(
+      List<Exercise> exercises, int exIdx, int setIdx, double deltaKmh) {
+    final set = exercises[exIdx].sets[setIdx];
+    final current = set.actualSpeedKmh ?? set.targetSpeedKmh ?? 0.0;
+    var next = current + deltaKmh;
+    if (next < 0) next = 0;
+    next = (next * 10).round() / 10;
+    set.actualSpeedKmh = next;
+    _persist();
+    notifyListeners();
+  }
+
+  /// Writes [value] into whichever of [ExerciseSet.rpe]/[ExerciseSet.rir]
+  /// matches [scale], and clears the other -- the one place that must keep
+  /// their mutual-exclusivity invariant true (see the doc comment on
+  /// [ExerciseSet.rpe]), so a set re-logged after the global effort-scale
+  /// setting changes never carries a stale value in the scale it's no
+  /// longer tagged with. A null [value] (no chip picked) clears both,
+  /// matching the old `setRpe(..., null)` behavior.
+  void setEffort(List<Exercise> exercises, int exIdx, int setIdx,
+      EffortScale scale, int? value) {
+    final set = exercises[exIdx].sets[setIdx];
+    set.rpe = scale == EffortScale.rpe ? value : null;
+    set.rir = scale == EffortScale.rir ? value : null;
     _persist();
     notifyListeners();
   }
@@ -169,13 +263,42 @@ class ProgramsProvider extends ChangeNotifier {
   /// previously only [ExerciseDetailScreen]'s manual flow ever wrote to.
   void appendGuidedHistoryEntry(List<Exercise> exercises, int exIdx) {
     final ex = exercises[exIdx];
-    var maxWeight = 0.0;
-    for (final s in ex.sets) {
-      if (s.w > maxWeight) maxWeight = s.w;
+    switch (ex.logMode) {
+      case ExerciseLogMode.reps:
+        var maxWeight = 0.0;
+        for (final s in ex.sets) {
+          if (s.w > maxWeight) maxWeight = s.w;
+        }
+        final reps = [for (final s in ex.sets) s.actualReps ?? 0];
+        ex.history.add(
+            HistoryEntry(weight: maxWeight, reps: reps, date: todayIso()));
+      case ExerciseLogMode.timed:
+        // w keeps its existing meaning (optional added weight, 0 = pure
+        // bodyweight) even in Timed mode -- same max-scan as Reps mode.
+        var maxWeight = 0.0;
+        for (final s in ex.sets) {
+          if (s.w > maxWeight) maxWeight = s.w;
+        }
+        final durations = [for (final s in ex.sets) s.actualDurationSec ?? 0];
+        ex.history.add(HistoryEntry(
+          weight: maxWeight,
+          reps: const [],
+          date: todayIso(),
+          mode: ExerciseLogMode.timed,
+          durations: durations,
+        ));
+      case ExerciseLogMode.cardio:
+        final durations = [for (final s in ex.sets) s.actualDurationSec ?? 0];
+        final speeds = [for (final s in ex.sets) s.actualSpeedKmh ?? 0.0];
+        ex.history.add(HistoryEntry(
+          weight: 0,
+          reps: const [],
+          date: todayIso(),
+          mode: ExerciseLogMode.cardio,
+          durations: durations,
+          speeds: speeds,
+        ));
     }
-    final reps = [for (final s in ex.sets) s.actualReps ?? 0];
-    ex.history
-        .add(HistoryEntry(weight: maxWeight, reps: reps, date: todayIso()));
     _persist();
     notifyListeners();
   }
@@ -192,6 +315,68 @@ class ProgramsProvider extends ChangeNotifier {
     ex.history.add(HistoryEntry(weight: weight, reps: reps, date: todayIso()));
     for (final s in ex.sets) {
       s.w = weight;
+    }
+    _persist();
+    notifyListeners();
+  }
+
+  /// The Timed-mode analogue of [saveExerciseLog] -- [saveExerciseLog]'s
+  /// `(idx, weight, reps)` contract is Reps-shaped and must not be reused
+  /// here. Always overwrites every current set's added weight and actual
+  /// seconds held (by position; a [durationsSec] shorter than the set list
+  /// leaves the extra sets' actual seconds unchanged), then appends a
+  /// matching [HistoryEntry].
+  void saveTimedExerciseLog(
+    List<Exercise> exercises,
+    int exIdx,
+    double addedWeightKg,
+    List<int> durationsSec,
+  ) {
+    final ex = exercises[exIdx];
+    ex.history.add(HistoryEntry(
+      weight: addedWeightKg,
+      reps: const [],
+      date: todayIso(),
+      mode: ExerciseLogMode.timed,
+      durations: durationsSec,
+    ));
+    for (var i = 0; i < ex.sets.length; i++) {
+      ex.sets[i].w = addedWeightKg;
+      if (i < durationsSec.length) {
+        ex.sets[i].actualDurationSec = durationsSec[i];
+      }
+    }
+    _persist();
+    notifyListeners();
+  }
+
+  /// The Cardio-mode analogue of [saveExerciseLog] -- weight always stays 0
+  /// (unused in Cardio mode). Always overwrites every current set's actual
+  /// duration+speed (by position, same shorter-list rule as
+  /// [saveTimedExerciseLog]), then appends a matching [HistoryEntry].
+  void saveCardioExerciseLog(
+    List<Exercise> exercises,
+    int exIdx,
+    List<int> durationsSec,
+    List<double> speedsKmh,
+  ) {
+    final ex = exercises[exIdx];
+    ex.history.add(HistoryEntry(
+      weight: 0,
+      reps: const [],
+      date: todayIso(),
+      mode: ExerciseLogMode.cardio,
+      durations: durationsSec,
+      speeds: speedsKmh,
+    ));
+    for (var i = 0; i < ex.sets.length; i++) {
+      ex.sets[i].w = 0;
+      if (i < durationsSec.length) {
+        ex.sets[i].actualDurationSec = durationsSec[i];
+      }
+      if (i < speedsKmh.length) {
+        ex.sets[i].actualSpeedKmh = speedsKmh[i];
+      }
     }
     _persist();
     notifyListeners();

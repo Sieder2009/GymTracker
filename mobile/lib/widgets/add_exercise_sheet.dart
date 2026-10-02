@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/duration_format.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
-import '../models/exercise_set.dart';
+import '../models/exercise_log_mode.dart';
 import '../state/custom_exercises_provider.dart';
 import '../theme/app_colors.dart';
 import 'exercise_list_view.dart';
@@ -38,9 +39,14 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
   final _sets = TextEditingController(text: '3');
   final _reps = TextEditingController(text: '8');
   final _weight = TextEditingController(text: '0');
+  final _targetSeconds = TextEditingController(text: '30');
+  final _cardioMinutes = TextEditingController(text: '20');
+  final _cardioSpeed = TextEditingController(text: '6.0');
   final _note = TextEditingController();
   String _muscle = '';
   Map<String, double> _muscleActivation = {};
+  bool _unilateral = false;
+  ExerciseLogMode _logMode = ExerciseLogMode.reps;
 
   @override
   void dispose() {
@@ -48,6 +54,9 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     _sets.dispose();
     _reps.dispose();
     _weight.dispose();
+    _targetSeconds.dispose();
+    _cardioMinutes.dispose();
+    _cardioSpeed.dispose();
     _note.dispose();
     super.dispose();
   }
@@ -79,16 +88,98 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     final parsedSets = int.tryParse(_sets.text.trim()) ?? 1;
     final setCount = parsedSets < 1 ? 1 : parsedSets;
     final w = double.tryParse(_weight.text.trim().replaceAll(',', '.')) ?? 0;
-    final r = _reps.text.trim().isEmpty ? '—' : _reps.text.trim();
+    final targetSeconds = _logMode == ExerciseLogMode.cardio
+        ? (int.tryParse(_cardioMinutes.text.trim()) ?? 20) * 60
+        : int.tryParse(_targetSeconds.text.trim()) ?? 30;
+    final targetSpeed =
+        double.tryParse(_cardioSpeed.text.trim().replaceAll(',', '.')) ?? 6.0;
     final exercise = Exercise.fresh(
       name,
       _muscle,
       90,
-      List.generate(setCount, (_) => ExerciseSet(w: w, r: r)),
+      buildLogModeSets(
+        mode: _logMode,
+        setCount: setCount,
+        weightKg: w,
+        repsTarget: _reps.text.trim(),
+        targetSeconds: targetSeconds,
+        targetSpeedKmh: targetSpeed,
+      ),
       note: _note.text.trim(),
       muscleActivation: _muscleActivation,
+      unilateral: _unilateral,
+      logMode: _logMode,
     );
     Navigator.of(context).pop(exercise);
+  }
+
+  /// The mode-dependent row of fields -- same shape as
+  /// `PlanEditorScreen._buildModeFieldsRow`.
+  Widget _buildModeFieldsRow(AppLocalizations t) {
+    switch (_logMode) {
+      case ExerciseLogMode.reps:
+        return Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _reps,
+                decoration: InputDecoration(hintText: t.hintReps),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                controller: _weight,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(hintText: t.hintWeightKg),
+              ),
+            ),
+          ],
+        );
+      case ExerciseLogMode.timed:
+        return Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _targetSeconds,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(hintText: t.hintTargetSeconds),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                controller: _weight,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(hintText: t.hintAddedWeightKg),
+              ),
+            ),
+          ],
+        );
+      case ExerciseLogMode.cardio:
+        return Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _cardioMinutes,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(hintText: t.hintCardioMinutes),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                controller: _cardioSpeed,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(hintText: t.hintCardioSpeedKmh),
+              ),
+            ),
+          ],
+        );
+    }
   }
 
   @override
@@ -133,24 +224,24 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                     decoration: InputDecoration(hintText: t.hintSets),
                   ),
                 ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: TextField(
-                    controller: _reps,
-                    decoration: InputDecoration(hintText: t.hintReps),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: TextField(
-                    controller: _weight,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(hintText: t.hintWeightKg),
-                  ),
-                ),
               ],
             ),
+            const SizedBox(height: 8),
+            SegmentedButton<ExerciseLogMode>(
+              segments: [
+                ButtonSegment(
+                    value: ExerciseLogMode.reps, label: Text(t.logModeReps)),
+                ButtonSegment(
+                    value: ExerciseLogMode.timed, label: Text(t.logModeTimed)),
+                ButtonSegment(
+                    value: ExerciseLogMode.cardio,
+                    label: Text(t.logModeCardio)),
+              ],
+              selected: {_logMode},
+              onSelectionChanged: (s) => setState(() => _logMode = s.first),
+            ),
+            const SizedBox(height: 8),
+            _buildModeFieldsRow(t),
             const SizedBox(height: 8),
             TextField(
               controller: _note,
@@ -158,7 +249,25 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
               minLines: 1,
               decoration: InputDecoration(hintText: t.hintExerciseNote),
             ),
-            const SizedBox(height: 8),
+            Row(
+              children: [
+                Checkbox(
+                  value: _unilateral,
+                  onChanged: (v) => setState(() => _unilateral = v ?? false),
+                ),
+                Expanded(
+                  child: Text(t.labelUnilateralToggle,
+                      style: const TextStyle(fontSize: 13)),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 12, bottom: 8),
+              child: Text(
+                t.hintUnilateralToggle,
+                style: TextStyle(color: colors.mut, fontSize: 11.5),
+              ),
+            ),
             DropdownButtonFormField<String>(
               initialValue: _muscle,
               decoration: InputDecoration(labelText: t.labelMuscleGroup),

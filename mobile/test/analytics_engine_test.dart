@@ -3,6 +3,7 @@ import 'package:ironpeak_mobile/analytics/analytics_engine.dart';
 import 'package:ironpeak_mobile/models/big_lift.dart';
 import 'package:ironpeak_mobile/models/body_weight_entry.dart';
 import 'package:ironpeak_mobile/models/exercise.dart';
+import 'package:ironpeak_mobile/models/exercise_log_mode.dart';
 import 'package:ironpeak_mobile/models/exercise_set.dart';
 import 'package:ironpeak_mobile/models/history_entry.dart';
 import 'package:ironpeak_mobile/models/workout_session.dart';
@@ -200,6 +201,90 @@ void main() {
         HistoryEntry(weight: 100, reps: ['✓', 'x'], date: '2026-07-20'),
       ]);
       expect(exerciseHistoryPoints(ex).single.e1rm, isNull);
+    });
+
+    test('a Timed entry with a real added weight never produces a bogus topWeight/e1RM', () {
+      final ex = exercise([
+        HistoryEntry(
+          weight: 20, // real, nonzero added weight on a loaded carry
+          reps: const [],
+          date: '2026-07-20',
+          mode: ExerciseLogMode.timed,
+          durations: [45, 40],
+        ),
+      ]);
+      expect(exerciseHistoryPoints(ex), isEmpty);
+      expect(bestEstimatedOneRepMax(ex), isNull);
+    });
+
+    test('a Cardio entry never produces a bogus topWeight even though weight is written as 0', () {
+      final ex = exercise([
+        HistoryEntry(
+          weight: 0,
+          reps: const [],
+          date: '2026-07-20',
+          mode: ExerciseLogMode.cardio,
+          durations: [1200],
+          speeds: [8.5],
+        ),
+      ]);
+      expect(exerciseHistoryPoints(ex), isEmpty);
+    });
+  });
+
+  group('exerciseTimeHistoryPoints / bestHeldSeconds', () {
+    test('only Timed-stamped, dated entries with a logged duration are included', () {
+      final ex = Exercise.fresh('Plank', 'core', 60, [], history: [
+        HistoryEntry(weight: 0, reps: const [], date: '2026-07-01', mode: ExerciseLogMode.timed, durations: [30, 35]),
+        HistoryEntry(weight: 0, reps: const [], mode: ExerciseLogMode.timed, durations: [60]), // undated
+        HistoryEntry(weight: 40, reps: const [8], date: '2026-07-05'), // Reps entry, ignored here
+        HistoryEntry(weight: 0, reps: const [], date: '2026-07-10', mode: ExerciseLogMode.timed, durations: [50, 45]),
+      ]);
+      final points = exerciseTimeHistoryPoints(ex);
+      expect(points, hasLength(2));
+      expect(points.first.value, 35); // max of [30, 35]
+      expect(points.last.value, 50); // max of [50, 45]
+      expect(bestHeldSeconds(ex), 50);
+    });
+
+    test('bestHeldSeconds is null with no Timed history', () {
+      final ex = Exercise.fresh('Plank', 'core', 60, []);
+      expect(bestHeldSeconds(ex), isNull);
+    });
+
+    test('computeExerciseTimeTrend: insufficient with fewer than 2 dated points', () {
+      final ex = Exercise.fresh('Plank', 'core', 60, [], history: [
+        HistoryEntry(weight: 0, reps: const [], date: '2026-08-01', mode: ExerciseLogMode.timed, durations: [30]),
+      ]);
+      expect(computeExerciseTimeTrend(ex, now: now).quality, DataQuality.insufficient);
+    });
+
+    test('computeExerciseTimeTrend: % change from earliest to latest dated point', () {
+      final ex = Exercise.fresh('Plank', 'core', 60, [], history: [
+        HistoryEntry(weight: 0, reps: const [], date: '2026-07-10', mode: ExerciseLogMode.timed, durations: [30]),
+        HistoryEntry(weight: 0, reps: const [], date: '2026-08-07', mode: ExerciseLogMode.timed, durations: [45]),
+      ]);
+      final trend = computeExerciseTimeTrend(ex, windowDays: 30, now: now);
+      expect(trend.delta, closeTo(50, 0.01)); // 30 -> 45 = +50%
+    });
+  });
+
+  group('exerciseSpeedHistoryPoints / bestSpeedKmh', () {
+    test('only Cardio-stamped, dated entries with a logged speed are included', () {
+      final ex = Exercise.fresh('Treadmill', '', 0, [], history: [
+        HistoryEntry(weight: 0, reps: const [], date: '2026-07-01', mode: ExerciseLogMode.cardio, durations: [1200], speeds: [7.5]),
+        HistoryEntry(weight: 0, reps: const [], date: '2026-07-10', mode: ExerciseLogMode.cardio, durations: [1200], speeds: [9.0]),
+      ]);
+      expect(bestSpeedKmh(ex), 9.0);
+    });
+
+    test('computeExerciseSpeedTrend computes % change across dated entries', () {
+      final ex = Exercise.fresh('Treadmill', '', 0, [], history: [
+        HistoryEntry(weight: 0, reps: const [], date: '2026-07-10', mode: ExerciseLogMode.cardio, durations: [1200], speeds: [8.0]),
+        HistoryEntry(weight: 0, reps: const [], date: '2026-08-07', mode: ExerciseLogMode.cardio, durations: [1200], speeds: [10.0]),
+      ]);
+      final trend = computeExerciseSpeedTrend(ex, windowDays: 30, now: now);
+      expect(trend.delta, closeTo(25, 0.01)); // 8 -> 10 = +25%
     });
   });
 

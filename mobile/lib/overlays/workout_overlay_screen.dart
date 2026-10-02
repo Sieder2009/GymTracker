@@ -7,12 +7,18 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
 import '../data/constants.dart';
+import '../data/duration_format.dart';
+import '../data/effort_scale.dart';
 import '../data/lift_categories.dart';
+import '../data/rep_side_split.dart';
 import '../data/superset_steps.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
+import '../models/exercise_log_mode.dart';
+import '../models/exercise_set.dart';
 import '../services/notification_service.dart';
 import '../state/big_lifts_provider.dart';
+import '../state/effort_scale_provider.dart';
 import '../state/health_provider.dart';
 import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
@@ -122,11 +128,20 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
   int get _setIdx => _steps[_stepIdx].setIndex;
   DateTime? _restEndsAt;
   int _restTotal = 0;
-  int? _rpe;
+  int? _effort;
   Timer? _ticker;
   final DateTime _startedAt = DateTime.now();
   double _sessionVolumeKg = 0;
   int _sessionSets = 0;
+
+  /// Non-null while a Timed set's work timer is running -- wall-clock
+  /// based, same pattern as [_restEndsAt]. Mutually exclusive with
+  /// [_resting]: starting a hold only happens from the main view (never
+  /// while resting), and [_completeTimedSet] clears this before a rest
+  /// period (if any) can start.
+  DateTime? _workStartedAt;
+
+  bool get _working => _workStartedAt != null;
 
   /// Session-local exercise order (indices into the plan day's exercise
   /// list) -- reordering here only changes what order *this* workout walks
@@ -207,13 +222,80 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
   }
 
   void _completeSet(List<Exercise> exercises, int reps) {
-    final t = AppLocalizations.of(context)!;
+    final scale = context.read<EffortScaleProvider>().scale;
+    // Guards against a rare mid-session scale change (background/foreground
+    // through Settings): if _effort was tapped under the old scale and no
+    // longer falls within the new scale's range, it must not land in the
+    // new scale's field as a raw, mismatched number -- that would be
+    // exactly the "wrong number in the wrong field" this feature's model
+    // design is built to avoid (see ProgramsProvider.setEffort).
+    final effort = (_effort != null && effortValuesFor(scale).contains(_effort))
+        ? _effort
+        : null;
     _programs.setActualReps(exercises, _exIdx, _setIdx, reps);
-    _programs.setRpe(exercises, _exIdx, _setIdx, _rpe);
+    _programs.setEffort(exercises, _exIdx, _setIdx, scale, effort);
+
+    final ex = exercises[_exIdx];
+    // Only a Reps set contributes real lifted-and-repped kg-volume -- same
+    // rule `achievements_engine.dart`'s `_historyVolumeKg` already follows
+    // for all-time volume.
+    _sessionVolumeKg += ex.sets[_setIdx].w * reps;
+
+    _finishSet(exercises);
+  }
+
+  /// Stops the running work timer, logs the elapsed hold, and funnels into
+  /// the shared [_finishSet] tail -- the Timed analogue of [_completeSet].
+  void _completeTimedSet(List<Exercise> exercises) {
+    final elapsedSeconds =
+        DateTime.now().difference(_workStartedAt!).inSeconds;
+    _programs.setActualSeconds(exercises, _exIdx, _setIdx, elapsedSeconds);
+    // Clear the work timer BEFORE _finishSet can start a rest period --
+    // _working and _resting must never both be true.
+    setState(() => _workStartedAt = null);
+    _finishSet(exercises);
+  }
+
+  /// Writes back whatever duration/speed is currently displayed for this
+  /// set (already-live-adjusted via the duration/speed steppers, or --
+  /// untouched -- the set's own planned target, the same "write the
+  /// displayed default" rule [_completeSet] already follows for an
+  /// untouched reps stepper) and funnels into [_finishSet] -- the Cardio
+  /// analogue of [_completeSet]. No timer: Cardio sets are logged via
+  /// steppers, not a start/stop hold.
+  void _completeCardioSet(List<Exercise> exercises) {
+    _programs.adjustCardioDuration(exercises, _exIdx, _setIdx, 0);
+    _programs.adjustCardioSpeed(exercises, _exIdx, _setIdx, 0);
+    _finishSet(exercises);
+  }
+
+  /// Starts a Timed set's work timer -- enters [_buildWorkView].
+  void _startHold() {
+    setState(() => _workStartedAt = DateTime.now());
+  }
+
+  /// Cancels a running hold without logging anything, back to the main
+  /// view -- so a user who started a hold by mistake isn't stuck mid-hold.
+  void _cancelHold() {
+    setState(() => _workStartedAt = null);
+  }
+
+  /// The shared tail every set-completion path (`_completeSet`,
+  /// `_completeTimedSet`, `_completeCardioSet`) funnels through once its
+  /// own mode-specific value has already been written to the set: marks
+  /// the set done, counts it toward this session's set total (every mode
+  /// -- a plank/cardio-only session still counts toward the
+  /// totalSets/streak achievements), appends a history entry on the
+  /// exercise's last set, and either finishes the workout or advances/
+  /// rests. This single shared tail is what keeps a superset mixing a Reps
+  /// exercise with a Timed one interleaving correctly (see
+  /// `data/superset_steps.dart` -- `buildWorkoutSteps` walks by literal set
+  /// count and is mode-blind).
+  void _finishSet(List<Exercise> exercises) {
+    final t = AppLocalizations.of(context)!;
     _programs.toggleSet(exercises, _exIdx, _setIdx);
 
     final ex = exercises[_exIdx];
-    _sessionVolumeKg += ex.sets[_setIdx].w * reps;
     _sessionSets += 1;
 
     final currentSets = ex.sets.length;
@@ -225,27 +307,33 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     // to -- previously only that manual flow ever populated it, so no
     // exercise outside bench/deadlift/squat could ever show a PR from a
     // guided session. Comparing the estimated 1RM before/after appending
-    // is what actually detects "is this a new best."
+    // is what actually detects "is this a new best." Timed/Cardio never
+    // reach this block -- their added/zero weight must never produce a
+    // fake e1RM/PR toast or a BigLifts bump.
     String? prMessage;
     if (isLastSetOfExercise) {
-      final previousBest = bestEstimatedOneRepMax(ex);
+      final previousBest =
+          ex.logMode == ExerciseLogMode.reps ? bestEstimatedOneRepMax(ex) : null;
       _programs.appendGuidedHistoryEntry(exercises, _exIdx);
-      final newBest = bestEstimatedOneRepMax(ex);
-      if (newBest != null && (previousBest == null || newBest > previousBest)) {
-        var maxWeight = 0.0;
-        var repsAtMax = 0;
-        for (final s in ex.sets) {
-          if (s.w > maxWeight) {
-            maxWeight = s.w;
-            repsAtMax = s.actualReps ?? 0;
+      if (ex.logMode == ExerciseLogMode.reps) {
+        final newBest = bestEstimatedOneRepMax(ex);
+        if (newBest != null &&
+            (previousBest == null || newBest > previousBest)) {
+          var maxWeight = 0.0;
+          var repsAtMax = 0;
+          for (final s in ex.sets) {
+            if (s.w > maxWeight) {
+              maxWeight = s.w;
+              repsAtMax = s.actualReps ?? 0;
+            }
           }
-        }
-        prMessage = t.toastNewPr(ex.name, fmt1(maxWeight), repsAtMax);
-        final liftCategory = liftCategoryForName(ex.name);
-        if (liftCategory != null) {
-          final bigLifts = context.read<BigLiftsProvider>();
-          bigLifts.addEntry(liftCategory.key, maxWeight);
-          bigLifts.bumpPrIfHigher(liftCategory.key, maxWeight, todayIso());
+          prMessage = t.toastNewPr(ex.name, fmt1(maxWeight), repsAtMax);
+          final liftCategory = liftCategoryForName(ex.name);
+          if (liftCategory != null) {
+            final bigLifts = context.read<BigLiftsProvider>();
+            bigLifts.addEntry(liftCategory.key, maxWeight);
+            bigLifts.bumpPrIfHigher(liftCategory.key, maxWeight, todayIso());
+          }
         }
       }
     }
@@ -304,7 +392,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     if (!_steps[_stepIdx].restAfter) {
       setState(() {
         _stepIdx += 1;
-        _rpe = null;
+        _effort = null;
       });
       return;
     }
@@ -313,7 +401,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     setState(() {
       _restTotal = restSeconds;
       _restEndsAt = DateTime.now().add(Duration(seconds: restSeconds));
-      _rpe = null;
+      _effort = null;
     });
     unawaited(_scheduleRestOverNotification(restSeconds));
   }
@@ -370,7 +458,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
   void _advance() {
     setState(() {
       _restEndsAt = null;
-      _rpe = null;
+      _effort = null;
       _stepIdx += 1;
     });
     // Covers both "rest actually elapsed" (harmless no-op cancel, it
@@ -437,7 +525,9 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
       body: SafeArea(
         child: _resting
             ? _buildRestView(colors, t)
-            : _buildMainView(exercises, colors, t),
+            : _working
+                ? _buildWorkView(exercises, colors, t)
+                : _buildMainView(exercises, colors, t),
       ),
     );
   }
@@ -446,9 +536,6 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
       List<Exercise> exercises, AppColors colors, AppLocalizations t) {
     final ex = exercises[_exIdx];
     final sets = ex.sets;
-    final weight = sets[_setIdx].w;
-    final targetReps = sets[_setIdx].r;
-    final actualReps = sets[_setIdx].actualReps ?? _lowRepBound(targetReps);
     final isLast = _stepIdx == _steps.length - 1;
     final progress = _doneBefore(exercises) / _totalSets(exercises);
     final inSuperset = ex.supersetWithNext || (_exIdx > 0 && exercises[_exIdx - 1].supersetWithNext);
@@ -525,25 +612,145 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
             textAlign: TextAlign.center,
           ),
           const Spacer(),
+          ..._buildModeControls(exercises, sets, colors, t),
+          const SizedBox(height: 16),
+          _buildSetDots(ex, sets, colors),
+          const Spacer(),
+          _buildBottomButton(exercises, sets, isLast, t),
+        ],
+      ),
+    );
+  }
+
+  /// The set-progress dots row -- unchanged across every mode.
+  Widget _buildSetDots(Exercise ex, List<ExerciseSet> sets, AppColors colors) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < sets.length; i++)
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: ex.done.contains(i) ? colors.green : Colors.transparent,
+              border:
+                  Border.all(color: i == _setIdx ? colors.accent : colors.line),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// The mode-dependent middle section: Reps keeps the weight+reps
+  /// steppers and effort chips unchanged; Timed keeps the weight stepper
+  /// (now "added weight") but drops the reps stepper/effort chips in favor
+  /// of a target-hold readout; Cardio drops both steppers for its own
+  /// duration+speed steppers, no weight and no effort chips.
+  List<Widget> _buildModeControls(List<Exercise> exercises,
+      List<ExerciseSet> sets, AppColors colors, AppLocalizations t) {
+    final ex = exercises[_exIdx];
+    final set = sets[_setIdx];
+    switch (ex.logMode) {
+      case ExerciseLogMode.reps:
+        final targetReps = set.r;
+        final rawActualReps = set.actualReps ?? _lowRepBound(targetReps);
+        // A unilateral exercise's displayed/stepped rep count is always
+        // snapped to even first (see `data/rep_side_split.dart`) -- covers
+        // a persisted odd value logged before the toggle existed, or an
+        // odd target-range low bound -- so every step, and "Complete set"
+        // below, always writes back an even total.
+        final actualReps =
+            ex.unilateral ? nextEvenReps(rawActualReps) : rawActualReps;
+        final repStep = repStepFor(unilateral: ex.unilateral);
+        final effortScale = context.watch<EffortScaleProvider>().scale;
+        return [
+          _weightStepperRow(exercises, set.w, t),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
                 icon: const Icon(Icons.remove_circle_outline),
-                iconSize: 32,
-                onPressed: () => _step(exercises, -2.5),
+                iconSize: 26,
+                onPressed: () => _stepReps(exercises, actualReps, -repStep),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  weight > 0 ? '${fmt1(weight)} kg' : t.labelBodyweightAbbr,
-                  style: Theme.of(context).textTheme.headlineLarge,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Text('$actualReps',
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    Text(t.hintRepsPerformed,
+                        style: TextStyle(color: colors.mut, fontSize: 11)),
+                    if (ex.unilateral)
+                      Text(t.labelRepsPerSide(fmt(repsPerSide(actualReps))),
+                          style: TextStyle(color: colors.mut, fontSize: 11)),
+                  ],
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.add_circle_outline),
-                iconSize: 32,
-                onPressed: () => _step(exercises, 2.5),
+                iconSize: 26,
+                onPressed: () => _stepReps(exercises, actualReps, repStep),
+              ),
+            ],
+          ),
+          Center(
+            child: Text(t.targetReps(targetReps),
+                style: TextStyle(color: colors.mut)),
+          ),
+          const SizedBox(height: 16),
+          Text(
+              effortScale == EffortScale.rir ? t.headerRir : t.headerRpe,
+              style: TextStyle(color: colors.mut), textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 6,
+            children: [
+              for (final v in effortValuesFor(effortScale))
+                ChoiceChip(
+                  label: Text('$v'),
+                  selected: _effort == v,
+                  onSelected: (_) => setState(() => _effort = v),
+                ),
+            ],
+          ),
+        ];
+      case ExerciseLogMode.timed:
+        return [
+          _weightStepperRow(exercises, set.w, t, label: t.hintAddedWeightKg),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(t.targetHoldSeconds(set.targetDurationSec ?? 30),
+                style: TextStyle(color: colors.mut)),
+          ),
+        ];
+      case ExerciseLogMode.cardio:
+        final duration = set.actualDurationSec ?? set.targetDurationSec ?? 0;
+        final speed = set.actualSpeedKmh ?? set.targetSpeedKmh ?? 0;
+        return [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline),
+                iconSize: 28,
+                onPressed: () =>
+                    _programs.adjustCardioDuration(exercises, _exIdx, _setIdx, -30),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(formatSeconds(duration),
+                    style: Theme.of(context).textTheme.headlineMedium),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                iconSize: 28,
+                onPressed: () =>
+                    _programs.adjustCardioDuration(exercises, _exIdx, _setIdx, 30),
               ),
             ],
           ),
@@ -554,69 +761,135 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
               IconButton(
                 icon: const Icon(Icons.remove_circle_outline),
                 iconSize: 26,
-                onPressed: () => _stepReps(exercises, actualReps, -1),
+                onPressed: () =>
+                    _programs.adjustCardioSpeed(exercises, _exIdx, _setIdx, -0.5),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    Text('$actualReps',
-                        style: Theme.of(context).textTheme.headlineMedium),
-                    Text(t.hintRepsPerformed,
-                        style: TextStyle(color: colors.mut, fontSize: 11)),
-                  ],
-                ),
+                child: Text('${fmt1(speed)} ${t.unitKmh}',
+                    style: Theme.of(context).textTheme.headlineMedium),
               ),
               IconButton(
                 icon: const Icon(Icons.add_circle_outline),
                 iconSize: 26,
-                onPressed: () => _stepReps(exercises, actualReps, 1),
+                onPressed: () =>
+                    _programs.adjustCardioSpeed(exercises, _exIdx, _setIdx, 0.5),
               ),
             ],
           ),
+          const SizedBox(height: 16),
           Center(
-            child: Text(t.targetReps(targetReps),
+            child: Text(
+                t.targetCardioPace(((set.targetDurationSec ?? 0) / 60).round(),
+                    fmt1(set.targetSpeedKmh ?? 0)),
                 style: TextStyle(color: colors.mut)),
           ),
+        ];
+    }
+  }
+
+  Widget _weightStepperRow(
+      List<Exercise> exercises, double weight, AppLocalizations t,
+      {String? label}) {
+    return Column(
+      children: [
+        if (label != null)
+          Text(label, style: TextStyle(color: Theme.of(context).extension<AppColors>()!.mut, fontSize: 11.5)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              iconSize: 32,
+              onPressed: () => _step(exercises, -2.5),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                weight > 0 ? '${fmt1(weight)} kg' : t.labelBodyweightAbbr,
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              iconSize: 32,
+              onPressed: () => _step(exercises, 2.5),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Reps/Cardio complete this set directly; Timed instead starts the work
+  /// timer (see [_buildWorkView]) -- only its Stop button actually logs the
+  /// set and advances.
+  Widget _buildBottomButton(List<Exercise> exercises, List<ExerciseSet> sets,
+      bool isLast, AppLocalizations t) {
+    final ex = exercises[_exIdx];
+    switch (ex.logMode) {
+      case ExerciseLogMode.reps:
+        final targetReps = sets[_setIdx].r;
+        final rawActualReps =
+            sets[_setIdx].actualReps ?? _lowRepBound(targetReps);
+        final actualReps =
+            ex.unilateral ? nextEvenReps(rawActualReps) : rawActualReps;
+        return ElevatedButton(
+          onPressed: () => _completeSet(exercises, actualReps),
+          child: Text(isLast ? t.actionFinishWorkout : t.actionCompleteSet),
+        );
+      case ExerciseLogMode.timed:
+        return ElevatedButton(
+          onPressed: _startHold,
+          child: Text(t.actionStartHold),
+        );
+      case ExerciseLogMode.cardio:
+        return ElevatedButton(
+          onPressed: () => _completeCardioSet(exercises),
+          child: Text(isLast ? t.actionFinishWorkout : t.actionCompleteSet),
+        );
+    }
+  }
+
+  /// The Timed work timer -- reuses [RestRing] (progress = elapsed/target,
+  /// clamped) with a Stop button that reads elapsed seconds and calls
+  /// [_completeTimedSet]. Wall-clock based (elapsed = now - _workStartedAt,
+  /// re-derived every tick via [_onTick]'s unconditional `setState`), same
+  /// pattern the class doc mandates for the rest timer, so it survives the
+  /// app being backgrounded mid-hold.
+  Widget _buildWorkView(
+      List<Exercise> exercises, AppColors colors, AppLocalizations t) {
+    final ex = exercises[_exIdx];
+    final target = ex.sets[_setIdx].targetDurationSec ?? 30;
+    final elapsed = DateTime.now().difference(_workStartedAt!).inSeconds;
+    final progress = target == 0 ? 0.0 : elapsed / target;
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(ex.name,
+              style: Theme.of(context).textTheme.headlineMedium,
+              textAlign: TextAlign.center),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 0; i < sets.length; i++)
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color:
-                        ex.done.contains(i) ? colors.green : Colors.transparent,
-                    border: Border.all(
-                        color: i == _setIdx ? colors.accent : colors.line),
-                  ),
-                ),
-            ],
+          RestRing(
+            progress: progress.clamp(0, 1),
+            trackColor: colors.card2,
+            progressColor: colors.accent,
+            child: Text(formatSeconds(elapsed),
+                style: Theme.of(context).textTheme.headlineLarge),
           ),
           const SizedBox(height: 16),
-          Text(t.headerRpe,
-              style: TextStyle(color: colors.mut), textAlign: TextAlign.center),
-          const SizedBox(height: 8),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 6,
-            children: [
-              for (var v = 5; v <= 10; v++)
-                ChoiceChip(
-                  label: Text('$v'),
-                  selected: _rpe == v,
-                  onSelected: (_) => setState(() => _rpe = v),
-                ),
-            ],
-          ),
-          const Spacer(),
+          Text(t.targetHoldSeconds(target), style: TextStyle(color: colors.mut)),
+          const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => _completeSet(exercises, actualReps),
-            child: Text(isLast ? t.actionFinishWorkout : t.actionCompleteSet),
+            onPressed: () => _completeTimedSet(exercises),
+            child: Text(t.actionStopAndLog),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _cancelHold,
+            child: Text(t.actionCancel),
           ),
         ],
       ),
@@ -691,8 +964,8 @@ class _SessionOverviewSheetState extends State<_SessionOverviewSheet> {
     Navigator.of(context).pop(_local);
   }
 
-  String _setsSubtitle(Exercise ex) =>
-      ex.sets.isEmpty ? '' : '${ex.sets.length} × ${ex.sets.first.r}';
+  String _setsSubtitle(AppLocalizations t, Exercise ex) =>
+      exerciseSetsSummaryLabel(t, ex);
 
   Widget _sectionHeader(String label, AppColors colors) => Padding(
         padding: const EdgeInsets.only(bottom: 4, top: 4),
@@ -752,7 +1025,7 @@ class _SessionOverviewSheetState extends State<_SessionOverviewSheet> {
                         leading: Icon(Icons.check_circle,
                             color: colors.green, size: 20),
                         title: Text(widget.exerciseAt(i).name),
-                        subtitle: Text(_setsSubtitle(widget.exerciseAt(i)),
+                        subtitle: Text(_setsSubtitle(t, widget.exerciseAt(i)),
                             style: TextStyle(color: colors.mut, fontSize: 12)),
                       ),
                   ],
@@ -764,7 +1037,7 @@ class _SessionOverviewSheetState extends State<_SessionOverviewSheet> {
                     title: Text(current.name,
                         style: TextStyle(
                             fontWeight: FontWeight.w700, color: colors.accent)),
-                    subtitle: Text(_setsSubtitle(current),
+                    subtitle: Text(_setsSubtitle(t, current),
                         style: TextStyle(color: colors.mut, fontSize: 12)),
                   ),
                   if (_local.isNotEmpty) ...[
@@ -792,7 +1065,7 @@ class _SessionOverviewSheetState extends State<_SessionOverviewSheet> {
                                 style: TextStyle(color: colors.mut)),
                             title: Text(widget.exerciseAt(_local[i]).name),
                             subtitle: Text(
-                                _setsSubtitle(widget.exerciseAt(_local[i])),
+                                _setsSubtitle(t, widget.exerciseAt(_local[i])),
                                 style:
                                     TextStyle(color: colors.mut, fontSize: 12)),
                             trailing: const Icon(Icons.drag_handle),

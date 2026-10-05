@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 – Ironpeak Fitness</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#06140f">
+<link rel="icon" href="__SITE_URL__/assets/img/favicon.svg" type="image/svg+xml">
+<!-- GitHub Pages serves this file for every missing path, at any depth, so
+     nothing here may use relative URLs: styles are inline and links use the
+     site URL the deploy workflow fills in (main.js-free on purpose). -->
+<style>
+  @font-face {
+    font-family: "Big Shoulders Display";
+    src: url("__SITE_URL__/assets/fonts/big-shoulders-display-latin.woff2") format("woff2");
+    font-weight: 100 900;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Archivo";
+    src: url("__SITE_URL__/assets/fonts/archivo-latin.woff2") format("woff2");
+    font-weight: 100 900;
+    font-stretch: 62% 125%;
+    font-display: swap;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background: #06140f; color-scheme: dark; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 32px 16px;
+    font-family: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #eef5f1;
+    background:
+      radial-gradient(90% 60% at 50% 110%, rgba(56, 208, 143, 0.18), transparent 70%),
+      linear-gradient(180deg, #030806, #06140f 70%);
+    text-align: center;
+  }
+  html[lang="de"] [data-l="en"], html[lang="en"] [data-l="de"] { display: none; }
+  main { max-width: 640px; }
+  .logo { width: 88px; height: 88px; margin: 0 auto 28px; }
+  .bar { animation: rep 3s cubic-bezier(0.645, 0.045, 0.355, 1) infinite; }
+  @keyframes rep {
+    0%, 18%, 100% { transform: translateY(0); }
+    42%, 55% { transform: translateY(-14px); }
+    77% { transform: translateY(0); }
+  }
+  h1 {
+    margin: 0;
+    font-family: "Big Shoulders Display", Impact, "Arial Narrow", sans-serif;
+    font-size: clamp(7rem, 34vw, 15rem);
+    font-weight: 900;
+    line-height: 0.82;
+    letter-spacing: -0.01em;
+    background: linear-gradient(180deg, #fff 35%, #a9e7cb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  p {
+    margin: 22px auto 34px;
+    max-width: 30em;
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: #b9cbc2;
+  }
+  a.home {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    height: 54px;
+    padding: 0 26px 0 8px;
+    border-radius: 999px;
+    background: #1fa76a;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-stretch: 115%;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  a.home span.i {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.2);
+  }
+  a.home:focus-visible { outline: 2px solid #38d08f; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#38D08F"/><stop offset=".55" stop-color="#1FA76A"/><stop offset="1" stop-color="#0B6644"/>
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="22" fill="url(#g)"/>
+    <g transform="translate(15 15) scale(.7)">
+      <path d="M74,24L88,82L34,82Z" fill="#04382A" fill-opacity=".3"/>
+      <path d="M42,8L66,82L14,82Z" fill="#04382A" fill-opacity=".42"/>
+      <path d="M74,24L77.4,38L74.2,34.6L71,39L67.6,34.8L64.3,38Z" fill="#fff" fill-opacity=".9"/>
+      <path d="M42,8L49.1,30L44.5,35L41,29.8L37.5,34L33.7,30Z" fill="#fff"/>
+      <g class="bar">
+        <path fill="#fff" d="M21.6,57.3H78.4A1.6,1.6 0 0 1 80,58.9V61.1A1.6,1.6 0 0 1 78.4,62.7H21.6A1.6,1.6 0 0 1 20,61.1V58.9A1.6,1.6 0 0 1 21.6,57.3ZM18.5,41H20.5A3,3 0 0 1 23.5,44V76A3,3 0 0 1 20.5,79H18.5A3,3 0 0 1 15.5,76V44A3,3 0 0 1 18.5,41ZM79.5,41H81.5A3,3 0 0 1 84.5,44V76A3,3 0 0 1 81.5,79H79.5A3,3 0 0 1 76.5,76V44A3,3 0 0 1 79.5,41ZM11.4,47.5H12.1A2.4,2.4 0 0 1 14.5,49.9V70.1A2.4,2.4 0 0 1 12.1,72.5H11.4A2.4,2.4 0 0 1 9,70.1V49.9A2.4,2.4 0 0 1 11.4,47.5ZM87.9,47.5H88.6A2.4,2.4 0 0 1 91,49.9V70.1A2.4,2.4 0 0 1 88.6,72.5H87.9A2.4,2.4 0 0 1 85.5,70.1V49.9A2.4,2.4 0 0 1 87.9,47.5ZM6.6,56.6H8A1.6,1.6 0 0 1 9.6,58.2V61.8A1.6,1.6 0 0 1 8,63.4H6.6A1.6,1.6 0 0 1 5,61.8V58.2A1.6,1.6 0 0 1 6.6,56.6ZM92,56.6H93.4A1.6,1.6 0 0 1 95,58.2V61.8A1.6,1.6 0 0 1 93.4,63.4H92A1.6,1.6 0 0 1 90.4,61.8V58.2A1.6,1.6 0 0 1 92,56.6Z"/>
+      </g>
+    </g>
+  </svg>
+  <h1>404</h1>
+  <p>
+    <span data-l="de">Falscher Pfad. Hier oben gibt es nichts zu sehen – der Gipfel liegt woanders.</span>
+    <span data-l="en">Wrong trail. There's nothing up here – the summit is somewhere else.</span>
+  </p>
+  <a class="home" href="__SITE_URL__/" data-home>
+    <span class="i" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </span>
+    <span data-l="de">Zurück ins Tal</span><span data-l="en">Back to the valley</span>
+  </a>
+</main>
+<script>
+  (function () {
+    var lang = 'en';
+    try { lang = localStorage.getItem('ironpeak-lang') || ''; } catch (e) {}
+    if (lang !== 'de' && lang !== 'en') {
+      var list = navigator.languages || [navigator.language || ''];
+      lang = 'en';
+      for (var i = 0; i < list.length; i++) {
+        var code = String(list[i]).toLowerCase();
+        if (code.indexOf('de') === 0) { lang = 'de'; break; }
+        if (code.indexOf('en') === 0) break;
+      }
+    }
+    document.documentElement.lang = lang;
+    document.title = lang === 'de' ? '404 – Seite nicht gefunden · Ironpeak Fitness' : '404 – Page not found · Ironpeak Fitness';
+    // Local preview: the deploy workflow hasn't filled in the site URL.
+    var home = document.querySelector('[data-home]');
+    if (home && home.getAttribute('href').indexOf('__SITE_URL__') === 0) {
+      var parts = location.pathname.split('/');
+      home.setAttribute('href', /\.github\.io$/.test(location.hostname) && parts[1] ? '/' + parts[1] + '/' : '/');
+    }
+  })();
+</script>
+</body>
+</html>

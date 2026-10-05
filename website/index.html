@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="de" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ironpeak Fitness – Trainingsplaner, Krafttracker &amp; Analysen, 100 % lokal</title>
+<meta name="description" content="Ironpeak Fitness ist Trainingsplaner, Krafttracker und Analyse-Tool in einer nativen App für Android, iOS, Windows und macOS. Kostenlos, ohne Konto, ohne Cloud – alle Daten bleiben auf deinem Gerät.">
+<meta name="theme-color" content="#06140f">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="__SITE_URL__/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ironpeak Fitness">
+<meta property="og:title" content="Ironpeak Fitness – Dein Training. Deine Daten. Dein Gipfel.">
+<meta property="og:description" content="Trainingsplaner, Krafttracker und ehrliche Analysen in einer App – kostenlos, ohne Konto, 100 % lokal. Für Android, iOS, Windows und macOS.">
+<meta property="og:url" content="__SITE_URL__/">
+<meta property="og:image" content="__SITE_URL__/assets/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Ironpeak Fitness – Logo und Bergsilhouette bei Nacht">
+<meta property="og:locale" content="de_DE">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/site.css">
+<script>
+  /* Runs before first paint: JS flag, language (saved choice, else the
+     browser's first German or English preference), reduced motion, and
+     whether the intro plays (once per tab session). */
+  (function (d, w) {
+    var h = d.documentElement;
+    h.className = h.className.replace('no-js', 'js');
+    var lang = null;
+    try { lang = w.localStorage.getItem('ironpeak-lang'); } catch (e) {}
+    if (lang !== 'de' && lang !== 'en') {
+      var list = w.navigator.languages || [w.navigator.language || ''];
+      lang = 'en';
+      for (var i = 0; i < list.length; i++) {
+        var code = String(list[i]).toLowerCase();
+        if (code.indexOf('de') === 0) { lang = 'de'; break; }
+        if (code.indexOf('en') === 0) break;
+      }
+    }
+    h.lang = lang;
+    var calm = !!(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (calm) h.className += ' calm';
+    var seen = false;
+    try { seen = w.sessionStorage.getItem('ironpeak-intro') === '1'; } catch (e) {}
+    if (!calm && !seen) h.className += ' intro-on';
+  })(document, window);
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Ironpeak Fitness",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "Android, iOS, Windows, macOS",
+  "description": "Workout planner, strength tracker and analytics in one native app. Free, no account, no cloud — all data stays on your device.",
+  "url": "__SITE_URL__/",
+  "image": "__SITE_URL__/assets/img/og.jpg",
+  "downloadUrl": "https://github.com/Sieder2009/GymTracker/releases/latest",
+  "codeRepository": "https://github.com/Sieder2009/GymTracker",
+  "inLanguage": ["de", "en", "es", "fr", "it", "pt", "nl", "tr", "pl", "ru"],
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "author": { "@type": "Person", "name": "Sieder2009", "url": "https://github.com/Sieder2009" }
+}
+</script>
+</head>
+<body>
+<!-- @icons: generated sprite. Lucide icons (ISC License, Copyright (c) Lucide Icons and Contributors, https://lucide.dev);
+     GitHub mark from Primer Octicons (MIT License, Copyright (c) GitHub Inc.). -->
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol>
+  <symbol id="i-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+  <symbol id="i-calculator" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></symbol>
+  <symbol id="i-chart-spline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16c.5-2 1.5-7 4-7 2 0 2 3 4 3 2.5 0 4.5-5 5-7"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-database-backup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 12a9 3 0 0 0 5 2.69"/><path d="M21 9.3V5"/><path d="M3 5v14a9 3 0 0 0 6.47 2.88"/><path d="M12 12v4h4"/><path d="M13 20a5 5 0 0 0 9-3 4.5 4.5 0 0 0-4.5-4.5c-1.33 0-2.54.54-3.41 1.41L12 16"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></symbol>
+  <symbol id="i-dumbbell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"/><path d="m2.5 21.5 1.4-1.4"/><path d="m20.1 3.9 1.4-1.4"/><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"/><path d="m9.6 14.4 4.8-4.8"/></symbol>
+  <symbol id="i-file-input" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M2 15h10"/><path d="m9 18 3-3-3-3"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"/></symbol>
+  <symbol id="i-heart-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></symbol>
+  <symbol id="i-languages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z"/><path d="M20.054 15.987H3.946"/></symbol>
+  <symbol id="i-link-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></symbol>
+  <symbol id="i-list-checks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></symbol>
+  <symbol id="i-person-standing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-tablet-smartphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="10" height="14" x="3" y="8" rx="2"/><path d="M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4"/><path d="M8 18h.01"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></symbol>
+  <symbol id="i-trending-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/><path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/><path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></symbol>
+</svg>
+<!-- /@icons -->
+
+<a class="skip" href="#main"><span data-l="de">Zum Inhalt springen</span><span data-l="en">Skip to content</span></a>
+
+<div class="intro" aria-hidden="true">
+  <svg class="intro__logo" data-logo="intro"></svg>
+  <div class="intro__bar"><i></i></div>
+</div>
+
+<header class="nav" data-nav>
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top" data-i18n data-de-aria-label="Ironpeak Fitness – nach oben" data-en-aria-label="Ironpeak Fitness – back to top" aria-label="Ironpeak Fitness – nach oben">
+      <svg class="nav__logo" data-logo="hover" viewBox="0 0 100 100" aria-hidden="true"><image href="assets/img/favicon.svg" width="100" height="100"/></svg>
+      <span class="nav__name">Ironpeak</span>
+    </a>
+    <nav class="nav__links" id="nav-links" data-i18n data-de-aria-label="Hauptnavigation" data-en-aria-label="Main navigation" aria-label="Hauptnavigation">
+      <a href="#app"><span data-l="de">Die App</span><span data-l="en">The app</span></a>
+      <a href="#demo"><span data-l="de">Ausprobieren</span><span data-l="en">Try it</span></a>
+      <a href="#features"><span data-l="de">Funktionen</span><span data-l="en">Features</span></a>
+      <a href="#privacy"><span data-l="de">Datenschutz</span><span data-l="en">Privacy</span></a>
+      <a class="nav__links-download" href="#download">Download</a>
+    </nav>
+    <div class="nav__tools">
+      <div class="lang" role="group" aria-label="Sprache / Language">
+        <button type="button" data-set-lang="de" aria-pressed="true" lang="de" title="Deutsch">DE</button>
+        <button type="button" data-set-lang="en" aria-pressed="false" lang="en" title="English">EN</button>
+      </div>
+      <a class="icon-btn" href="https://github.com/Sieder2009/GymTracker" data-i18n data-de-aria-label="Quellcode auf GitHub" data-en-aria-label="Source code on GitHub" aria-label="Quellcode auf GitHub">
+        <svg aria-hidden="true"><use href="#i-github"/></svg>
+      </a>
+      <a class="pill pill--sm nav__cta" href="#download" data-magnetic>
+        <span class="pill__icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>
+        <span class="pill__text"><span data-l="de">Laden</span><span data-l="en">Get it</span></span>
+      </a>
+      <button class="nav__menu" type="button" aria-expanded="false" aria-controls="nav-links" data-menu data-i18n data-de-aria-label="Menü" data-en-aria-label="Menu" aria-label="Menü">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="altimeter" aria-hidden="true">
+  <span class="altimeter__label"><span data-l="de">Höhe</span><span data-l="en">Altitude</span></span>
+  <span class="altimeter__value"><b data-alt-value>0</b> m</span>
+  <span class="altimeter__track"><i data-alt-marker></i></span>
+  <span class="altimeter__camp" data-alt-camp></span>
+</div>
+<div class="progress" aria-hidden="true"><i data-progress></i></div>
+
+<main id="main">
+
+  <!-- ===================================================== HERO -->
+  <section class="hero" id="top" data-name-de="Start" data-name-en="Home">
+    <div class="hero__stage">
+      <canvas class="hero__stars" aria-hidden="true"></canvas>
+      <div class="hero__aurora" aria-hidden="true"></div>
+
+      <svg class="hero__ridge hero__ridge--far" viewBox="0 0 1600 400" preserveAspectRatio="none" aria-hidden="true">
+        <path fill="#173a33" d="M0,400L0,250L90,200L170,240L260,150L340,210L430,170L520,230L610,140L700,200L790,120L880,190L980,150L1060,210L1150,130L1240,190L1330,160L1420,220L1510,170L1600,210L1600,400Z"/>
+      </svg>
+
+      <svg class="hero__ridge hero__ridge--mid" viewBox="0 0 1600 500" preserveAspectRatio="none" aria-hidden="true">
+        <path fill="#102c24" d="M0,500L0,280L120,230L230,300L360,170L470,250L560,210L690,300L800,200L930,270L1040,180L1170,260L1280,220L1400,300L1510,240L1600,270L1600,500Z"/>
+      </svg>
+
+      <div class="hero__title">
+        <p class="hero__tag" data-hero-in>
+          <span data-l="de">Dein Training. Deine Daten. Dein Gipfel.</span>
+          <span data-l="en">Your training. Your data. Your peak.</span>
+        </p>
+        <h1 class="hero__word">
+          <span class="sr-only">Ironpeak Fitness</span>
+          <span class="hero__letters" aria-hidden="true" data-hero-letters>IRONPEAK</span>
+        </h1>
+      </div>
+
+      <div class="hero__front" aria-hidden="true">
+        <svg class="hero__peak" viewBox="0 0 1600 900" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#06140f" stop-opacity="0"/>
+              <stop offset="1" stop-color="#06140f"/>
+            </linearGradient>
+          </defs>
+          <path fill="#1a4738" d="M640,0L180,520L0,600L0,900L560,900Z"/>
+          <path fill="#081a13" d="M640,0L560,900L980,900L900,420Z"/>
+          <path fill="#143c2f" d="M1080,260L900,420L980,900L1130,900Z"/>
+          <path fill="#091d16" d="M1080,260L1130,900L1600,900L1600,500L1360,560Z"/>
+          <path fill="#eef7f2" d="M640,0L624.9,170.1L600,192L507,150Z"/>
+          <path fill="#b7cec3" d="M640,0L733,150L690,195L650,148L624.9,170.1Z"/>
+          <path fill="#e2efe8" d="M1080,260L1087.4,355.3L1062,376L979,350Z"/>
+          <path fill="#a9c2b6" d="M1080,260L1164,350L1132,380L1100,345L1087.4,355.3Z"/>
+          <path fill="none" stroke="#c4ffe3" stroke-opacity=".35" stroke-width="1.5" vector-effect="non-scaling-stroke" d="M640,0L180,520M1080,260L900,420"/>
+          <rect x="0" y="380" width="1600" height="520" fill="url(#hero-fade)"/>
+        </svg>
+        <svg class="hero__glint" viewBox="-8 -8 16 16" aria-hidden="true"><path fill="#fff" d="M0,-6.5Q0.9,-0.9 6.5,0Q0.9,0.9 0,6.5Q-0.9,0.9 -6.5,0Q-0.9,-0.9 0,-6.5Z"/></svg>
+        <div class="hero__base"></div>
+      </div>
+
+      <div class="hero__foot">
+        <div class="hero__lead" data-hero-in>
+          <p class="hero__platforms">
+            <span data-l="de">Fitness-App · Android · iOS · Windows · macOS</span>
+            <span data-l="en">Fitness app · Android · iOS · Windows · macOS</span>
+          </p>
+          <p>
+            <span data-l="de">Trainingsplaner, Krafttracker und ehrliche Analysen in einer nativen App. Kein Konto, keine Cloud – alles bleibt auf deinem Gerät.</span>
+            <span data-l="en">Workout planner, strength tracker and honest analytics in one native app. No account, no cloud – everything stays on your device.</span>
+          </p>
+          <a class="release-chip" href="https://github.com/Sieder2009/GymTracker/releases/latest" data-release-chip hidden>
+            <i></i><span data-l="de">Neu:</span><span data-l="en">New:</span> <b data-release-version></b>
+          </a>
+        </div>
+        <div class="hero__ctas" data-hero-in>
+          <a class="pill" href="#download" data-magnetic>
+            <span class="pill__icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>
+            <span class="pill__text">
+              <span data-l="de" data-cta-de>Kostenlos laden</span><span data-l="en" data-cta-en>Download free</span>
+            </span>
+          </a>
+          <a class="pill pill--ghost" href="https://github.com/Sieder2009/GymTracker" data-magnetic>
+            <span class="pill__icon"><svg aria-hidden="true"><use href="#i-github"/></svg></span>
+            <span class="pill__text">GitHub</span>
+          </a>
+        </div>
+        <a class="hero__scroll" href="#about" data-hero-in>
+          <span class="hero__scroll-line"><i></i></span>
+          <span data-l="de">Scrollen – der Aufstieg beginnt</span><span data-l="en">Scroll – start the climb</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== MANIFEST -->
+  <section class="manifest" id="about" data-name-de="Basislager" data-name-en="Base camp">
+    <div class="wrap">
+      <p class="eyebrow"><span class="eyebrow__num">01</span><span data-l="de">Basislager</span><span data-l="en">Base camp</span></p>
+      <p class="manifest__text" data-words>
+        <span data-l="de">Ironpeak plant dein Training, zählt jede Wiederholung und zeigt dir ehrlich, ob du stärker wirst. Ohne Abo, ohne Konto, ohne Cloud. Nur du, die Hantel und deine Zahlen.</span>
+        <span data-l="en">Ironpeak plans your training, counts every rep and tells you honestly whether you're getting stronger. No subscription, no account, no cloud. Just you, the bar and your numbers.</span>
+      </p>
+      <dl class="stats">
+        <div class="stat">
+          <dt class="stat__num"><span data-count data-exercise-count>546</span></dt>
+          <dd><span data-l="de">Übungen, jede mit Muskelkarte</span><span data-l="en">exercises, each with a muscle map</span></dd>
+        </div>
+        <div class="stat">
+          <dt class="stat__num"><span data-count>10</span></dt>
+          <dd><span data-l="de">Sprachen, von Deutsch bis Türkisch</span><span data-l="en">languages, from German to Turkish</span></dd>
+        </div>
+        <div class="stat">
+          <dt class="stat__num"><span data-count>4</span></dt>
+          <dd><span data-l="de">Plattformen aus einer Codebasis</span><span data-l="en">platforms from one codebase</span></dd>
+        </div>
+        <div class="stat">
+          <dt class="stat__num"><span data-count>0</span></dt>
+          <dd><span data-l="de">Server. Deine Daten bleiben bei dir.</span><span data-l="en">servers. Your data stays with you.</span></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ===================================================== TOUR -->
+  <section class="tour" id="app" data-name-de="Die App" data-name-en="The app">
+    <div class="wrap tour__head">
+      <p class="eyebrow"><span class="eyebrow__num">02</span><span data-l="de">Die App</span><span data-l="en">The app</span></p>
+      <h2 class="display" data-reveal>
+        <span data-l="de">Vier Tabs.<br>Alles drin.</span>
+        <span data-l="en">Four tabs.<br>Everything inside.</span>
+      </h2>
+      <p class="lede" data-reveal>
+        <span data-l="de">Kein Menü-Labyrinth: Training, Kraft, Analyse und Übungen – Kalender, Galerie, Backup und Einstellungen liegen einen Tap entfernt.</span>
+        <span data-l="en">No menu maze: Training, Strength, Analytics and Exercises – calendar, gallery, backup and settings are one tap away.</span>
+      </p>
+    </div>
+
+    <div class="wrap tour__body">
+      <div class="tour__chapters">
+
+        <article class="chapter" data-chapter="0">
+          <p class="chapter__tab"><svg aria-hidden="true"><use href="#i-dumbbell"/></svg>Training</p>
+          <h3 class="chapter__title">
+            <span data-l="de">Heute steht an. Satz für Satz.</span>
+            <span data-l="en">Today's session. Set by set.</span>
+          </h3>
+          <p class="chapter__body">
+            <span data-l="de">Pläne nach Wochentag oder Rotation – selbst gebaut, importiert oder aus acht Vorlagen. Im geführten Workout trägst du jeden Satz per Slider oder Tastatur ein, mit RPE oder RIR, Supersätzen und Drag &amp; Drop. Der Pausentimer läuft nach echter Uhrzeit und meldet sich per Benachrichtigung – auch wenn das Handy gesperrt war.</span>
+            <span data-l="en">Plans by weekday or rotation – built by hand, imported, or picked from eight templates. In a guided workout you log every set with a slider or the keyboard, with RPE or RIR, supersets and drag &amp; drop. The rest timer runs on real clock time and notifies you when it's done – even if your phone was locked.</span>
+          </p>
+          <p class="chapter__callout">
+            <svg aria-hidden="true"><use href="#i-trending-up"/></svg>
+            <span data-l="de">Für jede Übung ein konkreter Vorschlag fürs nächste Mal: mehr Gewicht, eine Wiederholung mehr – oder ein Deload nach zwei schwachen Einheiten.</span>
+            <span data-l="en">A concrete suggestion for next time on every exercise: more weight, one more rep – or a deload after two weak sessions.</span>
+          </p>
+          <ul class="tags">
+            <li><span data-l="de">Progressive Overload</span><span data-l="en">Progressive overload</span></li>
+            <li>RPE / RIR</li>
+            <li><span data-l="de">Supersätze</span><span data-l="en">Supersets</span></li>
+            <li><span data-l="de">Zeit &amp; Cardio</span><span data-l="en">Time &amp; cardio</span></li>
+          </ul>
+          <div class="chapter__shot">
+            <img src="assets/img/screens/training-420.webp" srcset="assets/img/screens/training-420.webp 420w, assets/img/screens/training-780.webp 780w" sizes="64vw" width="780" height="1696" loading="lazy" decoding="async"
+              alt="Training-Tab: das nächste Workout, Wochentage und Kennzahlen auf einen Blick" data-i18n data-de-alt="Training-Tab: das nächste Workout, Wochentage und Kennzahlen auf einen Blick" data-en-alt="Training tab: the next workout, weekdays and key numbers at a glance">
+          </div>
+        </article>
+
+        <article class="chapter" data-chapter="1">
+          <p class="chapter__tab"><svg aria-hidden="true"><use href="#i-zap"/></svg><span data-l="de">Kraft</span><span data-l="en">Strength</span></p>
+          <h3 class="chapter__title">
+            <span data-l="de">Wie stark bist du wirklich?</span>
+            <span data-l="en">How strong are you, really?</span>
+          </h3>
+          <p class="chapter__body">
+            <span data-l="de">PRs und Verlauf für Bankdrücken, Kreuzheben und Kniebeuge, mit Trend und Plateau-Erkennung. Statt nur einer DOTS-Zahl bekommst du ein Kraftlevel in Klartext – von Anfänger bis Elite, mit Fortschrittsbalken zum nächsten Level. Dazu 1RM- und Plattenrechner.</span>
+            <span data-l="en">PRs and history for bench press, deadlift and squat, with trends and plateau detection. Instead of a bare DOTS number you get a plain-language strength level – Beginner to Elite, with a progress bar to the next one. Plus a 1RM and a plate calculator.</span>
+          </p>
+          <ul class="tags">
+            <li><span data-l="de">Kraftlevel</span><span data-l="en">Strength level</span></li>
+            <li><span data-l="de">DOTS-Score</span><span data-l="en">DOTS score</span></li>
+            <li><span data-l="de">1RM-Rechner</span><span data-l="en">1RM calculator</span></li>
+            <li><span data-l="de">Plattenrechner</span><span data-l="en">Plate calculator</span></li>
+          </ul>
+          <div class="chapter__shot">
+            <img src="assets/img/screens/strength-420.webp" srcset="assets/img/screens/strength-420.webp 420w, assets/img/screens/strength-780.webp 780w" sizes="64vw" width="780" height="1696" loading="lazy" decoding="async"
+              alt="Kraft-Tab: Körpergewicht, Powerlifting-Score und das Kraftlevel beim Bankdrücken" data-i18n data-de-alt="Kraft-Tab: Körpergewicht, Powerlifting-Score und das Kraftlevel beim Bankdrücken" data-en-alt="Strength tab: bodyweight, powerlifting score and the bench press strength level">
+          </div>
+        </article>
+
+        <article class="chapter" data-chapter="2">
+          <p class="chapter__tab"><svg aria-hidden="true"><use href="#i-chart-spline"/></svg><span data-l="de">Analyse</span><span data-l="en">Analytics</span></p>
+          <h3 class="chapter__title">
+            <span data-l="de">Ehrliche Zahlen. Keine erfundenen Kurven.</span>
+            <span data-l="en">Honest numbers. No made-up curves.</span>
+          </h3>
+          <p class="chapter__body">
+            <span data-l="de">Übersicht, Kraft, Volumen, Konstanz und Erfolge – jede Zahl und jedes Diagramm kommt aus deinen echten Einträgen. Reichen die Daten noch nicht, sagt die App das ehrlich, statt eine Linie zu erfinden.</span>
+            <span data-l="en">Overview, strength, volume, consistency and achievements – every number and every chart comes from what you actually logged. Not enough data yet? The app says so instead of inventing a line.</span>
+          </p>
+          <ul class="tags">
+            <li><span data-l="de">Wochenvolumen</span><span data-l="en">Weekly volume</span></li>
+            <li><span data-l="de">Trainingsserien</span><span data-l="en">Streaks</span></li>
+            <li><span data-l="de">Erfolge</span><span data-l="en">Achievements</span></li>
+            <li><span data-l="de">Aktivitätskalender</span><span data-l="en">Activity calendar</span></li>
+          </ul>
+          <div class="chapter__shot">
+            <img src="assets/img/screens/analytics-420.webp" srcset="assets/img/screens/analytics-420.webp 420w, assets/img/screens/analytics-780.webp 780w" sizes="64vw" width="780" height="1696" loading="lazy" decoding="async"
+              alt="Analyse-Tab: Fortschrittsübersicht und wöchentliches Volumen der letzten acht Wochen" data-i18n data-de-alt="Analyse-Tab: Fortschrittsübersicht und wöchentliches Volumen der letzten acht Wochen" data-en-alt="Analytics tab: progress overview and weekly volume over the last eight weeks">
+          </div>
+        </article>
+
+        <article class="chapter" data-chapter="3">
+          <p class="chapter__tab"><svg aria-hidden="true"><use href="#i-list-checks"/></svg><span data-l="de">Übungen</span><span data-l="en">Exercises</span></p>
+          <h3 class="chapter__title">
+            <span data-l="de"><span data-exercise-count>546</span> Übungen. Jede mit Muskelkarte.</span>
+            <span data-l="en"><span data-exercise-count>546</span> exercises. Each with a muscle map.</span>
+          </h3>
+          <p class="chapter__body">
+            <span data-l="de">Durchsuchbar und in sieben Kategorien sortiert. Für jede Übung zeigt eine gezeichnete Körperfigur, welche Muskeln wie stark arbeiten – vorne und hinten. Eigene Übungen legst du an, indem du die Muskeln direkt antippst. Die Datenbank kommt live von GitHub und funktioniert auch offline.</span>
+            <span data-l="en">Searchable and sorted into seven categories. For every exercise, an illustrated body shows which muscles work and how hard – front and back. Create your own by tapping the muscles right on the figure. The database loads live from GitHub and works offline too.</span>
+          </p>
+          <ul class="tags">
+            <li><span data-l="de">Muskelkarte</span><span data-l="en">Muscle map</span></li>
+            <li><span data-l="de">Technik-Tipps</span><span data-l="en">Form tips</span></li>
+            <li><span data-l="de">Eigene Übungen</span><span data-l="en">Custom exercises</span></li>
+            <li><span data-l="de">Live-Datenbank</span><span data-l="en">Live database</span></li>
+          </ul>
+          <div class="chapter__shot">
+            <img src="assets/img/screens/exercises-420.webp" srcset="assets/img/screens/exercises-420.webp 420w, assets/img/screens/exercises-780.webp 780w" sizes="64vw" width="780" height="1696" loading="lazy" decoding="async"
+              alt="Übungen-Tab: Muskeldiagramm für enges Bankdrücken mit Brust, Trizeps und vorderer Schulter" data-i18n data-de-alt="Übungen-Tab: Muskeldiagramm für enges Bankdrücken mit Brust, Trizeps und vorderer Schulter" data-en-alt="Exercises tab: muscle diagram for the close-grip bench press with chest, triceps and front delts">
+          </div>
+        </article>
+
+      </div>
+
+      <div class="tour__device" aria-hidden="true">
+        <div class="tour__bignum" data-tour-num>01</div>
+        <div class="phone">
+          <div class="phone__screen">
+            <img class="is-active" src="assets/img/screens/training-780.webp" width="780" height="1696" alt="" decoding="async" data-shot="0">
+            <img src="assets/img/screens/strength-780.webp" width="780" height="1696" alt="" loading="lazy" decoding="async" data-shot="1">
+            <img src="assets/img/screens/analytics-780.webp" width="780" height="1696" alt="" loading="lazy" decoding="async" data-shot="2">
+            <img src="assets/img/screens/exercises-780.webp" width="780" height="1696" alt="" loading="lazy" decoding="async" data-shot="3">
+          </div>
+        </div>
+        <ol class="tour__dots">
+          <li class="is-active"><i></i>Training</li>
+          <li><i></i><span data-l="de">Kraft</span><span data-l="en">Strength</span></li>
+          <li><i></i><span data-l="de">Analyse</span><span data-l="en">Analytics</span></li>
+          <li><i></i><span data-l="de">Übungen</span><span data-l="en">Exercises</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== DEMOS -->
+  <section class="demo" id="demo" data-name-de="Ausprobieren" data-name-en="Try it">
+    <div class="wrap">
+      <div class="demo__head">
+        <p class="eyebrow"><span class="eyebrow__num">03</span><span data-l="de">Probier's aus</span><span data-l="en">Try it</span></p>
+        <h2 class="display" data-reveal>
+          <span data-l="de">Echte Formeln.<br>Direkt hier.</span>
+          <span data-l="en">Real formulas.<br>Right here.</span>
+        </h2>
+        <p class="lede" data-reveal>
+          <span data-l="de">Diese drei Werkzeuge rechnen mit denselben Formeln und Daten wie die App – direkt aus ihrem Quellcode übernommen. Keine Attrappe.</span>
+          <span data-l="en">These three tools run on the same formulas and data as the app – ported straight from its source code. Not a mock-up.</span>
+        </p>
+      </div>
+
+      <div class="demo__grid">
+
+        <!-- Plate calculator -->
+        <article class="card card--plates" aria-labelledby="plates-title" data-demo="plates">
+          <header class="card__head">
+            <span class="card__icon"><svg aria-hidden="true"><use href="#i-calculator"/></svg></span>
+            <h3 id="plates-title"><span data-l="de">Plattenrechner</span><span data-l="en">Plate calculator</span></h3>
+            <span class="card__src">plate_calculator.dart</span>
+          </header>
+          <div class="plates__viz" aria-hidden="true">
+            <svg class="plates__svg" viewBox="0 0 960 240" data-plates-svg>
+              <rect class="plates__sleeve" x="20" y="108" width="270" height="24" rx="5"/>
+              <rect class="plates__sleeve" x="670" y="108" width="270" height="24" rx="5"/>
+              <rect class="plates__bar" x="290" y="112" width="380" height="16" rx="4"/>
+              <rect class="plates__collar" x="280" y="96" width="14" height="48" rx="3"/>
+              <rect class="plates__collar" x="666" y="96" width="14" height="48" rx="3"/>
+              <g data-plates-left></g>
+              <g data-plates-right></g>
+            </svg>
+          </div>
+          <div class="plates__controls">
+            <div class="field">
+              <label class="field__label" for="plates-target"><span data-l="de">Zielgewicht</span><span data-l="en">Target weight</span></label>
+              <div class="field__row">
+                <input class="range" type="range" min="20" max="300" step="2.5" value="100" data-plates-range
+                  data-i18n data-de-aria-label="Zielgewicht (Regler)" data-en-aria-label="Target weight (slider)" aria-label="Zielgewicht (Regler)">
+                <span class="num">
+                  <input id="plates-target" type="number" min="0" max="500" step="0.5" value="100" inputmode="decimal" data-plates-input>
+                  <span class="num__unit">kg</span>
+                </span>
+              </div>
+            </div>
+            <fieldset class="seg">
+              <legend class="field__label"><span data-l="de">Stange</span><span data-l="en">Bar</span></legend>
+              <label><input type="radio" name="plates-bar" value="20" checked><span>20 kg</span></label>
+              <label><input type="radio" name="plates-bar" value="15"><span>15 kg</span></label>
+              <label><input type="radio" name="plates-bar" value="10"><span>10 kg</span></label>
+            </fieldset>
+          </div>
+          <div class="plates__out" data-plates-out aria-live="polite">
+            <span class="plates__label"><span data-l="de">Pro Seite</span><span data-l="en">Per side</span></span>
+            <span class="plates__list" data-plates-list>25 · 15</span>
+            <span class="plates__total" data-plates-total>= 100 kg</span>
+          </div>
+          <p class="card__note">
+            <span data-l="de">Derselbe Greedy-Algorithmus wie in der App – für Standardscheiben (25 bis 0,5 kg) exakt, nicht nur geschätzt.</span>
+            <span data-l="en">The same greedy algorithm as the app – exact, not just a guess, for standard plates (25 down to 0.5 kg).</span>
+          </p>
+        </article>
+
+        <!-- Strength level -->
+        <article class="card card--strength" aria-labelledby="strength-title" data-demo="strength">
+          <header class="card__head">
+            <span class="card__icon"><svg aria-hidden="true"><use href="#i-trophy"/></svg></span>
+            <h3 id="strength-title"><span data-l="de">Kraftlevel</span><span data-l="en">Strength level</span></h3>
+            <span class="card__src">strength_standards.dart</span>
+          </header>
+          <fieldset class="seg seg--wide">
+            <legend class="sr-only"><span data-l="de">Übung</span><span data-l="en">Lift</span></legend>
+            <label><input type="radio" name="strength-lift" value="bench" checked><span><span data-l="de">Bankdrücken</span><span data-l="en">Bench</span></span></label>
+            <label><input type="radio" name="strength-lift" value="squat"><span><span data-l="de">Kniebeuge</span><span data-l="en">Squat</span></span></label>
+            <label><input type="radio" name="strength-lift" value="deadlift"><span><span data-l="de">Kreuzheben</span><span data-l="en">Deadlift</span></span></label>
+          </fieldset>
+          <div class="strength__inputs">
+            <div class="field">
+              <label class="field__label" for="strength-bw"><span data-l="de">Körpergewicht</span><span data-l="en">Bodyweight</span></label>
+              <span class="num"><input id="strength-bw" type="number" min="30" max="250" step="0.5" value="80" inputmode="decimal" data-strength-bw><span class="num__unit">kg</span></span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="strength-pr"><span data-l="de">Bestleistung (1RM)</span><span data-l="en">Best lift (1RM)</span></label>
+              <span class="num"><input id="strength-pr" type="number" min="0" max="500" step="0.5" value="100" inputmode="decimal" data-strength-pr><span class="num__unit">kg</span></span>
+            </div>
+            <fieldset class="seg">
+              <legend class="field__label"><span data-l="de">Tabelle</span><span data-l="en">Table</span></legend>
+              <label><input type="radio" name="strength-sex" value="m" checked><span><span data-l="de">Männer</span><span data-l="en">Men</span></span></label>
+              <label><input type="radio" name="strength-sex" value="f"><span><span data-l="de">Frauen</span><span data-l="en">Women</span></span></label>
+            </fieldset>
+          </div>
+          <div class="level" data-level aria-live="polite">
+            <div class="level__name" data-level-name>Fortgeschritten</div>
+            <div class="level__bar"><i data-level-bar style="width:0%"></i></div>
+            <div class="level__meta" data-level-meta>0 % bis Sehr fortgeschritten · 1,25 × Körpergewicht</div>
+            <ol class="level__steps" data-level-steps>
+              <li><span data-l="de">Anfänger</span><span data-l="en">Beginner</span></li>
+              <li><span data-l="de">Geübt</span><span data-l="en">Novice</span></li>
+              <li class="is-on"><span data-l="de">Fortgeschritten</span><span data-l="en">Intermediate</span></li>
+              <li><span data-l="de">Sehr fortgeschritten</span><span data-l="en">Advanced</span></li>
+              <li>Elite</li>
+            </ol>
+          </div>
+          <p class="card__note">
+            <span data-l="de">Dieselben Schwellen wie in der App: Bestleistung geteilt durch Körpergewicht – eine bewusst einfache Näherung, verständlicher als eine nackte DOTS-Zahl.</span>
+            <span data-l="en">The same thresholds as the app: best lift divided by bodyweight – a deliberately simple approximation, easier to read than a bare DOTS number.</span>
+          </p>
+        </article>
+
+        <!-- Muscle map -->
+        <article class="card card--muscles" aria-labelledby="muscles-title" data-demo="muscles">
+          <header class="card__head">
+            <span class="card__icon"><svg aria-hidden="true"><use href="#i-person-standing"/></svg></span>
+            <h3 id="muscles-title"><span data-l="de">Muskelkarte</span><span data-l="en">Muscle map</span></h3>
+            <span class="card__src">exercise_muscle_map.dart</span>
+          </header>
+          <p class="card__lede">
+            <span data-l="de">Wähl eine Übung: Die Figur färbt jeden Muskel nach seiner Aktivierung – von Weiß über Hellrot bis Dunkelrot, genau wie in der App.</span>
+            <span data-l="en">Pick an exercise: the figure colors every muscle by how hard it works – from white through light red to dark red, just like in the app.</span>
+          </p>
+          <div class="chips" role="radiogroup" data-i18n data-de-aria-label="Übung wählen" data-en-aria-label="Pick an exercise" aria-label="Übung wählen" data-muscle-picks>
+            <button type="button" role="radio" aria-checked="true" data-ex="bench_press"><span data-l="de">Bankdrücken</span><span data-l="en">Bench press</span></button>
+            <button type="button" role="radio" aria-checked="false" data-ex="squats"><span data-l="de">Kniebeuge</span><span data-l="en">Squat</span></button>
+            <button type="button" role="radio" aria-checked="false" data-ex="deadlift"><span data-l="de">Kreuzheben</span><span data-l="en">Deadlift</span></button>
+            <button type="button" role="radio" aria-checked="false" data-ex="pull_ups"><span data-l="de">Klimmzüge</span><span data-l="en">Pull-ups</span></button>
+            <button type="button" role="radio" aria-checked="false" data-ex="overhead_press"><span data-l="de">Schulterdrücken</span><span data-l="en">Overhead press</span></button>
+            <button type="button" role="radio" aria-checked="false" data-ex="hip_thrust">Hip Thrust</button>
+            <button type="button" role="radio" aria-checked="false" data-ex="barbell_curl"><span data-l="de">Langhantel-Curls</span><span data-l="en">Barbell curl</span></button>
+            <button type="button" role="radio" aria-checked="false" data-ex="plank">Plank</button>
+          </div>
+          <div class="bodies">
+            <figure class="body">
+              <svg data-body="front" aria-hidden="true"></svg>
+              <figcaption><span data-l="de">Vorne</span><span data-l="en">Front</span></figcaption>
+            </figure>
+            <figure class="body">
+              <svg data-body="back" aria-hidden="true"></svg>
+              <figcaption><span data-l="de">Hinten</span><span data-l="en">Back</span></figcaption>
+            </figure>
+          </div>
+          <ul class="muscle-list" data-muscle-list aria-live="polite"></ul>
+          <div class="heat-scale" aria-hidden="true"><span>0 %</span><i></i><span>100 %</span></div>
+          <p class="card__note">
+            <span data-l="de">Aktivierungswerte aus der Datenbank der App. Körperfigur: react-native-body-highlighter (MIT).</span>
+            <span data-l="en">Activation values from the app's database. Body figure: react-native-body-highlighter (MIT).</span>
+          </p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== FEATURES -->
+  <section class="gear" id="features" data-name-de="Funktionen" data-name-en="Features">
+    <div class="wrap">
+      <p class="eyebrow"><span class="eyebrow__num">04</span><span data-l="de">Ausrüstung</span><span data-l="en">Gear</span></p>
+      <h2 class="display" data-reveal>
+        <span data-l="de">Alles für<br>den Aufstieg.</span>
+        <span data-l="en">Everything<br>for the climb.</span>
+      </h2>
+
+      <ul class="tiles">
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-trending-up"/></svg>
+          <h3><span data-l="de">Progressive Overload</span><span data-l="en">Progressive overload</span></h3>
+          <p><span data-l="de">Konkrete Vorschläge fürs nächste Training – mehr Gewicht, mehr Wiederholungen oder ein Deload.</span><span data-l="en">Concrete suggestions for your next session – more weight, more reps or a deload.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-gauge"/></svg>
+          <h3>RPE &amp; RIR</h3>
+          <p><span data-l="de">Anstrengung pro Satz. Du wählst die Skala, jeder Satz merkt sich seine.</span><span data-l="en">Effort per set. You pick the scale, every set remembers its own.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-link-2"/></svg>
+          <h3><span data-l="de">Supersätze</span><span data-l="en">Supersets</span></h3>
+          <p><span data-l="de">Übungen verknüpfen – das geführte Workout wechselt automatisch zwischen ihnen.</span><span data-l="en">Link exercises – the guided workout alternates between them for you.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-timer"/></svg>
+          <h3><span data-l="de">Pausentimer</span><span data-l="en">Rest timer</span></h3>
+          <p><span data-l="de">Läuft nach echter Uhrzeit und meldet sich per Benachrichtigung, wenn die Pause vorbei ist.</span><span data-l="en">Runs on real clock time and pings you with a notification when rest is over.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-clock"/></svg>
+          <h3><span data-l="de">Zeit &amp; Cardio</span><span data-l="en">Time &amp; cardio</span></h3>
+          <p><span data-l="de">Halten auf Zeit, Cardio mit Dauer und Tempo – sauber getrennt vom gehobenen Volumen.</span><span data-l="en">Timed holds, cardio with duration and speed – kept apart from lifted volume.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-file-input"/></svg>
+          <h3><span data-l="de">CSV-Import</span><span data-l="en">CSV import</span></h3>
+          <p><span data-l="de">Deinen Verlauf aus Strong, Hevy oder FitNotes einfach mitnehmen.</span><span data-l="en">Bring your history over from Strong, Hevy or FitNotes.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-heart-pulse"/></svg>
+          <h3>Apple Health &amp; Health Connect</h3>
+          <p><span data-l="de">Schritte und Gewicht lesen, fertige Workouts zurückschreiben.</span><span data-l="en">Read steps and weight, write finished workouts back.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-trophy"/></svg>
+          <h3><span data-l="de">Erfolge</span><span data-l="en">Achievements</span></h3>
+          <p><span data-l="de">Vier Pfade mit Stufen – live aus deinen echten Daten berechnet, nie nur ein gespeichertes Häkchen.</span><span data-l="en">Four paths with levels – calculated live from your real data, never just a stored checkmark.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-camera"/></svg>
+          <h3><span data-l="de">Fotos &amp; Körpermaße</span><span data-l="en">Photos &amp; measurements</span></h3>
+          <p><span data-l="de">Eine Galerie für Fortschrittsfotos und Körpermaße, damit Veränderung sichtbar wird.</span><span data-l="en">A gallery for progress photos and body measurements, so change becomes visible.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-flame"/></svg>
+          <h3><span data-l="de">Kalorienrechner</span><span data-l="en">Calorie calculator</span></h3>
+          <p><span data-l="de">Schätzt deinen täglichen Kalorien- und Makrobedarf aus Körpergewicht und Ziel.</span><span data-l="en">Estimates your daily calories and macros from bodyweight and goal.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-database-backup"/></svg>
+          <h3><span data-l="de">Backup in deiner Hand</span><span data-l="en">Backups you own</span></h3>
+          <p><span data-l="de">Als Datei, über die Zwischenablage oder mit einem Tap in den Download-Ordner.</span><span data-l="en">As a file, via the clipboard, or one tap into your Downloads folder.</span></p>
+        </li>
+        <li class="tile">
+          <svg aria-hidden="true"><use href="#i-languages"/></svg>
+          <h3><span data-l="de">10 Sprachen</span><span data-l="en">10 languages</span></h3>
+          <p><span data-l="de">Deutsch, Englisch, Spanisch, Französisch, Italienisch, Portugiesisch, Niederländisch, Türkisch, Polnisch, Russisch.</span><span data-l="en">German, English, Spanish, French, Italian, Portuguese, Dutch, Turkish, Polish, Russian.</span></p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__row">
+        <div class="marquee__track">
+          <span data-l="de">8 Planvorlagen</span><span data-l="en">8 plan templates</span>
+          <span data-l="de">Plateau-Erkennung</span><span data-l="en">Plateau detection</span>
+          <span data-l="de">Tage verschieben</span><span data-l="en">Move a training day</span>
+          <span data-l="de">Einseitige Übungen</span><span data-l="en">Unilateral exercises</span>
+          <span data-l="de">DOTS-Score</span><span data-l="en">DOTS score</span>
+          <span data-l="de">Tägliche Erinnerung</span><span data-l="en">Daily reminder</span>
+          <span data-l="de">Eigene Farben</span><span data-l="en">Custom colors</span>
+          <span data-l="de">Hell- &amp; Dunkelmodus</span><span data-l="en">Light &amp; dark mode</span>
+        </div>
+      </div>
+      <div class="marquee__row marquee__row--rev">
+        <div class="marquee__track">
+          <span data-l="de">Update-Check über GitHub</span><span data-l="en">Update checks via GitHub</span>
+          <span data-l="de">Aktivitätskalender</span><span data-l="en">Activity calendar</span>
+          <span data-l="de">Drag &amp; Drop im Workout</span><span data-l="en">Drag &amp; drop mid-workout</span>
+          <span data-l="de">Plan teilen</span><span data-l="en">Share plans</span>
+          <span data-l="de">Rep-Max-Tabelle</span><span data-l="en">Rep-max table</span>
+          <span data-l="de">Geführtes Onboarding</span><span data-l="en">Guided onboarding</span>
+          <span data-l="de">Übungsnotizen</span><span data-l="en">Exercise notes</span>
+          <span data-l="de">kg-Eingabe per Slider</span><span data-l="en">Weight via slider</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== PRIVACY -->
+  <section class="privacy" id="privacy" data-name-de="Datenschutz" data-name-en="Privacy">
+    <div class="privacy__sky" aria-hidden="true">
+      <div class="privacy__sun"></div>
+      <svg class="privacy__ridge" viewBox="0 0 1600 300" preserveAspectRatio="none">
+        <path d="M0,300L0,190L140,150L260,190L420,90L560,170L700,120L860,200L1000,110L1150,180L1290,130L1440,190L1600,150L1600,300Z"/>
+      </svg>
+    </div>
+    <div class="wrap privacy__inner">
+      <p class="eyebrow"><span class="eyebrow__num">05</span><span data-l="de">Datenschutz</span><span data-l="en">Privacy</span></p>
+      <h2 class="display" data-reveal>
+        <span data-l="de">Deine Daten bleiben auf deinem Gerät.</span>
+        <span data-l="en">Your data stays on your device.</span>
+      </h2>
+      <ul class="zeros">
+        <li><b>0</b><span data-l="de">Server</span><span data-l="en">servers</span></li>
+        <li><b>0</b><span data-l="de">Konten</span><span data-l="en">accounts</span></li>
+        <li><b>0</b><span data-l="de">Tracker</span><span data-l="en">trackers</span></li>
+        <li><b>100&nbsp;%</b><span data-l="de">auf deinem Gerät</span><span data-l="en">on your device</span></li>
+      </ul>
+      <div class="privacy__cols">
+        <p data-reveal>
+          <span data-l="de">Alles liegt lokal in einer SQLite-Datenbank auf deinem Gerät. Von sich aus geht die App nur für zwei Dinge ins Netz: die Übungsdatenbank laden – offline nimmt sie die eingebaute Kopie – und bei GitHub nach Updates schauen. Deine Trainingsdaten werden dabei nie übertragen.</span>
+          <span data-l="en">Everything lives in a local SQLite database on your device. On its own, the app only goes online for two things: loading the exercise database – offline it uses the built-in copy – and checking GitHub for updates. Your training data is never sent anywhere.</span>
+        </p>
+        <p data-reveal>
+          <span data-l="de">Backups landen nur dort, wohin du sie selbst schickst: als Datei über das Teilen-Menü, etwa in iCloud Drive oder Google Drive. Keine automatische Synchronisierung, kein Upload im Hintergrund. Und auch diese Webseite setzt keine Cookies und lädt keine Tracker oder fremden Schriften.</span>
+          <span data-l="en">Backups only go where you send them: as a file through the share menu, say to iCloud Drive or Google Drive. No automatic sync, no background upload. And this website doesn't set cookies or load trackers or third-party fonts either.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== DOWNLOAD -->
+  <section class="summit" id="download" data-theme="light" data-name-de="Download" data-name-en="Download">
+    <div class="wrap">
+      <p class="eyebrow"><span class="eyebrow__num">06</span><span data-l="de">Gipfel</span><span data-l="en">Summit</span></p>
+      <h2 class="summit__title" data-reveal>
+        <span data-l="de">Hol dir Ironpeak.</span>
+        <span data-l="en">Get Ironpeak.</span>
+      </h2>
+      <p class="lede" data-reveal>
+        <span data-l="de">Kostenlos für Android, Windows, macOS und iOS – direkt von GitHub, ohne Store und ohne Konto.</span>
+        <span data-l="en">Free for Android, Windows, macOS and iOS – straight from GitHub, no store and no account.</span>
+        <span class="summit__version" data-release-line hidden>
+          <span data-l="de">Aktuell:</span><span data-l="en">Latest:</span>
+          <b data-release-version></b> · <span data-release-date></span>
+        </span>
+      </p>
+
+      <ul class="platforms">
+        <li class="platform" data-platform="android">
+          <span class="platform__badge"><span data-l="de">Dein Gerät</span><span data-l="en">Your device</span></span>
+          <svg class="platform__icon" aria-hidden="true"><use href="#i-smartphone"/></svg>
+          <h3>Android</h3>
+          <p><span data-l="de">Als APK direkt installieren. Beim ersten Mal „Unbekannte Apps installieren" erlauben – Updates meldet die App danach selbst.</span><span data-l="en">Install the APK directly. Allow "Install unknown apps" the first time – after that, the app tells you about updates itself.</span></p>
+          <div class="platform__actions">
+            <a class="pill pill--dark" href="https://github.com/Sieder2009/GymTracker/releases/latest/download/app-release.apk" data-magnetic>
+              <span class="pill__icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>
+              <span class="pill__text"><span data-l="de">APK laden</span><span data-l="en">Download APK</span></span>
+            </a>
+            <span class="platform__size" data-asset-size="app-release.apk"></span>
+          </div>
+        </li>
+        <li class="platform" data-platform="windows">
+          <span class="platform__badge"><span data-l="de">Dein Gerät</span><span data-l="en">Your device</span></span>
+          <svg class="platform__icon" aria-hidden="true"><use href="#i-monitor"/></svg>
+          <h3>Windows</h3>
+          <p><span data-l="de">Echter Installer mit Startmenü-Eintrag und sauberer Deinstallation – oder portabel als ZIP. Nicht signiert: Warnt SmartScreen, „Weitere Informationen" → „Trotzdem ausführen".</span><span data-l="en">A real installer with a Start-menu entry and a clean uninstall – or portable as a ZIP. Unsigned: if SmartScreen warns you, choose "More info" → "Run anyway".</span></p>
+          <div class="platform__actions">
+            <a class="pill pill--dark" href="https://github.com/Sieder2009/GymTracker/releases/latest/download/ironpeak-fitness-windows-setup.exe" data-magnetic>
+              <span class="pill__icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>
+              <span class="pill__text">Installer (.exe)</span>
+            </a>
+            <span class="platform__size" data-asset-size="ironpeak-fitness-windows-setup.exe"></span>
+            <a class="textlink" href="https://github.com/Sieder2009/GymTracker/releases/latest/download/ironpeak-fitness-windows.zip">Portable (.zip)</a>
+            <span class="platform__size" data-asset-size="ironpeak-fitness-windows.zip"></span>
+          </div>
+        </li>
+        <li class="platform" data-platform="macos">
+          <span class="platform__badge"><span data-l="de">Dein Gerät</span><span data-l="en">Your device</span></span>
+          <svg class="platform__icon" aria-hidden="true"><use href="#i-laptop"/></svg>
+          <h3>macOS</h3>
+          <p><span data-l="de">Als ZIP. Nicht signiert und nicht notarisiert: macOS blockiert den ersten Start – unter Systemeinstellungen → Datenschutz &amp; Sicherheit → „Trotzdem öffnen" einmal freigeben.</span><span data-l="en">As a ZIP. Unsigned and not notarized: macOS blocks the first launch – allow it once under System Settings → Privacy &amp; Security → "Open Anyway".</span></p>
+          <div class="platform__actions">
+            <a class="pill pill--dark" href="https://github.com/Sieder2009/GymTracker/releases/latest/download/ironpeak-fitness-macos.zip" data-magnetic>
+              <span class="pill__icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>
+              <span class="pill__text"><span data-l="de">ZIP laden</span><span data-l="en">Download ZIP</span></span>
+            </a>
+            <span class="platform__size" data-asset-size="ironpeak-fitness-macos.zip"></span>
+          </div>
+        </li>
+        <li class="platform" data-platform="ios">
+          <span class="platform__badge"><span data-l="de">Dein Gerät</span><span data-l="en">Your device</span></span>
+          <svg class="platform__icon" aria-hidden="true"><use href="#i-tablet-smartphone"/></svg>
+          <h3>iOS</h3>
+          <p><span data-l="de">Unsignierte IPA – installierbar nur, wenn du sie selbst signierst, etwa mit einem eigenen Apple-Developer-Konto.</span><span data-l="en">Unsigned IPA – installable only if you sign it yourself, for example with your own Apple Developer account.</span></p>
+          <div class="platform__actions">
+            <a class="pill pill--dark" href="https://github.com/Sieder2009/GymTracker/releases/latest/download/ironpeak-fitness-ios-unsigned.ipa" data-magnetic>
+              <span class="pill__icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>
+              <span class="pill__text"><span data-l="de">IPA laden</span><span data-l="en">Download IPA</span></span>
+            </a>
+            <span class="platform__size" data-asset-size="ironpeak-fitness-ios-unsigned.ipa"></span>
+          </div>
+        </li>
+      </ul>
+
+      <div class="summit__links">
+        <a class="textlink" href="https://github.com/Sieder2009/GymTracker/releases">
+          <svg aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+          <span data-l="de">Alle Versionen &amp; Änderungen</span><span data-l="en">All versions &amp; changelogs</span>
+        </a>
+        <a class="textlink" href="https://github.com/Sieder2009/GymTracker">
+          <svg aria-hidden="true"><use href="#i-github"/></svg>
+          <span data-l="de">Quellcode auf GitHub</span><span data-l="en">Source code on GitHub</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot" data-theme="light">
+  <div class="wrap">
+    <div class="foot__word" aria-hidden="true">IRONPEAK</div>
+    <div class="foot__grid">
+      <div class="foot__brand">
+        <svg class="foot__logo" data-logo="static" viewBox="0 0 100 100" aria-hidden="true"><image href="assets/img/favicon.svg" width="100" height="100"/></svg>
+        <p>
+          <span data-l="de">Ironpeak Fitness – Trainingsplaner, Krafttracker und Analysen. Kostenlos, ohne Konto, 100 % lokal.</span>
+          <span data-l="en">Ironpeak Fitness – workout planner, strength tracker and analytics. Free, no account, 100% local.</span>
+        </p>
+        <a class="textlink foot__top" href="#top">
+          <svg aria-hidden="true"><use href="#i-arrow-up"/></svg>
+          <span data-l="de">Zurück ins Tal</span><span data-l="en">Back to the valley</span>
+        </a>
+      </div>
+      <nav class="foot__col" data-i18n data-de-aria-label="Seite" data-en-aria-label="Page" aria-label="Seite">
+        <h4><span data-l="de">Seite</span><span data-l="en">Page</span></h4>
+        <a href="#app"><span data-l="de">Die App</span><span data-l="en">The app</span></a>
+        <a href="#demo"><span data-l="de">Ausprobieren</span><span data-l="en">Try it</span></a>
+        <a href="#features"><span data-l="de">Funktionen</span><span data-l="en">Features</span></a>
+        <a href="#privacy"><span data-l="de">Datenschutz</span><span data-l="en">Privacy</span></a>
+        <a href="#download">Download</a>
+      </nav>
+      <nav class="foot__col" aria-label="GitHub">
+        <h4><span data-l="de">Projekt</span><span data-l="en">Project</span></h4>
+        <a href="https://github.com/Sieder2009/GymTracker"><span data-l="de">Quellcode</span><span data-l="en">Source code</span></a>
+        <a href="https://github.com/Sieder2009/GymTracker/releases">Releases</a>
+        <a href="https://github.com/Sieder2009/GymTracker#readme"><span data-l="de">Dokumentation</span><span data-l="en">Documentation</span></a>
+        <a href="https://github.com/Sieder2009/GymTracker/issues"><span data-l="de">Fehler melden</span><span data-l="en">Report a bug</span></a>
+      </nav>
+      <div class="foot__col foot__credits">
+        <h4><span data-l="de">Danke</span><span data-l="en">Thanks</span></h4>
+        <p><span data-l="de">Besonderer Dank an</span><span data-l="en">Special thanks to</span> <a href="https://github.com/Plattnericus">Plattnericus</a> <span data-l="de">für die Mithilfe.</span><span data-l="en">for contributing.</span></p>
+        <p><span data-l="de">Körperfigur:</span><span data-l="en">Body figure:</span> <a href="https://github.com/HichamELBSI/react-native-body-highlighter">react-native-body-highlighter</a> <span data-l="de">von Hicham ELABBASSI (MIT).</span><span data-l="en">by Hicham ELABBASSI (MIT).</span></p>
+        <p><span data-l="de">Schriften: Big Shoulders Display &amp; Archivo (OFL). Animation: GSAP &amp; Lenis. Icons: Lucide (ISC).</span><span data-l="en">Type: Big Shoulders Display &amp; Archivo (OFL). Motion: GSAP &amp; Lenis. Icons: Lucide (ISC).</span></p>
+      </div>
+    </div>
+    <div class="foot__legal">
+      <span>© 2026 Sieder2009 · Ironpeak Fitness</span>
+      <span><span data-l="de">Keine Cookies. Kein Tracking.</span><span data-l="en">No cookies. No tracking.</span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/vendor/gsap.min.js" defer></script>
+<script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/js/vendor/lenis.min.js" defer></script>
+<script src="assets/js/logo.js" defer></script>
+<script src="assets/js/demos.js" defer></script>
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>

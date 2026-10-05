@@ -18,6 +18,8 @@ native app for Android, iOS, Windows, and macOS.** All your data stays
 ![Local-only](https://img.shields.io/badge/Data-100%25%20local-1fa76a)
 ![Latest Release](https://img.shields.io/github/v/release/Sieder2009/GymTraker?color=1fa76a&label=latest%20release)
 
+[![Website](https://img.shields.io/badge/Website-Ironpeak%20Fitness-1fa76a?style=for-the-badge&labelColor=06140f)](https://sieder2009.github.io/GymTracker/)
+
 </div>
 
 ---
@@ -320,6 +322,9 @@ mobile/
                              adaptive + animated launch icon, web, Windows .ico)
                              from lib/widgets/ironpeak_logo.dart
                              (`flutter test tool/generate_icons.dart`)
+website/                 The presentation site on GitHub Pages — plain
+                         HTML/CSS/JS, deployed by .github/workflows/pages.yml
+                         (see website/README.md)
 ```
 
 ## <img src="https://api.iconify.design/lucide:shield-check.svg?color=%231fa76a" width="20" height="20" alt=""/> Privacy

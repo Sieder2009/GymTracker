@@ -278,6 +278,70 @@
       }
     }
   },
+  "heatmapWorkoutsLastYear": "{count, plural, =0{No workouts in the last year} =1{1 workout in the last year} other{{count} workouts in the last year}}",
+  "@heatmapWorkoutsLastYear": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "heatmapWorkoutsInYear": "{count, plural, =0{No workouts in {year}} =1{1 workout in {year}} other{{count} workouts in {year}}}",
+  "@heatmapWorkoutsInYear": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "heatmapRangeLastYear": "Last 12 months",
+  "heatmapLegendLess": "Less",
+  "heatmapLegendMore": "More",
+  "heatmapDayNone": "No workout on {date}",
+  "@heatmapDayNone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "heatmapDayCount": "{count, plural, =1{1 workout on {date}} other{{count} workouts on {date}}}",
+  "@heatmapDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "heatmapMetricVolume": "Volume",
+  "heatmapMetricDuration": "Duration",
+  "heatmapHintVolume": "Color = training volume of the day",
+  "heatmapHintDuration": "Color = training time of the day",
+  "heatmapCardTitle": "Training activity",
+  "heatmapOpenCalendar": "Open calendar",
+  "heatmapTrainingDays": "{count, plural, =1{1 training day} other{{count} training days}}",
+  "@heatmapTrainingDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "heatmapTotalHours": "{hours} h",
+  "@heatmapTotalHours": {
+    "description": "Total training time shown next to the training-day count above the heatmap, e.g. '87.5 h'. The number is already formatted for the locale.",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
   "emptyNoSessionsThisDay": "No workout logged this day.",
   "labelMinutesShort": "{minutes} min",
   "@labelMinutesShort": {
@@ -692,6 +756,61 @@
   "muscleQuadVastusMedialis": "Vastus medialis",
   "actionExerciseGuide": "Form tips",
   "captionExerciseGuide": "General tips for this movement pattern — not specific instructions for this exact exercise.",
+  "exerciseDemoTitle": "Exercise demo",
+  "exerciseDemoCredit": "Animation © Gym visual",
+  "exerciseDemoOffline": "Animation not available offline",
+  "exerciseDemoRetry": "Tap to retry",
+  "exerciseDemoTapToEnlarge": "Tap to enlarge",
+  "exerciseDemoUpNext": "Up next: {name}",
+  "@exerciseDemoUpNext": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsExerciseMediaHeader": "Exercise animations",
+  "settingsExerciseMediaShow": "Show animations",
+  "settingsExerciseMediaShowHint": "Loaded from the internet the first time you open them, then kept on this device.",
+  "settingsExerciseMediaDownloadAll": "Download all for offline use",
+  "settingsExerciseMediaApproxSize": "About {size}",
+  "@settingsExerciseMediaApproxSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsExerciseMediaDownloadProgress": "{done} of {total} downloaded",
+  "@settingsExerciseMediaDownloadProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsExerciseMediaDownloadDone": "All animations are available offline",
+  "settingsExerciseMediaDownloadFailed": "{count, plural, =1{1 animation could not be downloaded — try again later} other{{count} could not be downloaded — try again later}}",
+  "@settingsExerciseMediaDownloadFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsExerciseMediaStored": "Stored on this device: {size}",
+  "@settingsExerciseMediaStored": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsExerciseMediaClear": "Delete downloaded animations",
+  "settingsExerciseMediaCredit": "Animations © Gym visual (gymvisual.com), via the ExerciseDB dataset (github.com/hasaneyldrm/exercises-dataset). They are not part of Ironpeak, are not shipped with the app and are only loaded from that source when needed.",
   "exerciseGuideVerticalPush": "Press straight up and slightly back, finishing over your head rather than out in front. Keep your ribs down and core braced — don't arch your lower back to force out extra range.",
   "exerciseGuideHorizontalPush": "Drive the weight away from your chest in a straight line, elbows at roughly 45° to your torso. Keep your shoulder blades pulled together and down — flared elbows or rolled-forward shoulders are what strain the shoulder here.",
   "exerciseGuideVerticalPull": "Pull your elbows down and back toward your hips, rather than just bending your arms. Lead with your chest and keep your shoulders away from your ears — don't swing or yank the weight down with momentum.",

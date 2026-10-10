@@ -18,6 +18,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/detailed_body_diagram.dart';
 import '../widgets/exercise_analytics_section.dart';
+import '../widgets/exercise_demo_gif.dart';
 import '../widgets/exercise_list_view.dart';
 import '../widgets/weight_ruler.dart';
 
@@ -471,6 +472,10 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     // Reverse chronological order, newest first — history entries are
     // appended oldest-first, so this list needs reversing before display.
     final history = ex.history.reversed.toList();
+    // Re-resolved from the current name on every build, so it follows a
+    // swipe/arrow-key move to another exercise and a rename alike; null
+    // (no card) for names the shared database doesn't know.
+    final demoGif = resolveExerciseGif(context, ex.name);
 
     return Scaffold(
       appBar: AppBar(
@@ -513,6 +518,11 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
+                if (demoGif != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _ExerciseDemoCard(gif: demoGif, exerciseName: ex.name),
+                  ),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: TextField(
@@ -725,6 +735,61 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 ],
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact "how it's done" card: a small animation (credited inside its own
+/// card) beside a title and a tap-to-enlarge hint -- the whole card opens
+/// the full-size view. Only taps are claimed here, so a horizontal swipe
+/// starting on the card still reaches the screen's swipe-to-browse handler.
+class _ExerciseDemoCard extends StatelessWidget {
+  const _ExerciseDemoCard({required this.gif, required this.exerciseName});
+
+  final String gif;
+  final String exerciseName;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    void enlarge() => showExerciseDemoDialog(context, gif: gif, exerciseName: exerciseName);
+    return Material(
+      color: colors.card,
+      borderRadius: BorderRadius.circular(AppRadii.md),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: enlarge,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            children: [
+              ExerciseDemoGif(
+                gif: gif,
+                size: 110,
+                exerciseName: exerciseName,
+                onTap: enlarge,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.exerciseDemoTitle,
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 4),
+                    Text(
+                      t.exerciseDemoTapToEnlarge,
+                      style: TextStyle(color: colors.mut, fontSize: 12.5),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.open_in_full_rounded, size: 18, color: colors.mut),
+            ],
           ),
         ),
       ),

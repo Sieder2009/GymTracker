@@ -110,6 +110,14 @@ WeekSummary computeWeekSummary(List<WorkoutSession> sessions, {DateTime? now}) {
   );
 }
 
+/// Whole calendar days from [a] to [b], counted on UTC midnights -- a plain
+/// local `difference().inDays` reads the 23-hour spring-forward night as 0
+/// days and would break a streak across the DST change.
+int _calendarDaysBetween(DateTime a, DateTime b) =>
+    DateTime.utc(b.year, b.month, b.day)
+        .difference(DateTime.utc(a.year, a.month, a.day))
+        .inDays;
+
 /// Longest run of consecutive calendar days containing >=1 workout, and
 /// whether that run reaches up to today/yesterday (the "current" streak).
 ConsistencyStats computeConsistency(List<WorkoutSession> sessions, {DateTime? now}) {
@@ -128,7 +136,7 @@ ConsistencyStats computeConsistency(List<WorkoutSession> sessions, {DateTime? no
   var currentStreak = 0;
 
   for (final d in dates) {
-    if (prev != null && d.difference(prev).inDays == 1) {
+    if (prev != null && _calendarDaysBetween(prev, d) == 1) {
       runStreak += 1;
     } else {
       runStreak = 1;
@@ -139,7 +147,7 @@ ConsistencyStats computeConsistency(List<WorkoutSession> sessions, {DateTime? no
 
   if (dates.isNotEmpty) {
     final last = dates.last;
-    final gapToToday = today.difference(last).inDays;
+    final gapToToday = _calendarDaysBetween(last, today);
     // Streak still "current" if the most recent workout was today or
     // yesterday (rest-day-friendly — one skipped day doesn't reset it to 0,
     // but a whole week off does).
@@ -278,9 +286,11 @@ List<WeekBucket> weeklyBuckets(List<WorkoutSession> sessions, {int weeks = 8, Da
   final today = _dateOnly(now ?? DateTime.now());
   final buckets = <WeekBucket>[];
   for (var i = weeks - 1; i >= 0; i--) {
-    final end = today.subtract(Duration(days: 7 * i));
-    final start = end.subtract(const Duration(days: 6));
-    final inBucket = _sessionsInRange(sessions, start, end.add(const Duration(days: 1)));
+    // Calendar-day arithmetic, not Duration: across a DST change a day is
+    // 23/25h, which would shift every bucket boundary off local midnight.
+    final end = DateTime(today.year, today.month, today.day - 7 * i);
+    final start = DateTime(end.year, end.month, end.day - 6);
+    final inBucket = _sessionsInRange(sessions, start, DateTime(end.year, end.month, end.day + 1));
     final volume = inBucket.fold<double>(0, (sum, s) => sum + s.totalVolumeKg);
     buckets.add(WeekBucket(weekStart: start, totalVolumeKg: volume, workoutCount: inBucket.length));
   }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
 import '../analytics/body_measurement_analytics.dart';
+import '../analytics/heatmap_engine.dart';
 import '../data/constants.dart';
 import '../data/lift_categories.dart';
 import '../l10n/app_localizations.dart';
@@ -20,12 +21,13 @@ import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/body_shape_diagram.dart';
 import '../widgets/chart_card.dart';
+import '../widgets/contribution_heatmap.dart';
 import '../widgets/exercise_list_view.dart' show categoryLabel;
 import '../widgets/kpi_tile.dart';
 import '../widgets/plateau_notice.dart';
 import '../widgets/strength_line_chart.dart';
-import '../widgets/training_calendar_heatmap.dart';
 import '../widgets/trend_value.dart';
+import 'calendar_screen.dart';
 
 class _ProgressRow {
   _ProgressRow(
@@ -526,11 +528,16 @@ class _LiftTrendCard extends StatelessWidget {
   }
 }
 
-/// Streaks + workouts-per-week, backed by [computeConsistency] /
-/// [weeklyBuckets] — never a fabricated streak when there's no logged
-/// history to compute one from.
+/// Streaks, the GitHub-style training-activity graph and workouts-per-week,
+/// backed by [computeConsistency] / [summarizeHeatmap] / [weeklyBuckets] —
+/// never a fabricated streak when there's no logged history to compute one
+/// from.
 class _ConsistencyTab extends StatelessWidget {
   const _ConsistencyTab();
+
+  void _openCalendar(BuildContext context, [DateTime? day]) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => CalendarScreen(initialDate: day)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -538,6 +545,9 @@ class _ConsistencyTab extends StatelessWidget {
     final colors = Theme.of(context).extension<AppColors>()!;
     final sessions = context.watch<WorkoutHistoryProvider>().sessions;
     final consistency = computeConsistency(sessions);
+    final heatmapDays = aggregateHeatmapDays(sessions);
+    // The full rolling year, however many weeks the card has room for.
+    final lastYear = summarizeHeatmap(heatmapDays, range: const HeatmapRange.lastYear());
     final buckets = weeklyBuckets(sessions);
     final bars = [
       for (final b in buckets)
@@ -579,7 +589,41 @@ class _ConsistencyTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        TrainingCalendarHeatmap(sessions: sessions),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t.heatmapCardTitle, style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 2),
+                Text(
+                  t.heatmapWorkoutsLastYear(lastYear.sessionCount),
+                  style: TextStyle(color: colors.mut, fontSize: 12.5),
+                ),
+                const SizedBox(height: 14),
+                // fitToWidth: this tab lives in a TabBarView, so the graph
+                // must not scroll sideways -- it shows the newest weeks that
+                // fit, and the calendar screen has the whole year.
+                ContributionHeatmap(
+                  days: heatmapDays,
+                  layout: HeatmapLayout.fitToWidth,
+                  hint: t.heatmapHintVolume,
+                  onSelectDate: (day) => _openCalendar(context, day),
+                ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: TextButton.icon(
+                    onPressed: () => _openCalendar(context),
+                    icon: const Icon(Icons.calendar_month_rounded, size: 18),
+                    label: Text(t.heatmapOpenCalendar),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
         BarChartCard(
           title: t.chartTitleWorkoutsPerWeek,

@@ -22,6 +22,14 @@ class AppConfig {
   static String get supportEmail => dotenv.get('SUPPORT_EMAIL', fallback: '');
   static String get supportPhone => dotenv.get('SUPPORT_PHONE', fallback: '');
 
+  /// Where exercise demo animations are downloaded from at runtime (see
+  /// `services/exercise_media_service.dart` and `data/exercise_gifs.dart`)
+  /// -- a jsDelivr copy of the exercises dataset pinned to one commit, so
+  /// what a given animation shows can never change underneath the app.
+  /// The animations are third-party content and are never bundled.
+  static String get exerciseMediaBaseUrl => dotenv.get('EXERCISE_MEDIA_BASE_URL',
+      fallback: 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/');
+
   static String get githubRepoUrl => 'https://github.com/$githubOwner/$githubRepo';
   static String get githubApiBase => 'https://api.github.com/repos/$githubOwner/$githubRepo';
   static String get githubRawBase => 'https://raw.githubusercontent.com/$githubOwner/$githubRepo/$githubBranch';

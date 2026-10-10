@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'l10n/app_localizations.dart';
 import 'services/exercise_database_service.dart';
+import 'services/exercise_media_service.dart';
 import 'services/health_service.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
@@ -19,6 +20,7 @@ import 'state/body_weight_provider.dart';
 import 'state/custom_exercises_provider.dart';
 import 'state/effort_scale_provider.dart';
 import 'state/exercise_database_provider.dart';
+import 'state/exercise_media_provider.dart';
 import 'state/gym_photos_provider.dart';
 import 'state/health_provider.dart';
 import 'state/locale_provider.dart';
@@ -71,6 +73,9 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(
             create: (_) =>
                 ExerciseDatabaseProvider(storage, ExerciseDatabaseService())),
+        ChangeNotifierProvider(
+            create: (_) =>
+                ExerciseMediaProvider(storage, ExerciseMediaService())),
         ChangeNotifierProvider(create: (_) => CustomExercisesProvider(storage)),
         ChangeNotifierProvider(create: (_) => ActiveScreenProvider()),
         ChangeNotifierProvider(create: (_) => ToastProvider()),

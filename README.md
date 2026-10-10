@@ -107,7 +107,18 @@ phone screen. One tap is enough to find everything.
   row suggest a deload instead of grinding at a stuck weight
   (`analytics/progression_engine.dart`). Built only from real numeric reps
   you logged — never a guess when a set only carries a '✓'/'x'/'m' marker.
-- A training calendar with a monthly view and workout history, plus a
+- **Animated exercise demos.** 354 of the 546 exercises in the database
+  show a short animation of how the movement is done: in the Exercises
+  tab, in the exercise editor, during a guided workout, and as an
+  "up next" preview while you rest. The animations are third-party media
+  that the app loads on demand and never bundles. See
+  [Exercise animations](#exercise-animations) for where they come from.
+- A **GitHub-style training calendar**, like a contribution graph. Every
+  day of the last 12 months is a small square, shaded by that day's
+  training volume or time, with GitHub's five levels and "Less … More"
+  legend. It also has a year selector and your current and best streak,
+  and tapping a day shows its sessions. Find it on the Analytics tab
+  under Consistency, or in the ⋮ menu under Calendar. There's also a
   photo gallery for your progress.
 - Swipe between the four main tabs, or use the tab bar at the bottom.
 
@@ -155,7 +166,9 @@ instead of a made-up line (`DataQuality` in `analytics_engine.dart`).
 - **Volume** — total volume this week, workouts this week, and a bar
   chart of your weekly training volume.
 - **Consistency** — your current and best training streak in days,
-  workouts this month, and a bar chart of workouts per week.
+  workouts this month, a GitHub-style activity graph of your training
+  days (tap a day to open the full calendar), and a bar chart of
+  workouts per week.
 - **Achievements** — four multi-level achievement paths (consistency,
   number of workouts, total volume, number of PRs). Each level is
   calculated live from your real data, not saved as a stored "unlocked"
@@ -178,6 +191,15 @@ section, without leaving the tab.
   cached copy, or the built-in copy, if you're offline). Changes to
   `mobile/assets/exercises.json` in this repo update the app without a
   new release.
+- **Animated demos for 354 exercises.** Which animation belongs to which
+  exercise is set in `lib/data/exercise_gifs.dart`, keyed by exercise id.
+  Every entry there was matched by movement *and* equipment and checked
+  against the animation's still frame. An exercise with no correct match
+  (e.g. chain/band variants, Olympic lifts, neck work, most outdoor
+  cardio) gets no animation rather than a wrong one. The GIFs load on
+  first view and then stay cached on the device. In Settings you can
+  download all of them for offline use (321 files, about 30 MB) or turn
+  them off completely.
 - **An illustrated muscle diagram for every exercise** (front/back view,
   male/female to match your athlete setting): a fully drawn body figure
   — hands, feet, and separate ab segments included — where every trained
@@ -277,6 +299,7 @@ way the app reads it):
 | `EXERCISE_DATABASE_PATH` | Path to `exercises.json` in the repo |
 | `UPDATE_CHECK_ENABLED` / `UPDATE_CHECK_INTERVAL_HOURS` | Whether and how often the app checks for new releases |
 | `SUPPORT_EMAIL` / `SUPPORT_PHONE` | Contact info shown on the Settings screen |
+| `EXERCISE_MEDIA_BASE_URL` | Where the exercise animations load from, by default the [exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) pinned to one commit via jsDelivr (see [Exercise animations](#exercise-animations)) |
 
 ## <img src="https://api.iconify.design/lucide:flask-conical.svg?color=%231fa76a" width="20" height="20" alt=""/> Tests & code quality
 
@@ -332,8 +355,13 @@ website/                 The presentation site on GitHub Pages — plain
 The app stores everything only on your device (SQLite via `sqflite`).
 There is no server and no account. The only network traffic is loading
 the exercise database (it falls back to the built-in local copy when
-offline) and the update check against the public GitHub API — you can
-turn the update check off in `.env` (`UPDATE_CHECK_ENABLED`). The file
+offline), the update check against the public GitHub API — you can
+turn the update check off in `.env` (`UPDATE_CHECK_ENABLED`) — and,
+while exercise animations are switched on, downloading each animation
+from the jsDelivr CDN the first time you open it. That download is a
+plain file request with no account or personal data, and afterwards the
+file is served from the on-device cache. You can switch it off under
+Settings → Exercise animations. The file
 export in the backup menu uses your operating system's native share
 menu (for example, to save the file to iCloud Drive or Google Drive).
 This is something you choose to do — it is not an automatic cloud sync,
@@ -352,3 +380,33 @@ over 1:1 (TypeScript → Dart, geometry unchanged). The muscle group
 mapping, the split of the deltoid into front/side heads and of
 "upper-back" into upper back/lats, the activation color scale, the
 hit-testing, and the caching are original work for this project.
+
+<a id="exercise-animations"></a>
+### Exercise animations (third-party, not part of this repository)
+
+The exercise demo GIFs are **not** in this repository, **not** in the
+app's assets and **not** in any release build. The app fetches them on
+demand from the [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset)
+repository, pinned to one commit and served through jsDelivr
+(`EXERCISE_MEDIA_BASE_URL`), and only keeps a cache on your device. The
+same approach is used by the open-source tracker
+[openGym](https://github.com/DuarteSantos8/openGym).
+
+- The animations are **© [Gym visual](https://gymvisual.com/)**. The
+  dataset redistributes them with that rights holder's permission. That
+  permission was granted to the dataset and is not transferable.
+- The content originally comes from [ExerciseDB](https://exercisedb.dev/)
+  (AscendAPI), which also claims ownership and publishes its own terms.
+  These two claims contradict each other, and upstream has not resolved
+  this yet ([issue #5](https://github.com/hasaneyldrm/exercises-dataset/issues/5)).
+- The dataset's MIT license covers its metadata and text, **not** these
+  images.
+
+So treat the animations as third-party content licensed neither to this
+project nor to you. Before a store release or any commercial use, clear
+it with the rights holder.
+
+The assignment of Ironpeak's exercises to the animations
+(`mobile/lib/data/exercise_gifs.dart`) and all of the loading, caching
+and display code are original work for this project. No code was copied
+from openGym or the dataset.

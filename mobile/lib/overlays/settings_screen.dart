@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,6 +20,7 @@ import '../state/appearance_provider.dart';
 import '../state/athlete_settings_provider.dart';
 import '../state/bar_weight_provider.dart';
 import '../state/effort_scale_provider.dart';
+import '../state/exercise_media_provider.dart';
 import '../state/health_provider.dart';
 import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
@@ -100,6 +103,8 @@ class SettingsScreen extends StatelessWidget {
             SizedBox(height: 24),
             _AppearanceSection(),
             SizedBox(height: 24),
+            _ExerciseMediaSection(),
+            SizedBox(height: 24),
             _AthleteProfileSection(),
             SizedBox(height: 24),
             _EffortScaleSection(),
@@ -150,6 +155,7 @@ class _SettingsRow extends StatelessWidget {
     required this.label,
     this.subtitle,
     this.subtitleColor,
+    this.subtitleMaxLines = 1,
     this.trailing,
     this.onTap,
     this.showChevron = true,
@@ -160,6 +166,9 @@ class _SettingsRow extends StatelessWidget {
   final String label;
   final String? subtitle;
   final Color? subtitleColor;
+  // One line fits a status word ("Connected"); a sentence-long status
+  // (e.g. a download result) needs room to wrap instead of being cut off.
+  final int subtitleMaxLines;
   final Widget? trailing;
   final VoidCallback? onTap;
   final bool showChevron;
@@ -188,7 +197,7 @@ class _SettingsRow extends StatelessWidget {
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                     ),
-                    maxLines: 1,
+                    maxLines: subtitleMaxLines,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -241,15 +250,18 @@ class _RowDivider extends StatelessWidget {
 
 /// A group of [_SettingsRow]s in one rounded, bordered container -- the
 /// grouped-list pattern from iOS Settings, in place of one shadowed [Card]
-/// per individual setting.
+/// per individual setting. [footer] is that pattern's small explanatory
+/// text under the group.
 class _SettingsGroup extends StatelessWidget {
-  const _SettingsGroup({required this.header, required this.children});
+  const _SettingsGroup({required this.header, required this.children, this.footer});
 
   final String header;
   final List<Widget> children;
+  final String? footer;
 
   @override
   Widget build(BuildContext context) {
+    final footer = this.footer;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -259,6 +271,20 @@ class _SettingsGroup extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: Column(children: children),
         ),
+        if (footer != null) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              footer,
+              style: TextStyle(
+                color: Theme.of(context).extension<AppColors>()!.mut,
+                fontSize: 11.5,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -733,6 +759,148 @@ Future<Color?> showCustomColorPicker(BuildContext context, {required Color initi
       );
     },
   );
+}
+
+/// "850 KB" / "46,4 MB" in the app's current locale -- the animation cache
+/// spans both ranges (one file to a full offline download).
+String _formatBytes(BuildContext context, int bytes) {
+  final locale = Localizations.localeOf(context).toString();
+  const mb = 1024 * 1024;
+  if (bytes < mb) {
+    return '${NumberFormat.decimalPattern(locale).format((bytes / 1024).round())} KB';
+  }
+  return '${NumberFormat('0.0', locale).format(bytes / mb)} MB';
+}
+
+/// Exercise demo animations (see `ExerciseDemoGif`): the on/off switch, a
+/// bulk download for training somewhere without reception, and how much
+/// they take up on this device. The download and storage rows don't exist
+/// on web, which has no disk cache to fill. The footer carries the full
+/// attribution -- the animations are third-party content, credited here
+/// as well as on every animation itself.
+class _ExerciseMediaSection extends StatefulWidget {
+  const _ExerciseMediaSection();
+
+  @override
+  State<_ExerciseMediaSection> createState() => _ExerciseMediaSectionState();
+}
+
+class _ExerciseMediaSectionState extends State<_ExerciseMediaSection> {
+  @override
+  void initState() {
+    super.initState();
+    // Re-read what's actually on disk whenever Settings opens --
+    // animations cached while browsing exercises count too.
+    if (!kIsWeb) context.read<ExerciseMediaProvider>().refreshCacheInfo();
+  }
+
+  Future<void> _confirmClear(ExerciseMediaProvider media, AppLocalizations t) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.settingsExerciseMediaClear),
+        content: Text(t.settingsExerciseMediaStored(_formatBytes(ctx, media.cacheBytes))),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(t.actionCancel)),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(t.actionDelete, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await media.clearCache();
+  }
+
+  /// One row for the whole download lifecycle: an estimate before, live
+  /// progress during (tapping again cancels), the outcome after.
+  Widget _downloadRow(ExerciseMediaProvider media, AppLocalizations t, AppColors colors) {
+    String subtitle;
+    Color? subtitleColor;
+    VoidCallback? onTap;
+    Widget? trailing;
+    if (media.isDownloading) {
+      subtitle = t.settingsExerciseMediaDownloadProgress(media.downloadDone, media.downloadTotal);
+      onTap = media.cancelDownload;
+      trailing = Icon(Icons.close_rounded, color: colors.mut);
+    } else if (media.missingCount <= 0) {
+      // Checked before a past run's failures: files that failed then may
+      // have been cached since (e.g. by viewing them) -- what's on disk now
+      // is what counts.
+      subtitle = t.settingsExerciseMediaDownloadDone;
+      subtitleColor = colors.green;
+    } else if (media.downloadFinished && media.downloadFailed > 0) {
+      // Never more than are actually still missing.
+      final failed = media.downloadFailed < media.missingCount ? media.downloadFailed : media.missingCount;
+      subtitle = t.settingsExerciseMediaDownloadFailed(failed);
+      subtitleColor = colors.yellow;
+      onTap = media.startDownloadAll; // retries just the missing ones
+    } else {
+      subtitle = t.settingsExerciseMediaApproxSize(
+          _formatBytes(context, media.missingCount * kApproxExerciseGifBytes));
+      onTap = media.startDownloadAll;
+    }
+    return _SettingsRow(
+      icon: Icons.download_for_offline_rounded,
+      iconColor: colors.accent,
+      label: t.settingsExerciseMediaDownloadAll,
+      subtitle: subtitle,
+      subtitleColor: subtitleColor,
+      subtitleMaxLines: 2,
+      trailing: trailing,
+      onTap: onTap,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final media = context.watch<ExerciseMediaProvider>();
+
+    return _SettingsGroup(
+      header: t.settingsExerciseMediaHeader,
+      footer: t.settingsExerciseMediaCredit,
+      children: [
+        _SettingsRow(
+          icon: Icons.play_circle_fill_rounded,
+          iconColor: colors.teal,
+          label: t.settingsExerciseMediaShow,
+          trailing: Switch.adaptive(value: media.enabled, onChanged: media.setEnabled),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(58, 0, 16, 12),
+          child: Text(t.settingsExerciseMediaShowHint, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+        ),
+        if (!kIsWeb) ...[
+          const _RowDivider(),
+          _downloadRow(media, t, colors),
+          if (media.isDownloading)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(58, 0, 16, 14),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+                child: LinearProgressIndicator(
+                  value: media.downloadTotal == 0 ? null : media.downloadDone / media.downloadTotal,
+                  minHeight: 6,
+                  backgroundColor: colors.card2,
+                  valueColor: AlwaysStoppedAnimation(colors.accent),
+                ),
+              ),
+            ),
+          const _RowDivider(),
+          _SettingsRow(
+            icon: Icons.delete_outline_rounded,
+            iconColor: colors.mut,
+            label: t.settingsExerciseMediaClear,
+            subtitle: t.settingsExerciseMediaStored(_formatBytes(context, media.cacheBytes)),
+            showChevron: false,
+            onTap: media.cacheBytes > 0 ? () => _confirmClear(media, t) : null,
+          ),
+        ],
+      ],
+    );
+  }
 }
 
 /// The one athlete-specific setting the app has (see

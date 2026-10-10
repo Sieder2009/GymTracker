@@ -12,15 +12,23 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/detailed_body_diagram.dart';
+import '../widgets/exercise_demo_gif.dart';
 import '../widgets/exercise_list_view.dart';
 
 /// "Übungen" tab: the full shared exercise database, searchable and
-/// filterable by muscle group — tapping one shows exactly which muscles it
-/// trains and how much (see [DetailedBodyDiagram], an original diagram,
-/// not a scraped image) and a link to search for a tutorial. The app never
-/// embeds or downloads third-party exercise videos/photos — only links out
-/// to let the user watch one on YouTube themselves, which sidesteps
-/// redistributing anyone else's copyrighted material.
+/// filterable by muscle group — tapping one shows a demo animation of how
+/// it's performed (when one is mapped), exactly which muscles it trains and
+/// how much (see [DetailedBodyDiagram], an original diagram, not a scraped
+/// image), form tips, and a link to search for a video tutorial on YouTube.
+///
+/// The demo animations are third-party content (© Gym visual, distributed
+/// through the open exercises dataset on GitHub — see
+/// `data/exercise_gifs.dart`), so the app does not redistribute them: this
+/// repo and every release build contain only the exercise-id → file-name
+/// mapping, never an animation. Each one is downloaded at runtime from a
+/// pinned public CDN copy of that dataset the first time it's shown, then
+/// cached on the device (see `ExerciseMediaService`); it's credited
+/// wherever it appears, and Settings can switch animations off entirely.
 class ExercisesScreen extends StatelessWidget {
   const ExercisesScreen({super.key});
 
@@ -88,12 +96,24 @@ class _ExerciseDetailSheetState extends State<_ExerciseDetailSheet> {
     final activation =
         customActivation ?? muscleActivationForExercise(widget.exercise);
     final archetype = archetypeForExercise(widget.exercise);
+    // How it's done first, then what it trains -- the diagram stays as the
+    // muscle breakdown the animation can't show. Null (no slot at all) for
+    // custom exercises, unmapped ids, or animations switched off.
+    final gif = resolveTemplateGif(context, widget.exercise);
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (gif != null) ...[
+              ExerciseDemoGif(
+                gif: gif,
+                size: 200,
+                exerciseName: widget.exercise.name,
+              ),
+              const SizedBox(height: 16),
+            ],
             DetailedBodyDiagram(
               activation: activation,
               size: 170,

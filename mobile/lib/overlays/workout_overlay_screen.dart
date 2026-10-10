@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,7 @@ import '../state/toast_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
+import '../widgets/exercise_demo_gif.dart';
 import '../widgets/exercise_list_view.dart' show categoryLabel;
 import '../widgets/rest_ring.dart';
 
@@ -524,7 +526,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
       backgroundColor: colors.bg,
       body: SafeArea(
         child: _resting
-            ? _buildRestView(colors, t)
+            ? _buildRestView(exercises, colors, t)
             : _working
                 ? _buildWorkView(exercises, colors, t)
                 : _buildMainView(exercises, colors, t),
@@ -539,6 +541,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     final isLast = _stepIdx == _steps.length - 1;
     final progress = _doneBefore(exercises) / _totalSets(exercises);
     final inSuperset = ex.supersetWithNext || (_exIdx > 0 && exercises[_exIdx - 1].supersetWithNext);
+    final demoGif = resolveExerciseGif(context, ex.name);
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -611,7 +614,17 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
             style: TextStyle(color: colors.mut),
             textAlign: TextAlign.center,
           ),
-          const Spacer(),
+          // With an animation, the gap above the controls becomes its slot
+          // (a larger share of the free space than the plain Spacer it
+          // replaces, see _WorkoutDemoSlot); without one, the layout is
+          // exactly what it always was.
+          if (demoGif != null)
+            Expanded(
+              flex: 2,
+              child: _WorkoutDemoSlot(gif: demoGif, exerciseName: ex.name),
+            )
+          else
+            const Spacer(),
           ..._buildModeControls(exercises, sets, colors, t),
           const SizedBox(height: 16),
           _buildSetDots(ex, sets, colors),
@@ -676,18 +689,24 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
                 iconSize: 26,
                 onPressed: () => _stepReps(exercises, actualReps, -repStep),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    Text('$actualReps',
-                        style: Theme.of(context).textTheme.headlineMedium),
-                    Text(t.hintRepsPerformed,
-                        style: TextStyle(color: colors.mut, fontSize: 11)),
-                    if (ex.unilateral)
-                      Text(t.labelRepsPerSide(fmt(repsPerSide(actualReps))),
+              // Flexible so a long translated caption wraps instead of
+              // pushing the + button off a narrow screen.
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      Text('$actualReps',
+                          style: Theme.of(context).textTheme.headlineMedium),
+                      Text(t.hintRepsPerformed,
+                          textAlign: TextAlign.center,
                           style: TextStyle(color: colors.mut, fontSize: 11)),
-                  ],
+                      if (ex.unilateral)
+                        Text(t.labelRepsPerSide(fmt(repsPerSide(actualReps))),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: colors.mut, fontSize: 11)),
+                    ],
+                  ),
                 ),
               ),
               IconButton(
@@ -896,10 +915,28 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     );
   }
 
-  Widget _buildRestView(AppColors colors, AppLocalizations t) {
+  /// The exercise the step after this rest belongs to, when that's a
+  /// different one than the exercise just finished -- the next plan
+  /// exercise, or a superset's first exercise again for its next round.
+  /// Null for "another set of the same exercise", and (defensively) after
+  /// the last step, which finishes the workout instead of resting.
+  /// [_stepIdx] still points at the step just completed while resting
+  /// ([_advance] moves it on), so the upcoming one is simply the next step.
+  Exercise? _upNextAfterRest(List<Exercise> exercises) {
+    final nextStep = _stepIdx + 1;
+    if (nextStep >= _steps.length) return null;
+    final nextExIdx = _steps[nextStep].exerciseIndex;
+    if (nextExIdx == _exIdx || nextExIdx >= exercises.length) return null;
+    return exercises[nextExIdx];
+  }
+
+  Widget _buildRestView(
+      List<Exercise> exercises, AppColors colors, AppLocalizations t) {
     final restEndsAt = _restEndsAt!;
     final restLeft =
         restEndsAt.difference(DateTime.now()).inSeconds.clamp(0, _restTotal);
+    final upNext = _upNextAfterRest(exercises);
+    final upNextGif = upNext == null ? null : resolveExerciseGif(context, upNext.name);
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -914,12 +951,107 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
           ),
           const SizedBox(height: 16),
           Text(t.secondsPause, style: TextStyle(color: colors.mut)),
+          if (upNext != null)
+            _RestUpNext(exercise: upNext, gif: upNextGif, colors: colors, t: t),
           const SizedBox(height: 24),
           TextButton(
             onPressed: _advance,
             child: Text(t.actionSkipRest),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The guided workout's demo animation, sized to the free space between the
+/// set counter and the controls: up to 170 px when there's room, smaller
+/// when there isn't, and gone entirely below 72 px (a small phone in Reps
+/// mode, with the weight/reps steppers and effort chips all on screen)
+/// rather than a uselessly tiny thumbnail -- never an overflow. Tap to
+/// enlarge.
+class _WorkoutDemoSlot extends StatelessWidget {
+  const _WorkoutDemoSlot({required this.gif, required this.exerciseName});
+
+  final String gif;
+  final String exerciseName;
+
+  static const double _maxSide = 170;
+  static const double _minSide = 72;
+  static const double _minGap = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final side = math.min(
+          _maxSide,
+          math.min(constraints.maxWidth, constraints.maxHeight - 2 * _minGap),
+        );
+        if (side < _minSide) return const SizedBox.shrink();
+        return Center(
+          child: ExerciseDemoGif(gif: gif, size: side, exerciseName: exerciseName),
+        );
+      },
+    );
+  }
+}
+
+/// "Up next: <exercise>" under the rest countdown, plus that exercise's
+/// animation, so the user can set up for it while resting. Gets only the
+/// height the countdown leaves over (it's the rest column's one flexible
+/// child): the animation is dropped first, then the label, and whatever is
+/// shown scales down slightly before it could ever overflow.
+class _RestUpNext extends StatelessWidget {
+  const _RestUpNext({
+    required this.exercise,
+    required this.gif,
+    required this.colors,
+    required this.t,
+  });
+
+  final Exercise exercise;
+  final String? gif;
+  final AppColors colors;
+  final AppLocalizations t;
+
+  static const double _gifSide = 100;
+  static const double _labelHeight = 44; // incl. the gap above it
+  static const double _gifHeight = _gifSide + 10;
+
+  @override
+  Widget build(BuildContext context) {
+    final gif = this.gif;
+    return Flexible(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxHeight < _labelHeight) return const SizedBox.shrink();
+          final showGif =
+              gif != null && constraints.maxHeight >= _labelHeight + _gifHeight;
+          return FittedBox(
+            fit: BoxFit.scaleDown,
+            child: SizedBox(
+              width: constraints.maxWidth,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 20),
+                  Text(
+                    t.exerciseDemoUpNext(exercise.name),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: colors.txt, fontWeight: FontWeight.w700),
+                  ),
+                  if (showGif) ...[
+                    const SizedBox(height: 10),
+                    ExerciseDemoGif(gif: gif, size: _gifSide, exerciseName: exercise.name),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

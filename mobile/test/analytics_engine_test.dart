@@ -82,6 +82,17 @@ void main() {
       final stats = computeConsistency(sessions, now: now);
       expect(stats.workoutsThisMonth, 2);
     });
+
+    test('a streak survives the spring-forward DST night (23-hour day in CET/CEST)', () {
+      final sessions = [
+        WorkoutSession(date: '2026-03-28', durationMinutes: 1, planName: 'A'),
+        WorkoutSession(date: '2026-03-29', durationMinutes: 1, planName: 'A'),
+        WorkoutSession(date: '2026-03-30', durationMinutes: 1, planName: 'A'),
+      ];
+      final stats = computeConsistency(sessions, now: DateTime(2026, 3, 30, 12));
+      expect(stats.bestStreakDays, 3);
+      expect(stats.currentStreakDays, 3);
+    });
   });
 
   group('computeLiftTrend', () {
@@ -307,6 +318,22 @@ void main() {
   });
 
   group('weeklyBuckets', () {
+    test('bucket boundaries stay on calendar days across the DST fall-back', () {
+      // 2026-10-25 is 25h long in CET/CEST. Duration-based stepping put the
+      // current week's start at 2026-10-20 01:00, dropping that day.
+      final dstNow = DateTime(2026, 10, 26);
+      final buckets = weeklyBuckets([
+        WorkoutSession(date: '2026-10-20', durationMinutes: 40, planName: 'A', totalVolumeKg: 100),
+        WorkoutSession(date: '2026-10-19', durationMinutes: 40, planName: 'A', totalVolumeKg: 10),
+      ], weeks: 2, now: dstNow);
+      expect(buckets.last.weekStart, DateTime(2026, 10, 20));
+      expect(buckets.last.workoutCount, 1);
+      expect(buckets.last.totalVolumeKg, 100);
+      expect(buckets.first.weekStart, DateTime(2026, 10, 13));
+      expect(buckets.first.workoutCount, 1);
+      expect(buckets.first.totalVolumeKg, 10);
+    });
+
     test('a week with zero sessions is a real zero bucket, not skipped', () {
       final buckets = weeklyBuckets([], weeks: 4, now: now);
       expect(buckets, hasLength(4));

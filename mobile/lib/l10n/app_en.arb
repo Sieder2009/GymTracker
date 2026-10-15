@@ -5,6 +5,9 @@
   "tabProgress": "Analytics",
   "actionSave": "Save",
   "actionSaveAndNext": "Save & next",
+  "labelTargetReps": "Target",
+  "headerUpNext": "UP NEXT",
+  "infoLastExercise": "That's the last exercise – after this you're done.",
   "actionCancel": "Cancel",
   "actionApply": "Apply",
   "actionBack": "Back",
@@ -867,6 +870,32 @@
     }
   },
   "actionMoveToAnotherDay": "Move to another day",
+  "titleMoveExercise": "Move \"{name}\"",
+  "@titleMoveExercise": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moveExerciseIntro": "The exercise moves to the chosen day of your plan for good, with its sets and history.",
+  "moveExerciseDayCount": "{count, plural, =0{No exercises} =1{1 exercise} other{{count} exercises}}",
+  "@moveExerciseDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelEveryTrainingDay": "Every training day",
+  "toastExerciseMoved": "Moved to {day}",
+  "@toastExerciseMoved": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "titleMoveDay": "Reschedule this day",
   "moveDaySheetIntro": "This won't change your saved weekly plan — only what shows on the date you pick.",
   "moveDayCurrentlyShowing": "Currently showing: {day}",

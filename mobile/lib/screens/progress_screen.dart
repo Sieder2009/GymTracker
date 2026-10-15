@@ -5,6 +5,7 @@ import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
 import '../analytics/body_measurement_analytics.dart';
 import '../analytics/heatmap_engine.dart';
+import '../analytics/logged_days.dart';
 import '../data/constants.dart';
 import '../data/lift_categories.dart';
 import '../l10n/app_localizations.dart';
@@ -544,8 +545,12 @@ class _ConsistencyTab extends StatelessWidget {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
     final sessions = context.watch<WorkoutHistoryProvider>().sessions;
-    final consistency = computeConsistency(sessions);
-    final heatmapDays = aggregateHeatmapDays(sessions);
+    // Streaks and the graph also count days of single saved exercises,
+    // same as the calendar; the per-week bars stay guided workouts only.
+    final trainingDays = sessionsWithLoggedExercises(
+        sessions, context.watch<ProgramsProvider>().programs);
+    final consistency = computeConsistency(trainingDays);
+    final heatmapDays = aggregateHeatmapDays(trainingDays);
     // The full rolling year, however many weeks the card has room for.
     final lastYear = summarizeHeatmap(heatmapDays, range: const HeatmapRange.lastYear());
     final buckets = weeklyBuckets(sessions);

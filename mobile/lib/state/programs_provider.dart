@@ -90,6 +90,29 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Moves one exercise for good from [from] (a day's exercises or the
+  /// plan's `dailyExercises`) to the end of another day of the same [plan]
+  /// -- or to `dailyExercises` when [toDayIdx] is null -- sets, notes and
+  /// logged history included. Unlike the date overrides in
+  /// TrainStateProvider this changes the plan itself.
+  ///
+  /// Superset links never jump to a stranger: the exercise before the moved
+  /// one loses a link that pointed at it, and the moved exercise arrives
+  /// unlinked. A rest day that receives an exercise becomes a training day,
+  /// otherwise the exercise would vanish behind "Rest day".
+  void moveExerciseToDay(Program plan, List<Exercise> from, int exIdx, int? toDayIdx) {
+    final target =
+        toDayIdx == null ? plan.dailyExercises : plan.days[toDayIdx].exercises;
+    if (identical(target, from) || exIdx < 0 || exIdx >= from.length) return;
+    final exercise = from.removeAt(exIdx);
+    if (exIdx > 0) from[exIdx - 1].supersetWithNext = false;
+    exercise.supersetWithNext = false;
+    target.add(exercise);
+    if (toDayIdx != null) plan.days[toDayIdx].rest = false;
+    _persist();
+    notifyListeners();
+  }
+
   void setMuscle(List<Exercise> exercises, int exIdx, String muscle) {
     exercises[exIdx].muscle = muscle;
     _persist();
@@ -316,6 +339,18 @@ class ProgramsProvider extends ChangeNotifier {
     for (final s in ex.sets) {
       s.w = weight;
     }
+    _persist();
+    notifyListeners();
+  }
+
+  /// Sets the planned rep target of one set (`ExerciseSet.r`, a count like
+  /// "8" or a range like "8-12"), edited right on the exercise screen.
+  /// Out-of-range indexes are ignored: that screen can show more set rows
+  /// than the plan has sets.
+  void setTargetReps(List<Exercise> exercises, int exIdx, int setIdx, String reps) {
+    final sets = exercises[exIdx].sets;
+    if (setIdx < 0 || setIdx >= sets.length || sets[setIdx].r == reps) return;
+    sets[setIdx].r = reps;
     _persist();
     notifyListeners();
   }

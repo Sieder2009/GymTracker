@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 
 import '../analytics/analytics_engine.dart';
 import '../analytics/heatmap_engine.dart';
+import '../analytics/logged_days.dart';
 import '../data/constants.dart' show isoOf;
 import '../l10n/app_localizations.dart';
+import '../state/programs_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/contribution_heatmap.dart';
@@ -48,7 +50,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
     final localeName = Localizations.localeOf(context).toString();
-    final sessions = context.watch<WorkoutHistoryProvider>().sessions;
+    // Guided workouts plus days on which single exercises were saved.
+    final sessions = sessionsWithLoggedExercises(
+      context.watch<WorkoutHistoryProvider>().sessions,
+      context.watch<ProgramsProvider>().programs,
+    );
     final today = heatmapDateOnly(DateTime.now());
 
     final days = aggregateHeatmapDays(sessions);
@@ -177,7 +183,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     subtitle: s.totalVolumeKg > 0
                         ? Text('${t.labelVolume}: ${volumeFormat.format(s.totalVolumeKg.round())} kg')
                         : null,
-                    trailing: Text(t.labelMinutesShort(s.durationMinutes)),
+                    // 0 = a day of single saved exercises: duration unknown.
+                    trailing: s.durationMinutes > 0
+                        ? Text(t.labelMinutesShort(s.durationMinutes))
+                        : null,
                   ),
                 ),
           ],

@@ -56,12 +56,16 @@ class ExerciseCard extends StatelessWidget {
     required this.onTapName,
     this.onDelete,
     this.onToggleSuperset,
+    this.onMoveToDay,
   });
 
   final Exercise exercise;
   final VoidCallback onTapName;
   final VoidCallback? onDelete;
   final VoidCallback? onToggleSuperset;
+
+  /// Moves the exercise to another day of its plan (move_exercise_sheet.dart).
+  final VoidCallback? onMoveToDay;
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +126,13 @@ class ExerciseCard extends StatelessWidget {
                       tooltip: t.actionToggleSuperset,
                       visualDensity: VisualDensity.compact,
                       onPressed: onToggleSuperset,
+                    ),
+                  if (onMoveToDay != null)
+                    IconButton(
+                      icon: const Icon(Icons.drive_file_move_outline, size: 20),
+                      tooltip: t.actionMoveToAnotherDay,
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onMoveToDay,
                     ),
                   if (onDelete != null)
                     IconButton(

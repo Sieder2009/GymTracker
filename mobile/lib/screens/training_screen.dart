@@ -3,11 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../analytics/analytics_engine.dart';
+import '../analytics/heatmap_engine.dart';
+import '../analytics/logged_days.dart';
 import '../data/constants.dart';
 import '../data/example_log.dart';
 import '../data/example_ppl_plan.dart';
-import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../models/exercise_log_mode.dart';
@@ -17,8 +17,6 @@ import '../overlays/import_log_screen.dart';
 import '../overlays/plan_editor_screen.dart';
 import '../overlays/settings_screen.dart';
 import '../overlays/workout_overlay_screen.dart';
-import '../state/big_lifts_provider.dart';
-import '../state/health_provider.dart';
 import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../state/train_state_provider.dart';
@@ -29,23 +27,16 @@ import '../theme/app_radii.dart';
 import '../widgets/add_exercise_sheet.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/backup_sheet.dart';
+import '../widgets/contribution_heatmap.dart';
 import '../widgets/day_pill_selector.dart';
 import '../widgets/exercise_card.dart';
-import '../widgets/health_connect_feedback.dart';
-import '../widgets/kpi_tile.dart';
 import '../widgets/language_picker_sheet.dart';
 import '../widgets/move_day_sheet.dart';
+import '../widgets/move_exercise_sheet.dart';
 import '../widgets/plan_picker_sheet.dart';
 import '../state/theme_provider.dart';
 import 'calendar_screen.dart';
 import 'gallery_screen.dart';
-
-String _greeting(AppLocalizations t) {
-  final hour = DateTime.now().hour;
-  if (hour < 12) return t.greetingMorning;
-  if (hour < 18) return t.greetingAfternoon;
-  return t.greetingEvening;
-}
 
 /// Rough estimate only (no per-exercise timing data exists) — roughly 3
 /// minutes per set including rest, matching the guided workout's typical
@@ -79,27 +70,20 @@ class _TrainingScreenState extends State<TrainingScreen> {
   void initState() {
     super.initState();
     // Runs once (this screen stays mounted for the app's lifetime inside
-    // the shell's PageView) — forces the plan prompt when multiple plans
-    // exist, so the user always confirms which one they're training today.
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _maybeForcePlanPrompt());
+    // the shell's PageView).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openActivePlanOnToday());
   }
 
-  Future<void> _maybeForcePlanPrompt() async {
+  /// No plan picker on launch: the plan the user picked stays their fixed
+  /// plan (TrainStateProvider persists it; switching lives in the overflow
+  /// menu). Launching only re-opens it on today's day, which the old
+  /// launch prompt used to do as a side effect of re-selecting the plan.
+  void _openActivePlanOnToday() {
     if (!mounted) return;
-    final programs = context.read<ProgramsProvider>().programs;
-    if (programs.length <= 1) return;
-    final trainState = context.read<TrainStateProvider>();
-    final chosen = await showPlanPicker(
-      context,
-      programs: programs,
-      activeId: trainState.activePlanId,
-      onDelete: _deletePlan,
-      isDismissible: false,
-      onNewPlan: _newPlan,
-      onLoadPpl: _loadPplExample,
-    );
-    if (chosen != null) _selectPlan(chosen);
+    final programs = context.read<ProgramsProvider>();
+    if (programs.programs.isEmpty) return;
+    final activeId = context.read<TrainStateProvider>().activePlanId;
+    _selectPlan(programs.byId(activeId) ?? programs.programs.first);
   }
 
   void _selectPlan(Program p) {
@@ -313,13 +297,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
             ],
           ),
           const SizedBox(height: 4),
-          Text(_greeting(t), style: Theme.of(context).textTheme.headlineLarge),
-          Text(
-            DateFormat.yMMMMEEEEd(localeName).format(DateTime.now()),
-            style: TextStyle(color: colors.mut),
-          ),
+          const _HomeCalendarCard(),
           const _UpdateAvailableCard(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(plan.name, style: Theme.of(context).textTheme.headlineMedium),
           Text(
             isRestDay
@@ -375,15 +355,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
             ),
           ],
           const SizedBox(height: 16),
-          _HomeDashboardStats(exercises: exercises, isRestDay: isRestDay),
-          // Extra breathing room (not just the usual 16) before the "start
-          // workout" CTA -- it's the one button that can land right at the
-          // floating nav bar's fold on first load (no scroll needed), and
-          // longer-language translations of everything above it (stats
-          // labels, health-connect card, PR list) push it further down
-          // than German does, so a tight gap here risks the button peeking
-          // out from behind the bar instead of sitting safely under it.
-          const SizedBox(height: 28),
+          if (!isRestDay && exercises.isNotEmpty) ...[
+            _NextWorkoutCard(exercises: exercises),
+            const SizedBox(height: 12),
+          ],
           if (isRestDay)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 40),
@@ -449,6 +424,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       onTapName: () => _openExerciseDetail(plan.id, dayIdx, i),
                       onDelete: () =>
                           _removeExercise(plan.id, dayIdx, i, exercises[i]),
+                      onMoveToDay: () => showMoveExerciseSheet(context,
+                          plan: plan, from: exercises, index: i, fromDayIdx: dayIdx),
                       onToggleSuperset: i < exercises.length - 1
                           ? () => context.read<ProgramsProvider>().toggleSuperset(exercises, i)
                           : null,
@@ -483,6 +460,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       onTapName: () => _openExerciseDetail(plan.id, null, i),
                       onDelete: () => _removeExercise(
                           plan.id, null, i, dailyExercises[i]),
+                      onMoveToDay: () => showMoveExerciseSheet(context,
+                          plan: plan, from: dailyExercises, index: i, fromDayIdx: null),
                       onToggleSuperset: i < dailyExercises.length - 1
                           ? () => context.read<ProgramsProvider>().toggleSuperset(dailyExercises, i)
                           : null,
@@ -501,100 +480,87 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 }
 
-/// Quick Stats + This Week + Recent PRs — the "at a glance" section of the
-/// home dashboard, entirely computed from [analytics_engine], never shown
-/// for a rest day's exercise estimate (that part alone respects [isRestDay]).
-class _HomeDashboardStats extends StatelessWidget {
-  const _HomeDashboardStats({required this.exercises, required this.isRestDay});
+/// How big today's session is, at a glance. The workout/volume/PR counters
+/// and the recent-PR list used to sit here too; the home screen is now just
+/// the calendar and today's plan, the numbers live in the Analytics tab.
+class _NextWorkoutCard extends StatelessWidget {
+  const _NextWorkoutCard({required this.exercises});
 
   final List<Exercise> exercises;
-  final bool isRestDay;
 
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
-    final sessions = context.watch<WorkoutHistoryProvider>().sessions;
-    final lifts = context.watch<BigLiftsProvider>().lifts;
-
-    final week = computeWeekSummary(sessions);
-    final recentPrs = countRecentLiftPrs(lifts);
-
-    final prEntries = <MapEntry<String, double>>[
-      if (lifts.bench.pr > 0) MapEntry(t.labelBenchPress, lifts.bench.pr),
-      if (lifts.deadlift.pr > 0) MapEntry(t.labelDeadlift, lifts.deadlift.pr),
-      if (lifts.squat.pr > 0) MapEntry(t.labelSquat, lifts.squat.pr),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!isRestDay && exercises.isNotEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(t.labelNextWorkout,
-                      style: Theme.of(context).textTheme.labelSmall),
-                  const SizedBox(height: 6),
-                  Text(
-                    t.exerciseCountEstimate(
-                        exercises.length, _estimateWorkoutMinutes(exercises)),
-                    style: TextStyle(color: colors.mut),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        Text(t.labelQuickStats, style: Theme.of(context).textTheme.labelSmall),
-        const SizedBox(height: 8),
-        Row(
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-                child: KpiTile(
-                    icon: Icons.fitness_center_rounded,
-                    label: t.labelWorkouts,
-                    value: '${week.workoutCount}',
-                    color: colors.accent)),
-            const SizedBox(width: 10),
-            Expanded(
-                child: KpiTile(
-                    icon: Icons.monitor_weight_rounded,
-                    label: t.labelVolume,
-                    value: '${fmt(week.totalVolumeKg)} kg',
-                    color: colors.teal)),
-            const SizedBox(width: 10),
-            Expanded(
-                child: KpiTile(
-                    icon: Icons.emoji_events_rounded,
-                    label: t.labelPRs,
-                    value: '$recentPrs',
-                    color: colors.yellow)),
+            Text(t.labelNextWorkout, style: Theme.of(context).textTheme.labelSmall),
+            const SizedBox(height: 6),
+            Text(
+              t.exerciseCountEstimate(exercises.length, _estimateWorkoutMinutes(exercises)),
+              style: TextStyle(color: colors.mut),
+            ),
           ],
         ),
-        const _HealthCard(),
-        if (prEntries.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Text(t.labelRecentPrs, style: Theme.of(context).textTheme.labelSmall),
-          const SizedBox(height: 8),
-          for (final entry in prEntries)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
+      ),
+    );
+  }
+}
+
+/// The training calendar where the greeting used to be: the newest weeks of
+/// the GitHub-style graph that fit the width (no sideways scrolling -- the
+/// app's page view owns that swipe), counting guided workouts and days on
+/// which single exercises were saved alike. Any tap opens the full calendar.
+class _HomeCalendarCard extends StatelessWidget {
+  const _HomeCalendarCard();
+
+  void _open(BuildContext context, [DateTime? day]) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => CalendarScreen(initialDate: day)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final localeName = Localizations.localeOf(context).toString();
+    final days = aggregateHeatmapDays(sessionsWithLoggedExercises(
+      context.watch<WorkoutHistoryProvider>().sessions,
+      context.watch<ProgramsProvider>().programs,
+    ));
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        onTap: () => _open(context),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Icon(Icons.emoji_events_outlined,
-                      size: 18, color: colors.yellow),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(entry.key)),
-                  Text('${fmt1(entry.value)} kg',
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Expanded(
+                    child: Text(
+                      DateFormat.yMMMMEEEEd(localeName).format(DateTime.now()),
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                  ),
+                  Icon(Icons.calendar_month_rounded, size: 20, color: colors.mut),
                 ],
               ),
-            ),
-        ],
-      ],
+              const SizedBox(height: 12),
+              ContributionHeatmap(
+                days: days,
+                layout: HeatmapLayout.fitToWidth,
+                onSelectDate: (day) => _open(context, day),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -663,101 +629,6 @@ class _UpdateAvailableCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Icon(Icons.chevron_right_rounded, color: colors.mut),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One-time connect prompt, only shown on Android/iOS (see
-/// [HealthProvider.isSupportedPlatform]) and only until the user actually
-/// connects — once [HealthProvider.isConnected] is true this card is gone
-/// from the dashboard entirely (re-enabling/disabling afterwards lives in
-/// Settings, see `_HealthSection`) rather than sitting there permanently
-/// showing a steps count nobody asked to see on the home screen every day.
-///
-/// Styled as one fully-tappable iOS-Settings-style row (leading brand tile,
-/// title/subtitle, trailing chevron) rather than a card with its own inner
-/// button — the old [OutlinedButton] rendered in [AppColors.secondary]
-/// (green), which reads as an unrelated accent next to the rest of the
-/// screen's blue. iOS/Android get their own real product name (see
-/// [healthBrandName]/[healthBrandColor]) and brand color here (not the
-/// app's own accent) so the row visually
-/// reads as "this connects to the OS's health store", distinct from in-app
-/// actions — deliberately not Apple's actual "Works with Apple Health"
-/// badge artwork or Health Connect's launcher icon, both of which are
-/// trademarked assets this app isn't licensed to reproduce; a generic
-/// heart glyph on the brand color communicates the same thing without
-/// copying either badge design.
-class _HealthCard extends StatelessWidget {
-  const _HealthCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final health = context.watch<HealthProvider>();
-    if (!health.isSupportedPlatform || health.isConnected) return const SizedBox.shrink();
-
-    final t = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).extension<AppColors>()!;
-    final brandColor = healthBrandColor();
-    final brandName = healthBrandName();
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: Card(
-        margin: EdgeInsets.zero,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: health.isLoading ? null : () => connectHealthWithFeedback(context, health, t),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: brandColor,
-                    borderRadius: BorderRadius.circular(AppRadii.sm),
-                  ),
-                  child: const Icon(Icons.favorite_rounded,
-                      color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        brandName,
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        health.isLoading ? t.actionConnectHealth : t.titleHealthSync,
-                        style: TextStyle(color: colors.mut, fontSize: 13),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (health.isLoading)
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: colors.mut),
-                  )
-                else
-                  Icon(Icons.chevron_right_rounded, color: colors.mut),
               ],
             ),
           ),

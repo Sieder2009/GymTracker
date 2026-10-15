@@ -13,6 +13,8 @@ import '../models/history_entry.dart';
 import '../models/muscle_group.dart';
 import '../services/log_parser.dart';
 import '../state/bar_weight_provider.dart';
+import '../state/exercise_draft_store.dart';
+import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
@@ -98,6 +100,15 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   // Cardio-only: each set's actual speed, kept in step with
   // [_repsControllers] (same length, same add/remove/dispose points).
   List<TextEditingController> _speedControllers = [];
+  // The plan's target reps per set (ExerciseSet.r), editable here; one per
+  // planned set, so set rows added on this screen have none.
+  List<TextEditingController> _targetControllers = [];
+  // The weight the exercise opened with -- a draft is only worth keeping
+  // once something differs from it (see _stashDraft).
+  double _loadedWeight = 0;
+  // False once the exercise was saved and the screen closes: dispose must
+  // not stash the just-saved input as a draft again.
+  bool _stashOnDispose = true;
   bool _renaming = false;
   final TextEditingController _renameController = TextEditingController();
   bool _historyPasteOpen = false;
@@ -114,14 +125,42 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   void initState() {
     super.initState();
     _noteController = TextEditingController();
-    _loadExercise(widget.startIdx);
+    _loadExercise(widget.startIdx, stash: false);
   }
 
-  void _loadExercise(int i) {
+  /// Keeps what was typed for the current exercise but not saved in
+  /// [ExerciseDraftStore] (memory only), or forgets it when nothing differs
+  /// from how the exercise opened.
+  void _stashDraft() {
+    final ex = _ex;
+    final typed = _repsControllers.any((c) => c.text.trim().isNotEmpty) ||
+        _speedControllers.any((c) => c.text.trim().isNotEmpty);
+    if (!typed && _weight == _loadedWeight && _repsControllers.length == ex.sets.length) {
+      ExerciseDraftStore.clear(ex);
+      return;
+    }
+    ExerciseDraftStore.put(
+      ex,
+      ExerciseDraft(
+        logMode: _logMode,
+        weight: _weight,
+        values: [for (final c in _repsControllers) c.text],
+        speeds: [for (final c in _speedControllers) c.text],
+      ),
+    );
+  }
+
+  /// Shows exercise [i], first stashing the current one's unsaved input
+  /// unless [stash] is false (first load, or right after saving).
+  void _loadExercise(int i, {bool stash = true}) {
+    if (stash) _stashDraft();
     for (final c in _repsControllers) {
       c.dispose();
     }
     for (final c in _speedControllers) {
+      c.dispose();
+    }
+    for (final c in _targetControllers) {
       c.dispose();
     }
     final ex = widget.exercises[i];
@@ -140,10 +179,33 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     _perSideEntry = false;
     _unilateral = ex.unilateral;
     _logMode = ex.logMode;
+    _targetControllers = [for (final set in ex.sets) TextEditingController(text: set.r)];
+    _loadedWeight = _weight;
+    // Back to where the user left off, if they typed something and left
+    // without saving -- but never across a log-mode switch.
+    final draft = ExerciseDraftStore.of(ex);
+    if (draft != null && draft.logMode == _logMode) {
+      _weight = draft.weight;
+      for (final c in _repsControllers) {
+        c.dispose();
+      }
+      for (final c in _speedControllers) {
+        c.dispose();
+      }
+      _repsControllers = [for (final v in draft.values) TextEditingController(text: v)];
+      _speedControllers = [
+        for (var k = 0; k < draft.values.length; k++)
+          TextEditingController(text: k < draft.speeds.length ? draft.speeds[k] : ''),
+      ];
+    }
   }
 
   @override
   void dispose() {
+    if (_stashOnDispose) _stashDraft();
+    for (final c in _targetControllers) {
+      c.dispose();
+    }
     for (final c in _repsControllers) {
       c.dispose();
     }
@@ -349,6 +411,24 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     });
   }
 
+  /// The planned target reps of set [i] (e.g. "8" or "8-12"), saved into
+  /// the plan as it is typed; rows added only on this screen have no
+  /// planned set to edit.
+  Widget _targetField(int i, AppLocalizations t) {
+    if (i >= _targetControllers.length) return const SizedBox.shrink();
+    return TextField(
+      controller: _targetControllers[i],
+      keyboardType: TextInputType.text,
+      textAlign: TextAlign.center,
+      decoration: InputDecoration(labelText: t.labelTargetReps),
+      onChanged: (value) {
+        final reps = value.trim();
+        if (reps.isEmpty) return;
+        context.read<ProgramsProvider>().setTargetReps(widget.exercises, _idx, i, reps);
+      },
+    );
+  }
+
   /// One set's row, shaped for [_logMode]: reps (unchanged), a single
   /// seconds-held field (Timed), or minutes+speed fields (Cardio) --
   /// [_repsControllers] is reused as each mode's main number (see the
@@ -385,6 +465,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 },
               ),
             ),
+            const SizedBox(width: 8),
+            SizedBox(width: 84, child: _targetField(i, t)),
             removeButton,
           ],
         );
@@ -450,9 +532,11 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
         ];
         widget.onSaveCardio?.call(_idx, durations, speeds);
     }
+    ExerciseDraftStore.clear(_ex);
     if (_idx < widget.exercises.length - 1) {
-      setState(() => _loadExercise(_idx + 1));
+      setState(() => _loadExercise(_idx + 1, stash: false));
     } else {
+      _stashOnDispose = false;
       Navigator.of(context).pop();
     }
   }
@@ -733,6 +817,11 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                     style: TextStyle(color: colors.mut, fontSize: 11),
                   ),
                 ],
+                const SizedBox(height: 28),
+                _UpNextCard(
+                  next: isLastExercise ? null : widget.exercises[_idx + 1],
+                  onTap: () => _goToOffset(1),
+                ),
               ],
             ),
           ),
@@ -901,6 +990,53 @@ class _HistoryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The end of the scroll view: what comes after this exercise, so scrolling
+/// all the way down answers "what's next?" -- tapping it browses there
+/// (without saving, like a swipe; unsaved input stays as a draft). On the
+/// last exercise it just says so.
+class _UpNextCard extends StatelessWidget {
+  const _UpNextCard({required this.next, required this.onTap});
+
+  final Exercise? next;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final exercise = next;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t.headerUpNext, style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: 8),
+        if (exercise == null)
+          Text(t.infoLastExercise, style: TextStyle(color: colors.mut))
+        else
+          Card(
+            margin: EdgeInsets.zero,
+            child: ListTile(
+              onTap: onTap,
+              title: Text(exercise.name, style: Theme.of(context).textTheme.headlineMedium),
+              subtitle: exercise.sets.isEmpty
+                  ? null
+                  : Text(exerciseSetsSummaryLabel(t, exercise), style: TextStyle(color: colors.mut)),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (exercise.logMode == ExerciseLogMode.reps && exercise.currentWeight > 0)
+                    Text('${fmt1(exercise.currentWeight)} kg',
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Icon(Icons.chevron_right_rounded, color: colors.mut),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

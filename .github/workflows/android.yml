@@ -116,6 +116,26 @@ jobs:
           fi
         shell: bash
 
+      # The home-screen icon follows the app's appearance by switching
+      # between <activity-alias> entries, one per icon variant, which only
+      # release builds get (android/app/src/release/AndroidManifest.xml).
+      # A mistake there doesn't fail the build -- it ships an APK that shows
+      # two Ironpeak icons on the home screen, or none at all -- so check the
+      # manifest that actually got merged into the APK before it's uploaded
+      # or released. The script finds aapt2 in the runner's preinstalled
+      # Android SDK (ANDROID_HOME, newest build-tools); it's dart:io-only, so
+      # plain `dart` instead of `dart run`, which would first run the build
+      # hooks of the app's native dependencies for nothing.
+      - name: Verify launcher aliases
+        run: |
+          set -euo pipefail
+          if [ ! -d "${ANDROID_HOME:-}/build-tools" ]; then
+            echo "::error::No Android SDK build-tools under ANDROID_HOME (${ANDROID_HOME:-unset}) -- the launcher alias check needs aapt2 from there."
+            exit 1
+          fi
+          dart tool/verify_launcher_aliases.dart --release build/app/outputs/flutter-apk/app-release.apk
+        shell: bash
+
       - uses: actions/upload-artifact@v4
         with:
           name: ironpeak-fitness-android

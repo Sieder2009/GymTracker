@@ -962,5 +962,10 @@
     }
   },
   "toastHoldLogged": "Hold logged",
-  "toastCardioLogged": "Cardio set logged"
+  "toastCardioLogged": "Cardio set logged",
+  "settingsAppIconTitle": "App icon",
+  "settingsAppIconAdaptive": "Match appearance",
+  "settingsAppIconAdaptiveHint": "Light or dark like the app, in your primary color",
+  "settingsAppIconPending": "Changes when you leave the app",
+  "settingsAppIconFooter": "Android swaps the icon once you leave the app (Home or the app switcher), which also closes the app. Some launchers take a few seconds to show the new one."
 }

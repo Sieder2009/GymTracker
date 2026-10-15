@@ -8,6 +8,7 @@ import 'l10n/app_localizations.dart';
 import 'services/exercise_database_service.dart';
 import 'services/exercise_media_service.dart';
 import 'services/health_service.dart';
+import 'services/launcher_icon_service.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'state/active_screen_provider.dart';
@@ -80,6 +81,13 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ActiveScreenProvider()),
         ChangeNotifierProvider(create: (_) => ToastProvider()),
         ChangeNotifierProvider(create: (_) => AppearanceProvider(storage)),
+        // Not lazy: it has to tell Android which icon to switch to (and
+        // repair a missing launcher entry) at every launch, not only once
+        // someone happens to open Settings.
+        ChangeNotifierProvider(
+            lazy: false,
+            create: (context) => LauncherIconService(storage,
+                context.read<ThemeProvider>(), context.read<AppearanceProvider>())),
         ChangeNotifierProvider(
             create: (context) =>
                 UpdateProvider(storage, notificationService, context.read<LocaleProvider>())),

@@ -3,146 +3,106 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:path_drawing/path_drawing.dart';
 
-/// The Ironpeak mark -- a two-peak mountain with a barbell across it ("iron"
-/// + "peak") -- and its motion, in one place. This file is the single source
-/// of truth: [AnimatedIronpeakLogo] draws it live, and
-/// `tool/generate_icons.dart` renders every static asset (Android adaptive
-/// icon + animated launch icon, legacy PNGs, web icons, Windows .ico) from the
-/// very same path strings, so the launcher icon, the splash animation and the
-/// in-app logo can never drift apart.
+import '../theme/app_colors.dart';
+import '../theme/launcher_icons.dart';
+
+/// The Ironpeak mark -- a single summit standing on a barbell ("iron" +
+/// "peak"), flat and in one color -- and its motion, in one place. This file
+/// is the single source of truth: [AnimatedIronpeakLogo] draws it live, and
+/// `tool/generate_icons.dart` renders every static asset (the 16 Android
+/// launcher variants, the themed monochrome layer, the animated launch icon,
+/// web/Windows/iOS/macOS icons) from the very same path strings and timing,
+/// so the launcher icon, the splash animation and the in-app logo can never
+/// drift apart.
 ///
 /// The glyph lives in a 100x100 "logo unit" box and every shape stays inside
-/// the circle of radius 50 around (50, 50) -- that circle is what maps onto
-/// the 66dp safe zone of Android's 108dp adaptive-icon canvas, i.e. what no
-/// launcher mask (circle, squircle, teardrop...) can ever crop.
+/// the circle of radius 50 around (50, 50), in every frame of the motion too
+/// -- that circle is what maps onto the 66dp safe zone of Android's 108dp
+/// adaptive-icon canvas, i.e. what no launcher mask can ever crop.
+///
+/// One color only, so the same shapes double as the Android 13+ themed icon
+/// and can take any accent: the backdrop/glyph colors come from
+/// [LauncherIconVariant] (launcher) or the live theme (in-app).
 abstract final class IronpeakMark {
   static const double unit = 100;
 
-  /// Glyph box as a fraction of the badge: 66dp of the 108dp adaptive canvas.
+  /// Glyph box as a fraction of the full adaptive canvas: 66dp of 108dp.
   static const double launcherGlyphFraction = 66 / 108;
 
-  /// Where there is no launcher mask (in-app badge, web, .ico) the glyph can
-  /// be a bit bigger.
-  static const double badgeGlyphFraction = 0.7;
+  /// Glyph box as a fraction of the part of the adaptive canvas a launcher
+  /// actually shows (the 72dp inside every mask) -- for previews that should
+  /// look exactly like the home-screen icon.
+  static const double maskedGlyphFraction = 66 / 72;
 
-  // --- colors ----------------------------------------------------------
-
-  // Brand green is the README mountain's #1FA76A (AppColors.green) -- lit
-  // from the top-left, deeper toward the bottom-right.
-  static const Color gradientStart = Color(0xFF38D08F);
-  static const Color gradientMid = Color(0xFF1FA76A);
-  static const Color gradientEnd = Color(0xFF0B6644);
-  static const double gradientMidStop = 0.55;
-
-  static const Color rock = Color(0xFF04382A);
-  static const double backPeakAlpha = 0.3;
-  static const double frontPeakAlpha = 0.42;
-  static const double shadowAlpha = 0.25;
-  static const Color snow = Color(0xFFFFFFFF);
-  static const Color iron = Color(0xFFFFFFFF);
-
-  /// Themed (monochrome) Android icons: the system tints this layer with a
-  /// single color, so the mountain gets partial coverage to stay readable
-  /// behind the bar.
-  static const double monoBackPeakAlpha = 0.35;
-  static const double monoFrontPeakAlpha = 0.6;
+  /// Where nothing masks the icon (in-app badge, favicon, .ico, iOS/macOS).
+  static const double badgeGlyphFraction = 0.72;
 
   // --- geometry (SVG path syntax, logo units) --------------------------
   //
-  // Plain SVG path data on purpose: Android's VectorDrawable `pathData`
-  // parses the identical syntax, so the generator pastes these strings
-  // straight into the XML.
+  // Plain absolute SVG path data on purpose: Android's VectorDrawable
+  // `pathData` parses the identical syntax, so the generator pastes these
+  // strings straight into the XML.
 
-  static const String backPeak = 'M74,24L88,82L34,82Z';
-  static const String frontPeak = 'M42,8L66,82L14,82Z';
-  static const String backSnow =
-      'M74,24L77.4,38L74.2,34.6L71,39L67.6,34.8L64.3,38Z';
-  static const String frontSnow =
-      'M42,8L49.1,30L44.5,35L41,29.8L37.5,34L33.7,30Z';
+  /// The bar, a pill across the whole mark: the horizon the summit stands on.
+  static const String bar =
+      'M10,53H90A4,4 0 0 1 94,57V57A4,4 0 0 1 90,61H10A4,4 0 0 1 6,57V57A4,4 0 0 1 10,53Z';
 
-  /// Where the bar rests (center line) and how far a rep lifts it.
-  static const double barbellRestY = 60;
-  static const double repHeight = 14;
-  static const double shadowOffset = 1.6;
+  /// Both plates, one subpath each.
+  static const String plates =
+      'M15,38H17A4,4 0 0 1 21,42V72A4,4 0 0 1 17,76H15A4,4 0 0 1 11,72V42A4,4 0 0 1 15,38Z'
+      'M83,38H85A4,4 0 0 1 89,42V72A4,4 0 0 1 85,76H83A4,4 0 0 1 79,72V42A4,4 0 0 1 83,38Z';
 
-  static final String barbell = _barbell(barbellRestY);
-  static final String barbellShadow = _barbell(barbellRestY + shadowOffset);
+  /// The summit: a gentle west face up to a rounded top, a steeper east face
+  /// down. Its base sits inside the bar.
+  static const String peak =
+      'M48.91,19.12A4,4 0 0 1 56.12,19.59L72.5,60.5L25.81,60.5Z';
 
-  /// Four-point glint, centered on the origin -- the glint group places it.
-  static const String spark =
-      'M0,-6.5Q0.9,-0.9 6.5,0Q0.9,0.9 0,6.5Q-0.9,0.9 -6.5,0Q-0.9,-0.9 0,-6.5Z';
-  static const Offset sparkAnchor = Offset(51, 13);
+  /// The bar's center line: the bar grows from (50, barCenterY) and the
+  /// plates snap open from it.
+  static const double barCenterY = 57;
 
-  /// Pivot for the mountain's pop-in and landing squash: the middle of its
-  /// base, so it squashes downward into the ground rather than around its
-  /// center.
-  static const Offset mountainPivot = Offset(50, 82);
-
-  static String _barbell(double cy) {
-    return [
-      _rrect(20, cy - 2.7, 60, 5.4, 1.6), // bar
-      _rrect(15.5, cy - 19, 8, 38, 3), // big plates
-      _rrect(76.5, cy - 19, 8, 38, 3),
-      _rrect(9, cy - 12.5, 5.5, 25, 2.4), // small plates
-      _rrect(85.5, cy - 12.5, 5.5, 25, 2.4),
-      _rrect(5, cy - 3.4, 4.6, 6.8, 1.6), // sleeve ends
-      _rrect(90.4, cy - 3.4, 4.6, 6.8, 1.6),
-    ].join();
-  }
-
-  static String _rrect(double x, double y, double w, double h, double r) {
-    final x2 = x + w;
-    final y2 = y + h;
-    final arc = 'A${_n(r)},${_n(r)} 0 0 1 ';
-    return 'M${_n(x + r)},${_n(y)}'
-        'H${_n(x2 - r)}$arc${_n(x2)},${_n(y + r)}'
-        'V${_n(y2 - r)}$arc${_n(x2 - r)},${_n(y2)}'
-        'H${_n(x + r)}$arc${_n(x)},${_n(y2 - r)}'
-        'V${_n(y + r)}$arc${_n(x + r)},${_n(y)}Z';
-  }
-
-  /// Compact number for path data: no trailing zeros, no "-0".
-  static String _n(double v) {
-    var s = v.toStringAsFixed(2);
-    if (s.contains('.')) {
-      s = s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
-    }
-    return s == '-0' ? '0' : s;
-  }
+  /// The bar's bottom edge. The summit is clipped below it, so it can rise
+  /// from behind the bar (and sink back behind it) like a sunrise.
+  static const double horizonY = 61;
 
   // Parsed once; paths are only ever drawn, never mutated.
-  static final Path _backPeakPath = parseSvgPathData(backPeak);
-  static final Path _frontPeakPath = parseSvgPathData(frontPeak);
-  static final Path _backSnowPath = parseSvgPathData(backSnow);
-  static final Path _frontSnowPath = parseSvgPathData(frontSnow);
-  static final Path _barbellPath = parseSvgPathData(barbell);
-  static final Path _barbellShadowPath = parseSvgPathData(barbellShadow);
-  static final Path _sparkPath = parseSvgPathData(spark);
+  static final Path _barPath = parseSvgPathData(bar);
+  static final Path _platesPath = parseSvgPathData(plates);
+  static final Path _peakPath = parseSvgPathData(peak);
 
   // --- motion ----------------------------------------------------------
   //
   // A pure function of time, so the live widget, the preview sheet and the
-  // Android launch animation (res/drawable/ic_splash_animated.xml, which
-  // generate_icons.dart writes with these same numbers) all play one script:
+  // Android launch animation (res/drawable*/ic_splash_animated.xml, which
+  // generate_icons.dart writes from these same numbers and Android's own
+  // interpolators) all play one script:
   //
-  //  * intro  -- the mountain pops in, the barbell drops onto it and
-  //              bounces (Android's own BounceInterpolator curve, so the
-  //              launch animation matches exactly), the peak squashes on the
-  //              first impact and a glint flashes.
-  //  * loop   -- one rep forever: lift, hold (glint at the top), controlled
-  //              lowering, a small landing squash, short rest.
+  //  * intro -- the bar grows out from its center, the plates snap open
+  //             with a little overshoot, and the summit rises from behind
+  //             the bar.
+  //  * loop  -- a calm breath: the summit sinks a few units behind the bar
+  //             and rises again, then rests.
 
-  static const double introSeconds = 0.64;
-  static const double loopSeconds = 3.0;
+  static const double introSeconds = 0.9;
+  static const double loopSeconds = 3.6;
 
-  static const double _dropFrom = 44;
-  static const double _dropStart = 0.08;
-  static const double _dropSeconds = 0.52;
+  /// How far below its resting place the summit starts: far enough that it
+  /// is entirely hidden behind the horizon at t = 0.
+  static const double peakRise = 46;
 
-  /// The BounceInterpolator's first impact: where the barbell first reaches
-  /// its rest position and the mountain should squash.
-  static const double impactSeconds =
-      _dropStart + _dropSeconds * (0.3535 / 1.1226);
+  /// How deep the summit sinks in the loop.
+  static const double breathDepth = 7;
+
+  // Intro timeline, seconds: (start, duration). The splash generator turns
+  // these into Android animators, so keep them in sync with the curves
+  // named next to them.
+  static const (double, double) barGrow = (0.0, 0.36); // fast_out_slow_in
+  static const (double, double) platesSnap = (0.18, 0.42); // overshoot
+  static const (double, double) peakRiseTiming = (0.32, 0.58); // fast_out_slow_in
+
+  // Loop timeline, seconds after the intro: (start, duration).
+  static const (double, double) breathDown = (1.4, 0.5); // accelerate_decelerate
+  static const (double, double) breathUp = (2.1, 0.8); // decelerate
 
   /// The pose at [seconds] since the logo appeared. Past the intro it
   /// repeats every [loopSeconds].
@@ -152,144 +112,136 @@ abstract final class IronpeakMark {
   }
 
   static LogoPose _intro(double t) {
-    final pop = _seg(t, 0, 0.24);
-    final fade = _seg(t, 0, 0.18);
-    final drop = _seg(t, _dropStart, _dropSeconds);
-
-    final squashDown = _seg(t, impactSeconds, 0.07);
-    final squashUp = _seg(t, impactSeconds + 0.07, 0.12);
-    final squash =
-        1 - 0.045 * _decel(squashDown) * (1 - _decel(squashUp));
-
-    final glintUp = _seg(t, 0.26, 0.14);
-    final glintDown = _seg(t, 0.40, 0.24);
-
     return LogoPose(
-      mountainAlpha: Curves.fastOutSlowIn.transform(fade),
-      mountainScale: 0.86 + 0.14 * Curves.fastOutSlowIn.transform(pop),
-      mountainSquash: squash,
-      barbellDy: -_dropFrom * (1 - _androidBounce(drop)),
-      barbellAlpha: _seg(t, _dropStart, 0.08),
-      sparkScale: 1.15 * _decel(glintUp) * (1 - _accel(glintDown)),
-      sparkTurn: _seg(t, 0.26, 0.38) * math.pi / 2,
+      barScale: Curves.fastOutSlowIn.transform(_seg(t, barGrow)),
+      plateScale: overshoot(_seg(t, platesSnap)),
+      peakDy: peakRise *
+          (1 - Curves.fastOutSlowIn.transform(_seg(t, peakRiseTiming))),
     );
   }
 
   static LogoPose _loop(double u) {
-    final up = Curves.easeInOutCubic.transform(_seg(u, 0.55, 0.70));
-    final down = Curves.easeInOutCubic.transform(_seg(u, 1.65, 0.65));
-    final land = _seg(u, 2.30, 0.30);
-    final glint = _seg(u, 1.20, 0.50);
-    return LogoPose(
-      barbellDy: -repHeight * (up - down),
-      mountainSquash: 1 - 0.02 * math.sin(math.pi * land),
-      sparkScale: math.sin(math.pi * glint),
-      sparkTurn: glint * math.pi / 2,
-    );
+    final down = accelerateDecelerate(_seg(u, breathDown));
+    final up = decelerate(_seg(u, breathUp));
+    return LogoPose(peakDy: breathDepth * (down - up));
   }
 
-  static double _seg(double t, double start, double seconds) =>
-      math.min(1.0, math.max(0.0, (t - start) / seconds));
-
-  static double _decel(double x) => 1 - (1 - x) * (1 - x);
-  static double _accel(double x) => x * x;
-
-  /// android.view.animation.BounceInterpolator, verbatim.
-  static double _androidBounce(double t) {
-    double bounce(double x) => x * x * 8;
-    final x = t * 1.1226;
-    if (x < 0.3535) return bounce(x);
-    if (x < 0.7408) return bounce(x - 0.54719) + 0.7;
-    if (x < 0.9644) return bounce(x - 0.8526) + 0.9;
-    return bounce(x - 1.0435) + 0.95;
+  static double _seg(double t, (double, double) timing) {
+    final (start, seconds) = timing;
+    return math.min(1.0, math.max(0.0, (t - start) / seconds));
   }
+
+  // Android's interpolators, verbatim, so the in-app motion matches the
+  // launch animation exactly (fast_out_slow_in is Curves.fastOutSlowIn).
+
+  /// android.view.animation.OvershootInterpolator, default tension 2.
+  static double overshoot(double t) {
+    const tension = 2.0;
+    final s = t - 1;
+    return s * s * ((tension + 1) * s + tension) + 1;
+  }
+
+  /// android.view.animation.AccelerateDecelerateInterpolator.
+  static double accelerateDecelerate(double t) =>
+      math.cos((t + 1) * math.pi) / 2 + 0.5;
+
+  /// android.view.animation.DecelerateInterpolator, factor 1.
+  static double decelerate(double t) => 1 - (1 - t) * (1 - t);
 
   // --- painting --------------------------------------------------------
 
-  /// Paints the badge (per [shape]) and the glyph in [pose], centered in the
-  /// biggest square that fits [size].
+  /// Paints the badge (per [shape], filled with [background]) and the glyph
+  /// in [glyph] color and [pose], centered in the biggest square that fits
+  /// [size].
   ///
-  /// [monochrome] draws the glyph in black with partial alpha only, no badge
-  /// and no shadow -- the layer a themed Android icon is tinted from.
+  /// [border] adds a hairline around a rounded badge (a light badge on a
+  /// light page needs one). [monochrome] draws the glyph alone in black, no
+  /// badge -- the layer a themed Android icon is tinted from.
   static void paint(
     Canvas canvas,
     Size size, {
     LogoPose pose = LogoPose.rest,
     LogoShape shape = LogoShape.roundedSquare,
+    Color background = LauncherIcons.lightBackdrop,
+    Color glyph = const Color(0xFF2F6FEB),
+    Color? border,
+    double cornerFraction = 0.22,
     bool monochrome = false,
     double glyphFraction = badgeGlyphFraction,
   }) {
     final side = math.min(size.width, size.height);
     canvas.save();
     canvas.translate((size.width - side) / 2, (size.height - side) / 2);
-    if (!monochrome) _paintBadge(canvas, side, shape);
+    if (!monochrome) {
+      _paintBadge(canvas, side, shape, background, border, cornerFraction);
+    }
     final inset = side * (1 - glyphFraction) / 2;
     canvas.translate(inset, inset);
     canvas.scale(side * glyphFraction / unit);
-    _paintGlyph(canvas, pose, monochrome);
+    _paintGlyph(canvas, pose, monochrome ? const Color(0xFF000000) : glyph);
     canvas.restore();
   }
 
-  static void _paintBadge(Canvas canvas, double side, LogoShape shape) {
+  static void _paintBadge(
+    Canvas canvas,
+    double side,
+    LogoShape shape,
+    Color background,
+    Color? border,
+    double cornerFraction,
+  ) {
     if (shape == LogoShape.none) return;
     final rect = Offset.zero & Size.square(side);
-    final paint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [gradientStart, gradientMid, gradientEnd],
-        stops: [0, gradientMidStop, 1],
-      ).createShader(rect);
-    if (shape == LogoShape.roundedSquare) {
+    final fill = Paint()..color = background;
+    if (shape == LogoShape.square) {
+      canvas.drawRect(rect, fill);
+      return;
+    }
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(side * cornerFraction));
+    canvas.drawRRect(rrect, fill);
+    if (border != null) {
       canvas.drawRRect(
-          RRect.fromRectAndRadius(rect, Radius.circular(side * 0.22)), paint);
-    } else {
-      canvas.drawRect(rect, paint);
+        rrect.deflate(0.5),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = border,
+      );
     }
   }
 
-  static void _paintGlyph(Canvas canvas, LogoPose pose, bool mono) {
-    Paint fill(Color color, double alpha) => Paint()
+  static void _paintGlyph(Canvas canvas, LogoPose pose, Color color) {
+    final fill = Paint()
       ..isAntiAlias = true
-      ..color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
+      ..color = color;
 
-    final ink = mono ? const Color(0xFF000000) : null;
-
-    // Mountain: pops in from the base and squashes into it on impact.
-    canvas.save();
-    canvas.translate(mountainPivot.dx, mountainPivot.dy);
-    canvas.scale(
-        pose.mountainScale, pose.mountainScale * pose.mountainSquash);
-    canvas.translate(-mountainPivot.dx, -mountainPivot.dy);
-    final ma = pose.mountainAlpha;
-    canvas.drawPath(
-        _backPeakPath,
-        fill(ink ?? rock, (mono ? monoBackPeakAlpha : backPeakAlpha) * ma));
-    canvas.drawPath(
-        _frontPeakPath,
-        fill(ink ?? rock, (mono ? monoFrontPeakAlpha : frontPeakAlpha) * ma));
-    canvas.drawPath(_backSnowPath, fill(ink ?? snow, 0.9 * ma));
-    canvas.drawPath(_frontSnowPath, fill(ink ?? snow, ma));
-    canvas.restore();
-
-    // Barbell, with a soft drop shadow so it lifts off the mountain.
-    canvas.save();
-    canvas.translate(0, pose.barbellDy);
-    final ba = pose.barbellAlpha;
-    if (!mono) {
-      canvas.drawPath(
-          _barbellShadowPath, fill(const Color(0xFF000000), shadowAlpha * ba));
-    }
-    canvas.drawPath(_barbellPath, fill(ink ?? iron, ba));
-    canvas.restore();
-
-    // Glint beside the summit.
-    if (pose.sparkScale > 0.001) {
+    // Summit: rises from (and sinks back) behind the bar, so it is clipped
+    // at the bar's bottom edge.
+    if (pose.peakDy < peakRise) {
       canvas.save();
-      canvas.translate(sparkAnchor.dx, sparkAnchor.dy);
-      canvas.rotate(pose.sparkTurn);
-      canvas.scale(pose.sparkScale);
-      canvas.drawPath(_sparkPath, fill(ink ?? snow, 1));
+      canvas.clipRect(const Rect.fromLTRB(-unit, -unit, 2 * unit, horizonY));
+      canvas.translate(0, pose.peakDy);
+      canvas.drawPath(_peakPath, fill);
+      canvas.restore();
+    }
+
+    // Bar: grows out from its center.
+    if (pose.barScale > 0.001) {
+      canvas.save();
+      canvas.translate(50, barCenterY);
+      canvas.scale(pose.barScale, 1);
+      canvas.translate(-50, -barCenterY);
+      canvas.drawPath(_barPath, fill);
+      canvas.restore();
+    }
+
+    // Plates: snap open from the bar's center line.
+    if (pose.plateScale > 0.001) {
+      canvas.save();
+      canvas.translate(0, barCenterY);
+      canvas.scale(1, pose.plateScale);
+      canvas.translate(0, -barCenterY);
+      canvas.drawPath(_platesPath, fill);
       canvas.restore();
     }
   }
@@ -304,7 +256,7 @@ enum LogoShape {
   /// -- the platform applies its own mask).
   square,
 
-  /// Rounded square (in-app badge, legacy Android PNGs, favicon, .ico).
+  /// Rounded square (in-app badge, launcher preview, favicon, .ico).
   roundedSquare,
 }
 
@@ -312,52 +264,58 @@ enum LogoShape {
 @immutable
 class LogoPose {
   const LogoPose({
-    this.mountainAlpha = 1,
-    this.mountainScale = 1,
-    this.mountainSquash = 1,
-    this.barbellDy = 0,
-    this.barbellAlpha = 1,
-    this.sparkScale = 0,
-    this.sparkTurn = 0,
+    this.barScale = 1,
+    this.plateScale = 1,
+    this.peakDy = 0,
   });
 
   /// The resting logo: what a static icon shows.
   static const LogoPose rest = LogoPose();
 
-  final double mountainAlpha;
-  final double mountainScale;
+  /// Horizontal scale of the bar around its center (0 = not there yet).
+  final double barScale;
 
-  /// Extra vertical scale of the mountain around its base (1 = none).
-  final double mountainSquash;
+  /// Vertical scale of the plates around the bar's center line; overshoots
+  /// slightly past 1 while they snap open.
+  final double plateScale;
 
-  /// Barbell offset from its resting height, in logo units (negative = up).
-  final double barbellDy;
-  final double barbellAlpha;
-
-  /// 0 hides the glint; ~1 is full size.
-  final double sparkScale;
-
-  /// Glint rotation, radians.
-  final double sparkTurn;
+  /// Summit offset below its resting place, in logo units (0 = rest,
+  /// [IronpeakMark.peakRise] = entirely behind the bar).
+  final double peakDy;
 }
 
-/// The Ironpeak badge, alive: pops in and drops its barbell once, then does a
-/// rep forever -- the closest an app can get to the iOS Clock icon's moving
-/// hands, since neither Android nor iOS lets a third-party launcher icon
-/// animate.
+/// The app's palette for [context], or the stock light/dark one when a
+/// theme without the [AppColors] extension is in charge (tests, previews).
+AppColors _colorsOf(BuildContext context) {
+  final theme = Theme.of(context);
+  return theme.extension<AppColors>() ??
+      (theme.brightness == Brightness.dark ? AppColors.dark : AppColors.light);
+}
+
+/// The Ironpeak badge, alive: builds itself once (bar, plates, summit
+/// rising), then breathes calmly forever -- the closest an app can get to a
+/// moving icon, since neither Android nor iOS lets a third-party launcher
+/// icon animate.
 ///
-/// Honors the OS "remove animations" setting (shows the resting pose), only
-/// repaints its own tiny canvas, and pauses with its route/tab like any other
-/// ticker. With [replayOnTap] a tap restarts the intro.
+/// Follows the theme: the badge takes the card color with a hairline border
+/// and the glyph the accent, so it shows the user's exact colors in light,
+/// dark and custom mode ([background]/[glyph] override them). Honors the OS
+/// "remove animations" setting (shows the resting pose), only repaints its
+/// own tiny canvas, and pauses with its route/tab like any other ticker.
+/// With [replayOnTap] a tap restarts the intro.
 class AnimatedIronpeakLogo extends StatefulWidget {
   const AnimatedIronpeakLogo({
     super.key,
     this.size = 96,
     this.replayOnTap = false,
+    this.background,
+    this.glyph,
   });
 
   final double size;
   final bool replayOnTap;
+  final Color? background;
+  final Color? glyph;
 
   @override
   State<AnimatedIronpeakLogo> createState() => _AnimatedIronpeakLogoState();
@@ -414,10 +372,16 @@ class _AnimatedIronpeakLogoState extends State<AnimatedIronpeakLogo>
 
   @override
   Widget build(BuildContext context) {
+    final colors = _colorsOf(context);
     Widget logo = RepaintBoundary(
       child: CustomPaint(
         size: Size.square(widget.size),
-        painter: _LogoPainter(_controller),
+        painter: _LogoPainter(
+          _controller,
+          background: widget.background ?? colors.card,
+          glyph: widget.glyph ?? colors.accent,
+          border: colors.line,
+        ),
       ),
     );
     if (widget.replayOnTap) {
@@ -436,15 +400,79 @@ class _AnimatedIronpeakLogoState extends State<AnimatedIronpeakLogo>
 }
 
 class _LogoPainter extends CustomPainter {
-  _LogoPainter(this.clock) : super(repaint: clock);
+  _LogoPainter(
+    this.clock, {
+    required this.background,
+    required this.glyph,
+    required this.border,
+  }) : super(repaint: clock);
 
   final Animation<double> clock;
+  final Color background;
+  final Color glyph;
+  final Color border;
 
   @override
   void paint(Canvas canvas, Size size) {
-    IronpeakMark.paint(canvas, size, pose: IronpeakMark.poseAt(clock.value));
+    IronpeakMark.paint(
+      canvas,
+      size,
+      pose: IronpeakMark.poseAt(clock.value),
+      background: background,
+      glyph: glyph,
+      border: border,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant _LogoPainter old) => old.clock != clock;
+  bool shouldRepaint(covariant _LogoPainter old) =>
+      old.clock != clock ||
+      old.background != background ||
+      old.glyph != glyph ||
+      old.border != border;
+}
+
+/// What the home screen shows for [variant]: the visible part of the
+/// adaptive icon under a rounded mask, glyph at its real launcher scale.
+/// Static on purpose -- launcher icons can't move.
+class LauncherIconPreview extends StatelessWidget {
+  const LauncherIconPreview({super.key, required this.variant, this.size = 44});
+
+  final LauncherIconVariant variant;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = _colorsOf(context);
+    return ExcludeSemantics(
+      child: CustomPaint(
+        size: Size.square(size),
+        painter: _LauncherIconPainter(variant, border: colors.line),
+      ),
+    );
+  }
+}
+
+class _LauncherIconPainter extends CustomPainter {
+  _LauncherIconPainter(this.variant, {required this.border});
+
+  final LauncherIconVariant variant;
+  final Color border;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    IronpeakMark.paint(
+      canvas,
+      size,
+      background: variant.background,
+      glyph: variant.glyph,
+      border: border,
+      cornerFraction: 0.3,
+      glyphFraction: IronpeakMark.maskedGlyphFraction,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _LauncherIconPainter old) =>
+      old.variant != variant || old.border != border;
 }

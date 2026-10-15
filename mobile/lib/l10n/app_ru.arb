@@ -547,5 +547,10 @@
   "holdSecondsLogged": "{seconds} сек удержано",
   "cardioSetLogged": "{minutes} мин · {speed} км/ч",
   "toastHoldLogged": "Удержание сохранено",
-  "toastCardioLogged": "Кардио-сет сохранён"
+  "toastCardioLogged": "Кардио-сет сохранён",
+  "settingsAppIconTitle": "Значок приложения",
+  "settingsAppIconAdaptive": "Подстраивать под внешний вид",
+  "settingsAppIconAdaptiveHint": "Светлый или тёмный, как приложение, в вашем основном цвете",
+  "settingsAppIconPending": "Изменится, когда вы выйдете из приложения",
+  "settingsAppIconFooter": "Android меняет значок, когда вы выходите из приложения (на главный экран или в недавние приложения), и при этом закрывает его. Некоторым лаунчерам нужно несколько секунд, чтобы показать новый."
 }

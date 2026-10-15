@@ -547,5 +547,10 @@
   "holdSecondsLogged": "{seconds} sn tutuldu",
   "cardioSetLogged": "{minutes} dk · {speed} km/sa",
   "toastHoldLogged": "Tutma süresi kaydedildi",
-  "toastCardioLogged": "Kardiyo seti kaydedildi"
+  "toastCardioLogged": "Kardiyo seti kaydedildi",
+  "settingsAppIconTitle": "Uygulama simgesi",
+  "settingsAppIconAdaptive": "Görünüme uydur",
+  "settingsAppIconAdaptiveHint": "Uygulama gibi açık veya koyu, birincil renginde",
+  "settingsAppIconPending": "Uygulamadan çıktığında değişir",
+  "settingsAppIconFooter": "Android simgeyi uygulamadan çıktığında (ana ekran veya son uygulamalar) değiştirir ve bu sırada uygulamayı kapatır. Bazı başlatıcıların yenisini göstermesi birkaç saniye sürer."
 }

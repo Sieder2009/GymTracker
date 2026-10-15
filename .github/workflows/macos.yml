@@ -37,6 +37,46 @@ jobs:
       # plugin this app uses already builds clean for macOS out of the box.
       - run: flutter create --org com.ironpeak --platforms=macos .
 
+      # Same as the app icon step in ios.yml: the regenerated macos/ comes
+      # with Flutter's placeholder icon, the real set is committed in
+      # tool/branding/macos/ and swaps in here. macOS doesn't mask app icons
+      # the way iOS does, so those PNGs carry the rounded-square shape
+      # themselves, one image per size (the slots of Flutter's template).
+      - name: Install the app icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=tool/branding/macos/AppIcon.appiconset
+          catalog=macos/Runner/Assets.xcassets
+          if [ ! -f "$src/Contents.json" ]; then
+            echo "::error::$src/Contents.json is missing -- there is no app icon set to install."
+            exit 1
+          fi
+          if [ ! -d "$catalog" ]; then
+            echo "::error::flutter create made no $catalog -- its macOS template changed, the icon has nowhere to go."
+            exit 1
+          fi
+          # sort -u: Flutter's template uses most images for two slots
+          # (e.g. app_icon_32.png is 16x16@2x and 32x32@1x).
+          images=$(grep -o '"filename"[[:space:]]*:[[:space:]]*"[^"]*"' "$src/Contents.json" | sed 's/.*"\([^"]*\)"$/\1/' | sort -u || true)
+          if [ -z "$images" ]; then
+            echo "::error::$src/Contents.json names no images."
+            exit 1
+          fi
+          missing=0
+          for image in $images; do
+            if [ ! -f "$src/$image" ]; then
+              echo "::error::$src/$image is named in Contents.json but not committed."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          rm -rf "$catalog/AppIcon.appiconset"
+          cp -R "$src" "$catalog/AppIcon.appiconset"
+          ls -l "$catalog/AppIcon.appiconset"
+
       # flutter create also (re-)adds its default counter-app template
       # test, which references a `MyApp` class that doesn't exist in this
       # project (ours is `IronpeakApp`) — remove it, our own test/ files

@@ -547,5 +547,10 @@
   "holdSecondsLogged": "{seconds}s tenuti",
   "cardioSetLogged": "{minutes} min · {speed} km/h",
   "toastHoldLogged": "Tenuta registrata",
-  "toastCardioLogged": "Serie cardio registrata"
+  "toastCardioLogged": "Serie cardio registrata",
+  "settingsAppIconTitle": "Icona dell'app",
+  "settingsAppIconAdaptive": "Segui l'aspetto",
+  "settingsAppIconAdaptiveHint": "Chiara o scura come l'app, nel tuo colore primario",
+  "settingsAppIconPending": "Cambierà quando esci dall'app",
+  "settingsAppIconFooter": "Android cambia l'icona quando esci dall'app (schermata Home o app recenti) e così facendo la chiude. Alcuni launcher impiegano qualche secondo a mostrare quella nuova."
 }

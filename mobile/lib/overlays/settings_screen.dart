@@ -15,6 +15,7 @@ import '../data/constants.dart';
 import '../data/effort_scale.dart';
 import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
+import '../services/launcher_icon_service.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
 import '../state/athlete_settings_provider.dart';
@@ -271,21 +272,30 @@ class _SettingsGroup extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: Column(children: children),
         ),
-        if (footer != null) ...[
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              footer,
-              style: TextStyle(
-                color: Theme.of(context).extension<AppColors>()!.mut,
-                fontSize: 11.5,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
+        if (footer != null) _GroupFooter(footer),
       ],
+    );
+  }
+}
+
+/// [_SettingsGroup]'s footer on its own, for a card built differently.
+class _GroupFooter extends StatelessWidget {
+  const _GroupFooter(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Theme.of(context).extension<AppColors>()!.mut,
+          fontSize: 11.5,
+          height: 1.35,
+        ),
+      ),
     );
   }
 }
@@ -627,6 +637,97 @@ class _AppearanceSection extends StatelessWidget {
             ),
           ),
         ),
+        const _LauncherIconBlock(),
+      ],
+    );
+  }
+}
+
+/// The home-screen icon, which follows the appearance chosen above (see
+/// LauncherIconService). Only Android release builds can switch it, so
+/// everywhere else this block doesn't exist. The preview shows the icon the
+/// home screen is headed for; Android only swaps it once the user leaves
+/// the app, and the hint under the switch says so in the meantime, so a
+/// still-unchanged home screen doesn't look like the setting failed.
+class _LauncherIconBlock extends StatelessWidget {
+  const _LauncherIconBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    final icons = context.watch<LauncherIconService>();
+    if (!icons.supported) return const SizedBox.shrink();
+
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t.settingsAppIconTitle, style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: KeyedSubtree(
+                        key: ValueKey(icons.desired),
+                        child: LauncherIconPreview(variant: icons.desired, size: 44),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            t.settingsAppIconAdaptive,
+                            style: TextStyle(color: colors.txt, fontSize: 14.5, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            t.settingsAppIconAdaptiveHint,
+                            style: TextStyle(color: colors.mut, fontSize: 12.5, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch.adaptive(value: icons.adaptive, onChanged: icons.setAdaptive),
+                  ],
+                ),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  alignment: Alignment.topLeft,
+                  child: icons.pending
+                      ? Padding(
+                          // Under the label, past the 44 preview + 12 gap.
+                          padding: const EdgeInsets.only(left: 56, top: 10),
+                          child: Row(
+                            children: [
+                              Icon(Icons.schedule_rounded, size: 14, color: colors.mut),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  t.settingsAppIconPending,
+                                  style: TextStyle(color: colors.mut, fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : const SizedBox(width: double.infinity),
+                ),
+              ],
+            ),
+          ),
+        ),
+        _GroupFooter(t.settingsAppIconFooter),
       ],
     );
   }

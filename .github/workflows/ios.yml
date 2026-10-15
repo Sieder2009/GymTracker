@@ -34,6 +34,46 @@ jobs:
       # installs, matching how android.yml generates android/.
       - run: flutter create --org com.ironpeak --platforms=ios .
 
+      # Being regenerated, ios/ always comes with Flutter's placeholder app
+      # icon. The real icon set is committed in tool/branding/ios/ and swaps
+      # in here: one 1024 px image per appearance (default, plus iOS 18's
+      # dark and tinted looks), from which Xcode derives every smaller size.
+      # Every image its Contents.json names must be there -- this fails
+      # with the missing file's name rather than leaving it to actool deep
+      # inside the Xcode build.
+      - name: Install the app icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=tool/branding/ios/AppIcon.appiconset
+          catalog=ios/Runner/Assets.xcassets
+          if [ ! -f "$src/Contents.json" ]; then
+            echo "::error::$src/Contents.json is missing -- there is no app icon set to install."
+            exit 1
+          fi
+          if [ ! -d "$catalog" ]; then
+            echo "::error::flutter create made no $catalog -- its iOS template changed, the icon has nowhere to go."
+            exit 1
+          fi
+          images=$(grep -o '"filename"[[:space:]]*:[[:space:]]*"[^"]*"' "$src/Contents.json" | sed 's/.*"\([^"]*\)"$/\1/' | sort -u || true)
+          if [ -z "$images" ]; then
+            echo "::error::$src/Contents.json names no images."
+            exit 1
+          fi
+          missing=0
+          for image in $images; do
+            if [ ! -f "$src/$image" ]; then
+              echo "::error::$src/$image is named in Contents.json but not committed."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          rm -rf "$catalog/AppIcon.appiconset"
+          cp -R "$src" "$catalog/AppIcon.appiconset"
+          ls -l "$catalog/AppIcon.appiconset"
+
       # flutter create also (re-)adds its default counter-app template
       # test, which references a `MyApp` class that doesn't exist in this
       # project (ours is `IronpeakApp`) — remove it, our own test/ files

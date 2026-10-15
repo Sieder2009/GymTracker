@@ -547,5 +547,10 @@
   "holdSecondsLogged": "{seconds}s vastgehouden",
   "cardioSetLogged": "{minutes} min · {speed} km/u",
   "toastHoldLogged": "Vasthoudtijd opgeslagen",
-  "toastCardioLogged": "Cardioset opgeslagen"
+  "toastCardioLogged": "Cardioset opgeslagen",
+  "settingsAppIconTitle": "App-icoon",
+  "settingsAppIconAdaptive": "Weergave volgen",
+  "settingsAppIconAdaptiveHint": "Licht of donker zoals de app, in je primaire kleur",
+  "settingsAppIconPending": "Verandert zodra je de app verlaat",
+  "settingsAppIconFooter": "Android wisselt het icoon zodra je de app verlaat (startscherm of recente apps) en sluit de app daarbij. Sommige launchers hebben een paar seconden nodig om het nieuwe te tonen."
 }

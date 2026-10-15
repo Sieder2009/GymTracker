@@ -17,6 +17,7 @@ import '../l10n/app_localizations.dart';
 import '../models/exercise.dart';
 import '../models/exercise_log_mode.dart';
 import '../models/exercise_set.dart';
+import '../services/launcher_icon_service.dart';
 import '../services/notification_service.dart';
 import '../state/big_lifts_provider.dart';
 import '../state/effort_scale_provider.dart';
@@ -180,6 +181,8 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     // this screen's lifetime (enabled here, disabled in dispose), not
     // requested app-wide.
     unawaited(WakelockPlus.enable());
+    // An icon switch closes the app, and this session's position isn't saved.
+    LauncherIconService.holdSwitch();
   }
 
   @override
@@ -187,6 +190,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
     unawaited(WakelockPlus.disable());
+    LauncherIconService.releaseSwitch();
     // Force-closing mid-rest (back gesture, session-overview navigation
     // away, ...) shouldn't leave a "rest over" ping scheduled for a
     // workout the user already left.

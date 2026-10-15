@@ -227,6 +227,11 @@ section, without leaving the tab.
   background sync.
 - Custom primary and secondary colors (full color picker), automatic
   system light/dark mode with a manual override.
+- A minimalist app icon (a summit standing on a barbell) that follows
+  the app's look: light or dark backdrop and your primary color. On
+  Android the home-screen icon switches between 16 variants once you
+  leave the app (custom colors snap to the nearest one; can be turned
+  off in Settings); iOS 18 adds its own dark and tinted versions.
 - 10 languages: German, English, Spanish, French, Italian, Portuguese,
   Dutch, Turkish, Polish, Russian.
 - A guided onboarding flow on first launch, including the plan template
@@ -341,9 +346,11 @@ mobile/
     widgets/              Reusable UI building blocks (charts, editors, …)
   test/                  Unit/widget tests
   tool/seed_demo_data.dart  Developer script: fills demo data into the local DB
-  tool/generate_icons.dart  Developer script: re-renders every app icon (Android
-                             adaptive + animated launch icon, web, Windows .ico)
-                             from lib/widgets/ironpeak_logo.dart
+  tool/generate_icons.dart  Developer script: re-renders every app icon (the 16
+                             Android launcher variants and their release-only
+                             aliases, animated launch icon, web, Windows .ico,
+                             iOS/macOS asset PNGs) from lib/widgets/ironpeak_logo.dart
+                             and lib/theme/launcher_icons.dart
                              (`flutter test tool/generate_icons.dart`)
 website/                 The presentation site on GitHub Pages — plain
                          HTML/CSS/JS, deployed by .github/workflows/pages.yml

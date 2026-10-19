@@ -565,7 +565,7 @@
   "labelDailyReminder": "Daily workout reminder",
   "labelReminderTime": "Reminder time",
   "reminderNotSupported": "Reminders aren't available on this device.",
-  "notificationTitle": "Ironpeak Fitness",
+  "notificationTitle": "Kilo",
   "notificationBody": "Time to train.",
   "notificationRestOverTitle": "Rest over!",
   "notificationRestOverBody": "Time for your next set.",
@@ -679,7 +679,7 @@
     }
   },
   "actionSkip": "Skip",
-  "titleOnboardingWelcome": "Welcome to Ironpeak Fitness",
+  "titleOnboardingWelcome": "Welcome to Kilo",
   "bodyOnboardingWelcome": "Training plans, strength progress, and muscle-group balance — all stored locally on your device, no account needed.",
   "actionGetStarted": "Get started",
   "titleOnboardingPlan": "Choose a training plan",

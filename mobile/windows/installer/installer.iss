@@ -1,4 +1,4 @@
-; Inno Setup script for Ironpeak Fitness (Windows).
+; Inno Setup script for Kilo (Windows; formerly Ironpeak Fitness).
 ;
 ; Before this file existed, windows.yml only produced a plain .zip of the
 ; Release folder — "download the update, tap install" then just opened
@@ -6,7 +6,7 @@
 ; compiles into a real setup.exe: a normal install wizard, a Start Menu
 ; shortcut, a proper uninstaller registered in "Apps & Features", and —
 ; via CloseApplications/RestartApplications below — it closes a currently
-; running Ironpeak Fitness before installing and relaunches it afterwards,
+; running Kilo before installing and relaunches it afterwards,
 ; which is what actually makes UpdateProvider's "download -> install ->
 ; it's the new version" flow true on Windows.
 ;
@@ -19,8 +19,8 @@
   #define MyAppVersion "0.0.0"
 #endif
 
-#define MyAppName "Ironpeak Fitness"
-#define MyAppPublisher "Ironpeak Fitness"
+#define MyAppName "Kilo"
+#define MyAppPublisher "Kilo"
 #define MyAppExeName "ironpeak_mobile.exe"
 ; Fixed and must never change between releases -- this is what lets Inno
 ; Setup recognize "this is an upgrade of an existing install" (same

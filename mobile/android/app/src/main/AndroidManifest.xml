@@ -9,7 +9,7 @@
          and every one of those features silently no-ops. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Health Connect: read-only steps/weight sync into the app, plus
-         writing finished Ironpeak workouts back out — see
+         writing finished Kilo workouts back out — see
          lib/services/health_service.dart. Scoped to only what's actually
          used (no location/GPS route permissions). -->
     <uses-permission android:name="android.permission.health.READ_STEPS"/>
@@ -34,7 +34,7 @@
          on "Installieren" would just silently fail. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
-        android:label="Ironpeak Fitness"
+        android:label="Kilo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

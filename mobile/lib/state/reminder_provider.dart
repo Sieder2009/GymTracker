@@ -62,7 +62,7 @@ class ReminderProvider extends ChangeNotifier {
   Future<void> _arm({String? title, String? body}) {
     return _notifications.scheduleDaily(
       _time,
-      title: title ?? 'Ironpeak Fitness',
+      title: title ?? 'Kilo',
       body: body ?? 'Time to train.',
     );
   }

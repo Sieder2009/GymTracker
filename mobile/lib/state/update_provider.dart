@@ -246,7 +246,7 @@ class UpdateProvider extends ChangeNotifier {
     final locale = Locale(kSupportedLocales.contains(languageCode) ? languageCode : 'en');
     final t = lookupAppLocalizations(locale);
     await _notifications.showUpdateReady(
-      title: 'Ironpeak Fitness',
+      title: 'Kilo',
       body: t.labelUpdateReady(version),
     );
   }

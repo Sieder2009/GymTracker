@@ -2,7 +2,7 @@
 
 <img src="https://api.iconify.design/lucide:mountain-snow.svg?color=%231fa76a" width="56" height="56" alt=""/>
 
-# Ironpeak Fitness
+# Kilo
 
 **A workout planner, strength tracker, and deep analytics tool — built as a
 native app for Android, iOS, Windows, and macOS.** All your data stays
@@ -18,7 +18,7 @@ native app for Android, iOS, Windows, and macOS.** All your data stays
 ![Local-only](https://img.shields.io/badge/Data-100%25%20local-1fa76a)
 ![Latest Release](https://img.shields.io/github/v/release/Sieder2009/GymTraker?color=1fa76a&label=latest%20release)
 
-[![Website](https://img.shields.io/badge/Website-Ironpeak%20Fitness-1fa76a?style=for-the-badge&labelColor=06140f)](https://sieder2009.github.io/GymTracker/)
+[![Website](https://img.shields.io/badge/Website-Kilo-1fa76a?style=for-the-badge&labelColor=06140f)](https://sieder2009.github.io/GymTracker/)
 
 </div>
 
@@ -26,7 +26,7 @@ native app for Android, iOS, Windows, and macOS.** All your data stays
 
 ## <img src="https://api.iconify.design/lucide:list.svg?color=%231fa76a" width="20" height="20" alt=""/> Contents
 
-- [What is Ironpeak Fitness?](#what-is-ironpeak-fitness)
+- [What is Kilo?](#what-is-kilo)
 - [Screenshots](#screenshots)
 - [Features](#features)
   - [Training](#training)
@@ -44,9 +44,9 @@ native app for Android, iOS, Windows, and macOS.** All your data stays
 
 ---
 
-## <img src="https://api.iconify.design/lucide:info.svg?color=%231fa76a" width="20" height="20" alt=""/> What is Ironpeak Fitness?
+## <img src="https://api.iconify.design/lucide:info.svg?color=%231fa76a" width="20" height="20" alt=""/> What is Kilo?
 
-Ironpeak Fitness is one single, native **Flutter app**. It is not a web app
+Kilo (formerly Ironpeak Fitness) is one single, native **Flutter app**. It is not a web app
 with a separate build, and not an Electron app. One codebase runs on
 **Android, iOS, Windows, and macOS**. The app is built around **four main
 tabs**, so you don't need to search through many menus:
@@ -227,8 +227,8 @@ section, without leaving the tab.
   background sync.
 - Custom primary and secondary colors (full color picker), automatic
   system light/dark mode with a manual override.
-- A minimalist app icon (a summit standing on a barbell) that follows
-  the app's look: light or dark backdrop and your primary color. On
+- A minimalist barbell app icon that follows the app's look: in
+  light mode a tile in your primary color, in dark mode a dark tile. On
   Android the home-screen icon switches between 16 variants once you
   leave the app (custom colors snap to the nearest one; can be turned
   off in Settings); iOS 18 adds its own dark and tinted versions.
@@ -413,7 +413,7 @@ So treat the animations as third-party content licensed neither to this
 project nor to you. Before a store release or any commercial use, clear
 it with the rights holder.
 
-The assignment of Ironpeak's exercises to the animations
+The assignment of Kilo's exercises to the animations
 (`mobile/lib/data/exercise_gifs.dart`) and all of the loading, caching
 and display code are original work for this project. No code was copied
 from openGym or the dataset.

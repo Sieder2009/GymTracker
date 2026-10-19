@@ -113,7 +113,7 @@ class IronpeakApp extends StatelessWidget {
                 )
               : null;
           return MaterialApp(
-            title: 'Ironpeak Fitness',
+            title: 'Kilo',
             debugShowCheckedModeBanner: false,
             theme: customTheme ??
                 AppTheme.light(

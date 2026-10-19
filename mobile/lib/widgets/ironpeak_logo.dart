@@ -6,22 +6,24 @@ import 'package:path_drawing/path_drawing.dart';
 import '../theme/app_colors.dart';
 import '../theme/launcher_icons.dart';
 
-/// The Ironpeak mark -- a single summit standing on a barbell ("iron" +
-/// "peak"), flat and in one color -- and its motion, in one place. This file
-/// is the single source of truth: [AnimatedIronpeakLogo] draws it live, and
-/// `tool/generate_icons.dart` renders every static asset (the 16 Android
-/// launcher variants, the themed monochrome layer, the animated launch icon,
-/// web/Windows/iOS/macOS icons) from the very same path strings and timing,
-/// so the launcher icon, the splash animation and the in-app logo can never
-/// drift apart.
+/// The Kilo mark -- a loaded barbell, flat and in one color -- and its motion,
+/// in one place. This file is the single source of truth:
+/// [AnimatedIronpeakLogo] draws it live, and `tool/generate_icons.dart`
+/// renders every static asset (the 16 Android launcher variants, the themed
+/// monochrome layer, the animated launch icon, web/Windows/iOS/macOS icons)
+/// from the very same path strings and timing, so the launcher icon, the
+/// splash animation and the in-app logo can never drift apart. (The class
+/// names still carry the app's former name, Ironpeak; only the user-facing
+/// name changed.)
 ///
 /// The glyph lives in a 100x100 "logo unit" box and every shape stays inside
-/// the circle of radius 50 around (50, 50), in every frame of the motion too
-/// -- that circle is what maps onto the 66dp safe zone of Android's 108dp
-/// adaptive-icon canvas, i.e. what no launcher mask can ever crop.
+/// the circle of radius 50 around (50, 50) once the barbell has landed, the
+/// rep included -- that circle is what maps onto the 66dp safe zone of
+/// Android's 108dp adaptive-icon canvas, i.e. what no launcher mask can ever
+/// crop.
 ///
 /// One color only, so the same shapes double as the Android 13+ themed icon
-/// and can take any accent: the backdrop/glyph colors come from
+/// and can take any accent: the tile/glyph colors come from
 /// [LauncherIconVariant] (launcher) or the live theme (in-app).
 abstract final class IronpeakMark {
   static const double unit = 100;
@@ -43,32 +45,41 @@ abstract final class IronpeakMark {
   // `pathData` parses the identical syntax, so the generator pastes these
   // strings straight into the XML.
 
-  /// The bar, a pill across the whole mark: the horizon the summit stands on.
+  /// The bar: the thin grip shaft in the middle and the thicker sleeves
+  /// the plates sit on, out past the plates on both ends -- an Olympic bar,
+  /// seen from the front.
   static const String bar =
-      'M10,53H90A4,4 0 0 1 94,57V57A4,4 0 0 1 90,61H10A4,4 0 0 1 6,57V57A4,4 0 0 1 10,53Z';
+      'M34.5,47.5H65.5A2.5,2.5 0 0 1 68,50V50A2.5,2.5 0 0 1 65.5,52.5H34.5A2.5,2.5 0 0 1 32,50V50A2.5,2.5 0 0 1 34.5,47.5Z'
+      'M6,46.5H29A3.5,3.5 0 0 1 32.5,50V50A3.5,3.5 0 0 1 29,53.5H6A3.5,3.5 0 0 1 2.5,50V50A3.5,3.5 0 0 1 6,46.5Z'
+      'M71,46.5H94A3.5,3.5 0 0 1 97.5,50V50A3.5,3.5 0 0 1 94,53.5H71A3.5,3.5 0 0 1 67.5,50V50A3.5,3.5 0 0 1 71,46.5Z';
 
-  /// Both plates, one subpath each.
+  /// The load, mirrored on both sides, from the middle out: the inner
+  /// shoulder, two big plates, two smaller ones, the lock collar. Real
+  /// plates have barely rounded edges, so the corners stay tight.
   static const String plates =
-      'M15,38H17A4,4 0 0 1 21,42V72A4,4 0 0 1 17,76H15A4,4 0 0 1 11,72V42A4,4 0 0 1 15,38Z'
-      'M83,38H85A4,4 0 0 1 89,42V72A4,4 0 0 1 85,76H83A4,4 0 0 1 79,72V42A4,4 0 0 1 83,38Z';
+      'M31,44H31A1,1 0 0 1 32,45V55A1,1 0 0 1 31,56H31A1,1 0 0 1 30,55V45A1,1 0 0 1 31,44Z'
+      'M69,44H69A1,1 0 0 1 70,45V55A1,1 0 0 1 69,56H69A1,1 0 0 1 68,55V45A1,1 0 0 1 69,44Z'
+      'M23.3,21H27.9A1.2,1.2 0 0 1 29.1,22.2V77.8A1.2,1.2 0 0 1 27.9,79H23.3A1.2,1.2 0 0 1 22.1,77.8V22.2A1.2,1.2 0 0 1 23.3,21Z'
+      'M72.1,21H76.7A1.2,1.2 0 0 1 77.9,22.2V77.8A1.2,1.2 0 0 1 76.7,79H72.1A1.2,1.2 0 0 1 70.9,77.8V22.2A1.2,1.2 0 0 1 72.1,21Z'
+      'M15.9,21H20A1.2,1.2 0 0 1 21.2,22.2V77.8A1.2,1.2 0 0 1 20,79H15.9A1.2,1.2 0 0 1 14.7,77.8V22.2A1.2,1.2 0 0 1 15.9,21Z'
+      'M80,21H84.1A1.2,1.2 0 0 1 85.3,22.2V77.8A1.2,1.2 0 0 1 84.1,79H80A1.2,1.2 0 0 1 78.8,77.8V22.2A1.2,1.2 0 0 1 80,21Z'
+      'M11.5,31H12.6A1.2,1.2 0 0 1 13.8,32.2V67.8A1.2,1.2 0 0 1 12.6,69H11.5A1.2,1.2 0 0 1 10.3,67.8V32.2A1.2,1.2 0 0 1 11.5,31Z'
+      'M87.4,31H88.5A1.2,1.2 0 0 1 89.7,32.2V67.8A1.2,1.2 0 0 1 88.5,69H87.4A1.2,1.2 0 0 1 86.2,67.8V32.2A1.2,1.2 0 0 1 87.4,31Z'
+      'M8.1,37H8.2A1.2,1.2 0 0 1 9.4,38.2V61.8A1.2,1.2 0 0 1 8.2,63H8.1A1.2,1.2 0 0 1 6.9,61.8V38.2A1.2,1.2 0 0 1 8.1,37Z'
+      'M91.8,37H91.9A1.2,1.2 0 0 1 93.1,38.2V61.8A1.2,1.2 0 0 1 91.9,63H91.8A1.2,1.2 0 0 1 90.6,61.8V38.2A1.2,1.2 0 0 1 91.8,37Z'
+      'M5,44H5A1,1 0 0 1 6,45V55A1,1 0 0 1 5,56H5A1,1 0 0 1 4,55V45A1,1 0 0 1 5,44Z'
+      'M95,44H95A1,1 0 0 1 96,45V55A1,1 0 0 1 95,56H95A1,1 0 0 1 94,55V45A1,1 0 0 1 95,44Z';
 
-  /// The summit: a gentle west face up to a rounded top, a steeper east face
-  /// down. Its base sits inside the bar.
-  static const String peak =
-      'M48.91,19.12A4,4 0 0 1 56.12,19.59L72.5,60.5L25.81,60.5Z';
+  /// Every shape of the mark, in drawing order, with the names the launch
+  /// animation targets them by.
+  static const List<(String, String)> parts = [('bar', bar), ('plates', plates)];
 
-  /// The bar's center line: the bar grows from (50, barCenterY) and the
-  /// plates snap open from it.
-  static const double barCenterY = 57;
-
-  /// The bar's bottom edge. The summit is clipped below it, so it can rise
-  /// from behind the bar (and sink back behind it) like a sunrise.
-  static const double horizonY = 61;
+  /// Bottom middle of the big plates: the barbell squashes into the floor
+  /// around it when it lands.
+  static const Offset foot = Offset(50, 79);
 
   // Parsed once; paths are only ever drawn, never mutated.
-  static final Path _barPath = parseSvgPathData(bar);
-  static final Path _platesPath = parseSvgPathData(plates);
-  static final Path _peakPath = parseSvgPathData(peak);
+  static final List<Path> _paths = [for (final (_, data) in parts) parseSvgPathData(data)];
 
   // --- motion ----------------------------------------------------------
   //
@@ -77,32 +88,41 @@ abstract final class IronpeakMark {
   // generate_icons.dart writes from these same numbers and Android's own
   // interpolators) all play one script:
   //
-  //  * intro -- the bar grows out from its center, the plates snap open
-  //             with a little overshoot, and the summit rises from behind
-  //             the bar.
-  //  * loop  -- a calm breath: the summit sinks a few units behind the bar
-  //             and rises again, then rests.
+  //  * intro -- the barbell is dropped: it falls in, bounces on the floor
+  //             (Android's BounceInterpolator curve, so the launch
+  //             animation matches exactly) and squashes a little on the
+  //             first impact.
+  //  * loop  -- one calm rep: lift, short hold, controlled lowering, rest.
+  //             In-app only; a launch animation plays once.
 
-  static const double introSeconds = 0.9;
+  static const double introSeconds = 0.72;
   static const double loopSeconds = 3.6;
 
-  /// How far below its resting place the summit starts: far enough that it
-  /// is entirely hidden behind the horizon at t = 0.
-  static const double peakRise = 46;
+  /// How far above its resting place the barbell starts falling.
+  static const double dropHeight = 60;
 
-  /// How deep the summit sinks in the loop.
-  static const double breathDepth = 7;
+  /// The fall: (start, duration) in seconds, bounce_interpolator.
+  static const (double, double) dropTiming = (0.08, 0.6);
 
-  // Intro timeline, seconds: (start, duration). The splash generator turns
-  // these into Android animators, so keep them in sync with the curves
-  // named next to them.
-  static const (double, double) barGrow = (0.0, 0.36); // fast_out_slow_in
-  static const (double, double) platesSnap = (0.18, 0.42); // overshoot
-  static const (double, double) peakRiseTiming = (0.32, 0.58); // fast_out_slow_in
+  /// The fade-in at the start of the fall, linear.
+  static const (double, double) fadeTiming = (0.08, 0.1);
 
-  // Loop timeline, seconds after the intro: (start, duration).
-  static const (double, double) breathDown = (1.4, 0.5); // accelerate_decelerate
-  static const (double, double) breathUp = (2.1, 0.8); // decelerate
+  /// How far the bell squashes into the floor on the first impact.
+  static const double squashDepth = 0.06;
+  static const double squashDownSeconds = 0.07;
+  static const double squashUpSeconds = 0.12;
+
+  /// The BounceInterpolator's first impact: where the falling barbell first
+  /// reaches the floor and squashes.
+  static final double impactSeconds =
+      dropTiming.$1 + dropTiming.$2 * (0.3535 / 1.1226);
+
+  /// The rep: how high the barbell is lifted, and (start, duration) in
+  /// seconds after the intro of the lift (fast_out_slow_in) and of the
+  /// lowering (accelerate_decelerate).
+  static const double repHeight = 6;
+  static const (double, double) repUp = (1.2, 0.55);
+  static const (double, double) repDown = (2.05, 0.75);
 
   /// The pose at [seconds] since the logo appeared. Past the intro it
   /// repeats every [loopSeconds].
@@ -112,18 +132,19 @@ abstract final class IronpeakMark {
   }
 
   static LogoPose _intro(double t) {
+    final down = decelerate(_seg(t, (impactSeconds, squashDownSeconds)));
+    final up = decelerate(_seg(t, (impactSeconds + squashDownSeconds, squashUpSeconds)));
     return LogoPose(
-      barScale: Curves.fastOutSlowIn.transform(_seg(t, barGrow)),
-      plateScale: overshoot(_seg(t, platesSnap)),
-      peakDy: peakRise *
-          (1 - Curves.fastOutSlowIn.transform(_seg(t, peakRiseTiming))),
+      dropDy: -dropHeight * (1 - bounce(_seg(t, dropTiming))),
+      alpha: _seg(t, fadeTiming),
+      squash: 1 - squashDepth * down * (1 - up),
     );
   }
 
   static LogoPose _loop(double u) {
-    final down = accelerateDecelerate(_seg(u, breathDown));
-    final up = decelerate(_seg(u, breathUp));
-    return LogoPose(peakDy: breathDepth * (down - up));
+    final up = Curves.fastOutSlowIn.transform(_seg(u, repUp));
+    final down = accelerateDecelerate(_seg(u, repDown));
+    return LogoPose(dropDy: -repHeight * (up - down));
   }
 
   static double _seg(double t, (double, double) timing) {
@@ -132,21 +153,24 @@ abstract final class IronpeakMark {
   }
 
   // Android's interpolators, verbatim, so the in-app motion matches the
-  // launch animation exactly (fast_out_slow_in is Curves.fastOutSlowIn).
+  // launch animation exactly.
 
-  /// android.view.animation.OvershootInterpolator, default tension 2.
-  static double overshoot(double t) {
-    const tension = 2.0;
-    final s = t - 1;
-    return s * s * ((tension + 1) * s + tension) + 1;
+  /// android.view.animation.BounceInterpolator.
+  static double bounce(double t) {
+    double b(double x) => x * x * 8;
+    final x = t * 1.1226;
+    if (x < 0.3535) return b(x);
+    if (x < 0.7408) return b(x - 0.54719) + 0.7;
+    if (x < 0.9644) return b(x - 0.8526) + 0.9;
+    return b(x - 1.0435) + 0.95;
   }
+
+  /// android.view.animation.DecelerateInterpolator, factor 1.
+  static double decelerate(double t) => 1 - (1 - t) * (1 - t);
 
   /// android.view.animation.AccelerateDecelerateInterpolator.
   static double accelerateDecelerate(double t) =>
       math.cos((t + 1) * math.pi) / 2 + 0.5;
-
-  /// android.view.animation.DecelerateInterpolator, factor 1.
-  static double decelerate(double t) => 1 - (1 - t) * (1 - t);
 
   // --- painting --------------------------------------------------------
 
@@ -154,16 +178,16 @@ abstract final class IronpeakMark {
   /// in [glyph] color and [pose], centered in the biggest square that fits
   /// [size].
   ///
-  /// [border] adds a hairline around a rounded badge (a light badge on a
-  /// light page needs one). [monochrome] draws the glyph alone in black, no
+  /// [border] adds a hairline around a rounded badge (a dark badge on a
+  /// dark page needs one). [monochrome] draws the glyph alone in black, no
   /// badge -- the layer a themed Android icon is tinted from.
   static void paint(
     Canvas canvas,
     Size size, {
     LogoPose pose = LogoPose.rest,
     LogoShape shape = LogoShape.roundedSquare,
-    Color background = LauncherIcons.lightBackdrop,
-    Color glyph = const Color(0xFF2F6FEB),
+    Color background = const Color(0xFF2F6FEB),
+    Color glyph = const Color(0xFFFFFFFF),
     Color? border,
     double cornerFraction = 0.22,
     bool monochrome = false,
@@ -176,9 +200,13 @@ abstract final class IronpeakMark {
       _paintBadge(canvas, side, shape, background, border, cornerFraction);
     }
     final inset = side * (1 - glyphFraction) / 2;
+    canvas.save();
+    // The falling barbell enters from above the badge, not from outside it.
+    canvas.clipRect(Offset.zero & Size.square(side));
     canvas.translate(inset, inset);
     canvas.scale(side * glyphFraction / unit);
     _paintGlyph(canvas, pose, monochrome ? const Color(0xFF000000) : glyph);
+    canvas.restore();
     canvas.restore();
   }
 
@@ -211,39 +239,24 @@ abstract final class IronpeakMark {
   }
 
   static void _paintGlyph(Canvas canvas, LogoPose pose, Color color) {
+    if (pose.alpha <= 0.001) return;
     final fill = Paint()
       ..isAntiAlias = true
-      ..color = color;
+      ..color = color.withValues(alpha: color.a * pose.alpha.clamp(0.0, 1.0));
 
-    // Summit: rises from (and sinks back) behind the bar, so it is clipped
-    // at the bar's bottom edge.
-    if (pose.peakDy < peakRise) {
-      canvas.save();
-      canvas.clipRect(const Rect.fromLTRB(-unit, -unit, 2 * unit, horizonY));
-      canvas.translate(0, pose.peakDy);
-      canvas.drawPath(_peakPath, fill);
-      canvas.restore();
+    canvas.save();
+    // Falling in, or lifted in a rep: the whole barbell moves.
+    canvas.translate(0, pose.dropDy);
+    // Landing: squashed into the floor around the foot.
+    if (pose.squash != 1) {
+      canvas.translate(foot.dx, foot.dy);
+      canvas.scale(1, pose.squash);
+      canvas.translate(-foot.dx, -foot.dy);
     }
-
-    // Bar: grows out from its center.
-    if (pose.barScale > 0.001) {
-      canvas.save();
-      canvas.translate(50, barCenterY);
-      canvas.scale(pose.barScale, 1);
-      canvas.translate(-50, -barCenterY);
-      canvas.drawPath(_barPath, fill);
-      canvas.restore();
+    for (final path in _paths) {
+      canvas.drawPath(path, fill);
     }
-
-    // Plates: snap open from the bar's center line.
-    if (pose.plateScale > 0.001) {
-      canvas.save();
-      canvas.translate(0, barCenterY);
-      canvas.scale(1, pose.plateScale);
-      canvas.translate(0, -barCenterY);
-      canvas.drawPath(_platesPath, fill);
-      canvas.restore();
-    }
+    canvas.restore();
   }
 }
 
@@ -264,24 +277,23 @@ enum LogoShape {
 @immutable
 class LogoPose {
   const LogoPose({
-    this.barScale = 1,
-    this.plateScale = 1,
-    this.peakDy = 0,
+    this.dropDy = 0,
+    this.alpha = 1,
+    this.squash = 1,
   });
 
   /// The resting logo: what a static icon shows.
   static const LogoPose rest = LogoPose();
 
-  /// Horizontal scale of the bar around its center (0 = not there yet).
-  final double barScale;
+  /// Offset of the barbell from its resting place, in logo units
+  /// (negative = above it: still falling in, or lifted in a rep).
+  final double dropDy;
 
-  /// Vertical scale of the plates around the bar's center line; overshoots
-  /// slightly past 1 while they snap open.
-  final double plateScale;
+  /// Opacity of the whole glyph (0 = not there yet).
+  final double alpha;
 
-  /// Summit offset below its resting place, in logo units (0 = rest,
-  /// [IronpeakMark.peakRise] = entirely behind the bar).
-  final double peakDy;
+  /// Vertical scale around the foot (1 = none, < 1 = squashed on impact).
+  final double squash;
 }
 
 /// The app's palette for [context], or the stock light/dark one when a
@@ -292,14 +304,16 @@ AppColors _colorsOf(BuildContext context) {
       (theme.brightness == Brightness.dark ? AppColors.dark : AppColors.light);
 }
 
-/// The Ironpeak badge, alive: builds itself once (bar, plates, summit
-/// rising), then breathes calmly forever -- the closest an app can get to a
+/// The Kilo badge, alive: the barbell drops in once, then does a calm rep
+/// now and then, forever -- the closest an app can get to a
 /// moving icon, since neither Android nor iOS lets a third-party launcher
 /// icon animate.
 ///
-/// Follows the theme: the badge takes the card color with a hairline border
-/// and the glyph the accent, so it shows the user's exact colors in light,
-/// dark and custom mode ([background]/[glyph] override them). Honors the OS
+/// Follows the theme like the launcher icon does: in a light theme an
+/// accent-colored tile with the glyph in the accent's text color, in a dark
+/// one a card-colored tile (hairline border) with an accent glyph -- the
+/// user's exact colors in light, dark and custom mode ([background]/[glyph]
+/// override them). Honors the OS
 /// "remove animations" setting (shows the resting pose), only repaints its
 /// own tiny canvas, and pauses with its route/tab like any other ticker.
 /// With [replayOnTap] a tap restarts the intro.
@@ -373,14 +387,15 @@ class _AnimatedIronpeakLogoState extends State<AnimatedIronpeakLogo>
   @override
   Widget build(BuildContext context) {
     final colors = _colorsOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     Widget logo = RepaintBoundary(
       child: CustomPaint(
         size: Size.square(widget.size),
         painter: _LogoPainter(
           _controller,
-          background: widget.background ?? colors.card,
-          glyph: widget.glyph ?? colors.accent,
-          border: colors.line,
+          background: widget.background ?? (dark ? colors.card : colors.accent),
+          glyph: widget.glyph ?? (dark ? colors.accent : colors.onAccent),
+          border: dark ? colors.line : null,
         ),
       ),
     );
@@ -410,7 +425,7 @@ class _LogoPainter extends CustomPainter {
   final Animation<double> clock;
   final Color background;
   final Color glyph;
-  final Color border;
+  final Color? border;
 
   @override
   void paint(Canvas canvas, Size size) {

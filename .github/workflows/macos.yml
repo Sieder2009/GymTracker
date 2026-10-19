@@ -84,6 +84,15 @@ jobs:
       # stray README.md at the project root — remove that too.
       - run: rm -f test/widget_test.dart README.md
 
+      # The app is called "Kilo" (formerly Ironpeak Fitness), but flutter
+      # create names it after the Dart package ("Ironpeak Mobile"). Only the
+      # name shown under the icon changes; the bundle id stays, so this is
+      # still the same app for everyone who has it installed.
+      - name: Set the display name
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Kilo" macos/Runner/Info.plist 2>/dev/null \
+            || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Kilo" macos/Runner/Info.plist
+
       - run: flutter pub get
 
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings

@@ -138,7 +138,7 @@ class _BrandHeader extends StatelessWidget {
       children: [
         const AnimatedIronpeakLogo(size: 88, replayOnTap: true),
         const SizedBox(height: 10),
-        Text('Ironpeak Fitness', style: Theme.of(context).textTheme.headlineMedium),
+        Text('Kilo', style: Theme.of(context).textTheme.headlineMedium),
       ],
     );
   }

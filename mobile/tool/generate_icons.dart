@@ -138,7 +138,7 @@ String _num(double v) {
   return s == '-0' ? '0' : s;
 }
 
-String _backdropColorName(IconBackdrop b) => 'ic_launcher_backdrop_${b.name}';
+String _backgroundColorName(LauncherIconVariant v) => 'ic_launcher_background_${v.id}';
 
 String _foregroundName(LauncherIconVariant v) => 'ic_launcher_foreground_${v.id}';
 
@@ -166,9 +166,7 @@ String _path(String data, Color color, {required int indent, double alpha = 1}) 
 /// foreground and the monochrome layer are made of.
 String _glyphVector(Color color) {
   final paths = [
-    _path(IronpeakMark.peak, color, indent: 8),
-    _path(IronpeakMark.bar, color, indent: 8),
-    _path(IronpeakMark.plates, color, indent: 8),
+    for (final (_, data) in IronpeakMark.parts) _path(data, color, indent: 8),
   ].join('\n');
   return '''<?xml version="1.0" encoding="utf-8"?>
 $_generated
@@ -185,7 +183,7 @@ ${_glyphGroup(paths, indent: 4)}
 String _adaptiveIcon(LauncherIconVariant v) => '''<?xml version="1.0" encoding="utf-8"?>
 $_generated
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/${_backdropColorName(v.backdrop)}" />
+    <background android:drawable="@color/${_backgroundColorName(v)}" />
     <foreground android:drawable="@drawable/${_foregroundName(v)}" />
     <!-- Android 13+ themed icons: the system tints this layer instead. -->
     <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
@@ -210,12 +208,11 @@ Future<void> _writeAndroid() async {
     ..writeln('<?xml version="1.0" encoding="utf-8"?>')
     ..writeln(_generated)
     ..writeln('<resources>');
-  for (final b in IconBackdrop.values) {
-    final c = b == IconBackdrop.dark ? LauncherIcons.darkBackdrop : LauncherIcons.lightBackdrop;
-    colors.writeln('    <color name="${_backdropColorName(b)}">${_hex(c)}</color>');
+  for (final v in LauncherIcons.all) {
+    colors.writeln('    <color name="${_backgroundColorName(v)}">${_hex(v.background)}</color>');
   }
   colors.writeln('</resources>');
-  await _writeText('$_res/values/ic_launcher_backdrops.xml', colors.toString());
+  await _writeText('$_res/values/ic_launcher_backgrounds.xml', colors.toString());
 
   for (final v in LauncherIcons.all) {
     await _writeText('$_res/drawable/${_foregroundName(v)}.xml', _glyphVector(v.glyph));
@@ -226,10 +223,12 @@ Future<void> _writeAndroid() async {
   await _writeText('$_res/mipmap-anydpi-v26/ic_launcher.xml', _adaptiveIcon(_default));
   await _writeText('$_res/drawable/ic_launcher_monochrome.xml', _glyphVector(const Color(0xFF000000)));
 
+  // The launch animation plays the bare glyph on the app's background, so
+  // it takes the accent itself (the light icon's white glyph would vanish).
   await _writeText('$_res/drawable/ic_splash_animated.xml',
-      _splashAnimatedVector(LauncherIconVariant(IconBackdrop.light, _default.hue).glyph));
+      _splashAnimatedVector(LauncherIcons.accentColor(_default.hue, IconBackdrop.light)));
   await _writeText('$_res/drawable-night/ic_splash_animated.xml',
-      _splashAnimatedVector(LauncherIconVariant(IconBackdrop.dark, _default.hue).glyph));
+      _splashAnimatedVector(LauncherIcons.accentColor(_default.hue, IconBackdrop.dark)));
 
   await _writeText('android/app/src/release/AndroidManifest.xml', _releaseManifest());
 }
@@ -304,56 +303,49 @@ ${start == 0 ? '' : '                android:startOffset="${_ms(start)}"\n'}    
 }
 
 /// The Android 12+ launch icon: the same shapes as the launcher icon, but
-/// every moving part starts in its t=0 pose (bar and plates collapsed,
-/// summit behind the bar) and is animated to rest, so a delayed animator
-/// never flashes the finished mark first. The script mirrors
-/// IronpeakMark.poseAt's intro, number for number, with Android's own
-/// interpolators (the Dart side implements the same curves).
+/// it starts in its t=0 pose (invisible, high above its resting place) and
+/// is animated to rest, so a delayed animator never flashes the finished
+/// mark first. The script mirrors IronpeakMark.poseAt's intro, number for
+/// number, with Android's own interpolators (the Dart side implements the
+/// same curves): the barbell is dropped, bounces on the floor and squashes
+/// a little on the first impact.
 String _splashAnimatedVector(Color color) {
-  final cx = _num(50);
-  final cy = _num(IronpeakMark.barCenterY);
+  final impact = IronpeakMark.impactSeconds;
+  final squash = ((1 - IronpeakMark.squashDepth) * 1000).round() / 1000;
   final targets = [
-    _animator('bar', 'scaleX', 0, 1,
-        timing: IronpeakMark.barGrow,
-        interpolator: '@android:interpolator/fast_out_slow_in'),
-    _animator('plates', 'scaleY', 0, 1,
-        timing: IronpeakMark.platesSnap,
-        interpolator: '@android:anim/overshoot_interpolator'),
-    _animator('peak', 'translateY', IronpeakMark.peakRise, 0,
-        timing: IronpeakMark.peakRiseTiming,
-        interpolator: '@android:interpolator/fast_out_slow_in'),
+    _animator('drop', 'translateY', -IronpeakMark.dropHeight, 0,
+        timing: IronpeakMark.dropTiming,
+        interpolator: '@android:anim/bounce_interpolator'),
+    for (final (part, _) in IronpeakMark.parts)
+      _animator(part, 'fillAlpha', 0, 1,
+          timing: IronpeakMark.fadeTiming,
+          interpolator: '@android:anim/linear_interpolator'),
+    _animator('squash', 'scaleY', 1, squash,
+        timing: (impact, IronpeakMark.squashDownSeconds),
+        interpolator: '@android:anim/decelerate_interpolator'),
+    _animator('squash', 'scaleY', squash, 1,
+        timing: (impact + IronpeakMark.squashDownSeconds, IronpeakMark.squashUpSeconds),
+        interpolator: '@android:anim/decelerate_interpolator'),
   ].join('\n');
-  final horizon = _num(IronpeakMark.horizonY);
-  final body = '''                <group android:name="horizon">
-                    <clip-path android:pathData="M-100,-100H200V${horizon}H-100Z" />
+  final body = '''                <group
+                    android:name="drop"
+                    android:translateY="${_num(-IronpeakMark.dropHeight)}">
                     <group
-                        android:name="peak"
-                        android:translateY="${_num(IronpeakMark.peakRise)}">
-${_path(IronpeakMark.peak, color, indent: 24)}
+                        android:name="squash"
+                        android:pivotX="${_num(IronpeakMark.foot.dx)}"
+                        android:pivotY="${_num(IronpeakMark.foot.dy)}">
+${[for (final (name, data) in IronpeakMark.parts) _namedPath(name, data, color, indent: 24)].join('\n')}
                     </group>
-                </group>
-                <group
-                    android:name="bar"
-                    android:pivotX="$cx"
-                    android:pivotY="$cy"
-                    android:scaleX="0">
-${_path(IronpeakMark.bar, color, indent: 20)}
-                </group>
-                <group
-                    android:name="plates"
-                    android:pivotX="$cx"
-                    android:pivotY="$cy"
-                    android:scaleY="0">
-${_path(IronpeakMark.plates, color, indent: 20)}
                 </group>''';
   return '''<?xml version="1.0" encoding="utf-8"?>
 $_generated
 <!-- Played once by the Android 12+ system splash screen
      (windowSplashScreenAnimatedIcon, see values*-v31/styles.xml) on the
-     app background color: the bar grows out from its center, the plates
-     snap open, the summit rises from behind the bar. The glyph sits in the
-     66 unit safe zone of the 108 unit canvas, inside the circle the splash
-     screen masks its icon to. Total length stays under the 1000ms limit.
+     app background color: the barbell drops in, bounces on the floor and
+     squashes a little on the first impact. The glyph sits in the 66
+     unit safe zone of the 108 unit canvas, inside the circle the splash
+     screen masks its icon to; the masked circle also hides the barbell
+     while it is still above it. Total length stays under the 1000ms limit.
      drawable-night holds the dark mode copy (lighter glyph color). -->
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt">
@@ -369,6 +361,16 @@ ${_glyphGroup(body, indent: 12)}
 $targets
 </animated-vector>
 ''';
+}
+
+/// A path that starts invisible (fillAlpha 0) and can be animated by name.
+String _namedPath(String name, String data, Color color, {required int indent}) {
+  final p = ' ' * indent;
+  return '$p<path\n'
+      '$p    android:name="$name"\n'
+      '$p    android:fillColor="${_hex(color)}"\n'
+      '$p    android:fillAlpha="0"\n'
+      '$p    android:pathData="$data" />';
 }
 
 // --- web -------------------------------------------------------------------
@@ -602,8 +604,8 @@ Future<void> _writePreview(Directory dir) async {
   });
 
   // Motion: intro every 100 ms, then the loop.
-  final intro = [for (var ms = 0; ms <= 900; ms += 100) ms / 1000];
-  final loop = [0.0, 1.2, 1.5, 1.7, 1.9, 2.1, 2.4, 2.7, 2.9, 3.4]
+  final intro = [0.0, 0.1, 0.2, 0.26, 0.3, 0.36, 0.44, 0.52, 0.6, 0.72];
+  final loop = [0.0, 1.2, 1.4, 1.6, 1.8, 2.05, 2.3, 2.55, 2.8, 3.2]
       .map((u) => IronpeakMark.introSeconds + u)
       .toList();
   const mw = pad + 10 * (cell + pad);

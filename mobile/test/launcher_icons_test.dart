@@ -86,12 +86,28 @@ void main() {
       expect(LauncherIcons.lightBackdrop, AppColors.light.bg);
       expect(LauncherIcons.darkBackdrop, AppColors.dark.bg);
     });
+
+    test('light icons are accent tiles, dark icons accent glyphs on black', () {
+      for (final v in LauncherIcons.all) {
+        final accent = LauncherIcons.accentColor(v.hue, v.backdrop);
+        if (v.backdrop == IconBackdrop.dark) {
+          expect(v.background, LauncherIcons.darkBackdrop, reason: v.id);
+          expect(v.glyph, accent, reason: v.id);
+        } else if (v.hue == IconHue.graphite) {
+          expect(v.glyph, accent, reason: v.id);
+        } else {
+          expect(v.background, accent, reason: v.id);
+          expect(v.glyph, const Color(0xFFFFFFFF), reason: v.id);
+        }
+      }
+    });
   });
 
   group('LauncherIcons.nearestHue', () {
-    test('maps every glyph color back to its own hue', () {
+    test('maps every accent shade back to its own hue', () {
       for (final v in LauncherIcons.all) {
-        expect(LauncherIcons.nearestHue(v.glyph), v.hue, reason: v.id);
+        expect(LauncherIcons.nearestHue(LauncherIcons.accentColor(v.hue, v.backdrop)), v.hue,
+            reason: v.id);
       }
     });
 

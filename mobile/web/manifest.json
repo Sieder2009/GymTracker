@@ -1,11 +1,11 @@
 {
-    "name": "ironpeak_mobile",
-    "short_name": "ironpeak_mobile",
+    "name": "Kilo",
+    "short_name": "Kilo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Kilo: training plans, strength progress and muscle balance, stored on your device.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

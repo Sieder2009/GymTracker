@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Ironpeak Fitness" "\0"
-            VALUE "FileDescription", "Ironpeak Fitness" "\0"
+            VALUE "CompanyName", "Kilo" "\0"
+            VALUE "FileDescription", "Kilo" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "Ironpeak Fitness" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 Ironpeak Fitness. All rights reserved." "\0"
+            VALUE "InternalName", "Kilo" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Kilo. All rights reserved." "\0"
             VALUE "OriginalFilename", "ironpeak_mobile.exe" "\0"
-            VALUE "ProductName", "Ironpeak Fitness" "\0"
+            VALUE "ProductName", "Kilo" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

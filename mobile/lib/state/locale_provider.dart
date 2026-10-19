@@ -4,7 +4,7 @@ import '../services/storage_service.dart';
 
 const String _kLocaleKey = 'ironpeak:locale';
 
-/// The 10 languages Ironpeak Fitness ships with. `null` selection means
+/// The 10 languages Kilo ships with. `null` selection means
 /// "follow the system language" (falling back to English if the system
 /// language isn't one of these).
 const List<String> kSupportedLocales = [

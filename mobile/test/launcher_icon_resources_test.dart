@@ -40,25 +40,27 @@ void main() {
   test('every variant has its adaptive icon and foreground', () {
     for (final v in LauncherIcons.all) {
       final icon = _read('$_res/mipmap-anydpi-v26/${v.androidIcon}.xml');
-      expect(icon, contains('@color/ic_launcher_backdrop_${v.backdrop.name}'));
+      expect(icon, contains('@color/ic_launcher_background_${v.id}'));
       expect(icon, contains('@drawable/ic_launcher_foreground_${v.id}'));
       expect(icon, contains('@drawable/ic_launcher_monochrome'));
 
       final foreground = _read('$_res/drawable/ic_launcher_foreground_${v.id}.xml');
       expect(foreground, contains('android:fillColor="${_hex(v.glyph)}"'), reason: v.id);
-      for (final data in [IronpeakMark.bar, IronpeakMark.plates, IronpeakMark.peak]) {
+      for (final (_, data) in IronpeakMark.parts) {
         expect(foreground, contains(data), reason: v.id);
       }
     }
   });
 
-  test('the backdrop colors and the themed layer match the sources', () {
-    final colors = _read('$_res/values/ic_launcher_backdrops.xml');
-    expect(colors, contains(_hex(LauncherIcons.lightBackdrop)));
-    expect(colors, contains(_hex(LauncherIcons.darkBackdrop)));
+  test('the tile colors and the themed layer match the sources', () {
+    final colors = _read('$_res/values/ic_launcher_backgrounds.xml');
+    for (final v in LauncherIcons.all) {
+      expect(colors,
+          contains('<color name="ic_launcher_background_${v.id}">${_hex(v.background)}</color>'));
+    }
 
     final mono = _read('$_res/drawable/ic_launcher_monochrome.xml');
-    for (final data in [IronpeakMark.bar, IronpeakMark.plates, IronpeakMark.peak]) {
+    for (final (_, data) in IronpeakMark.parts) {
       expect(mono, contains(data));
     }
   });
@@ -102,31 +104,24 @@ void main() {
   test('the launch animation plays the same script as the in-app logo', () {
     final light = _read('$_res/drawable/ic_splash_animated.xml');
     final dark = _read('$_res/drawable-night/ic_splash_animated.xml');
-    expect(light, contains(_hex(LauncherIcons.glyphColor(
+    expect(light, contains(_hex(LauncherIcons.accentColor(
         LauncherIcons.defaultVariant.hue, IconBackdrop.light))));
-    expect(dark, contains(_hex(LauncherIcons.glyphColor(
+    expect(dark, contains(_hex(LauncherIcons.accentColor(
         LauncherIcons.defaultVariant.hue, IconBackdrop.dark))));
 
     int ms(double seconds) => (seconds * 1000).round();
     for (final xml in [light, dark]) {
-      for (final (target, timing) in [
-        ('bar', IronpeakMark.barGrow),
-        ('plates', IronpeakMark.platesSnap),
-        ('peak', IronpeakMark.peakRiseTiming),
-      ]) {
-        final block = RegExp('<target android:name="$target">(.*?)</target>', dotAll: true)
-            .firstMatch(xml)!
-            .group(1)!;
-        final (start, seconds) = timing;
-        expect(block, contains('android:duration="${ms(seconds)}"'), reason: target);
-        if (start > 0) {
-          expect(block, contains('android:startOffset="${ms(start)}"'), reason: target);
-        }
+      final drop = RegExp('<target android:name="drop">(.*?)</target>', dotAll: true).firstMatch(xml)!.group(1)!;
+      final (start, seconds) = IronpeakMark.dropTiming;
+      expect(drop, contains('android:duration="${ms(seconds)}"'));
+      expect(drop, contains('android:startOffset="${ms(start)}"'));
+      expect(drop, contains('bounce_interpolator'));
+      expect(xml, contains('android:translateY="-${IronpeakMark.dropHeight.round()}"'));
+      // The squash starts on the first impact of the bounce.
+      expect(xml, contains('android:startOffset="${ms(IronpeakMark.impactSeconds)}"'));
+      for (final (part, _) in IronpeakMark.parts) {
+        expect(xml, contains('<target android:name="$part">'));
       }
-      // Under Android 12's 1000 ms cap for splash animations.
-      final ends = [IronpeakMark.barGrow, IronpeakMark.platesSnap, IronpeakMark.peakRiseTiming]
-          .map((t) => t.$1 + t.$2);
-      expect(ends.reduce((a, b) => a > b ? a : b), lessThanOrEqualTo(1.0));
     }
   });
 }

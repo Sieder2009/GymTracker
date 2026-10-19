@@ -9,18 +9,20 @@ import 'app_colors.dart';
 /// which launcher icons exist, what they are called on each platform, and
 /// which one fits the app's current appearance.
 ///
-/// An icon is one flat backdrop ([IconBackdrop], light or dark like the app
-/// itself) plus the Ironpeak glyph in one flat color ([IconHue], the app's
-/// accent). Android can only switch between icons that are declared ahead of
+/// An icon is a flat tile plus the Ironpeak glyph, both in the app's accent
+/// family ([IconHue]) and following its mode ([IconBackdrop]): light = an
+/// accent-colored tile with a white glyph, dark = a near-black tile with the
+/// glyph in the accent -- the same pair iOS 18 uses for its default and
+/// dark icons. Android can only switch between icons that are declared ahead of
 /// time -- one `<activity-alias>` per variant in
 /// `android/app/src/release/AndroidManifest.xml`, which
 /// `tool/generate_icons.dart` writes from [LauncherIcons.all] -- so an
 /// arbitrary accent picked in Settings is snapped to the nearest [IconHue].
 enum IconBackdrop { light, dark }
 
-/// The glyph's color family. [graphite] is the neutral one (near-black on
-/// the light backdrop, near-white on the dark one) for grey or barely
-/// saturated accents.
+/// The accent color family. [graphite] is the neutral one (a white tile
+/// with a near-black glyph in light mode, a near-white glyph in dark mode)
+/// for grey or barely saturated accents.
 enum IconHue { blue, teal, purple, amber, green, red, pink, graphite }
 
 @immutable
@@ -34,9 +36,8 @@ class LauncherIconVariant {
   /// names on every platform, so it must never change once shipped.
   String get id => '${backdrop.name}_${hue.name}';
 
-  Color get background => backdrop == IconBackdrop.dark
-      ? LauncherIcons.darkBackdrop
-      : LauncherIcons.lightBackdrop;
+  /// The tile behind the glyph.
+  Color get background => LauncherIcons.backgroundColor(hue, backdrop);
 
   Color get glyph => LauncherIcons.glyphColor(hue, backdrop);
 
@@ -65,10 +66,13 @@ class LauncherIconVariant {
 }
 
 abstract final class LauncherIcons {
-  /// Same as [AppColors.light] / [AppColors.dark]'s `bg`: the icon is the
-  /// app's own background with its accent on top.
+  /// The app's own backgrounds ([AppColors.light] / [AppColors.dark] `bg`):
+  /// the dark icons' tile, and what the launch animation plays on.
   static const Color lightBackdrop = Color(0xFFF5F5F7);
   static const Color darkBackdrop = Color(0xFF101114);
+
+  /// The light graphite tile: white, so a near-black glyph can sit on it.
+  static const Color _graphiteLightTile = Color(0xFFFFFFFF);
 
   /// The real Flutter activity every launcher alias targets, relative to the
   /// application id. Release builds hide its own launcher entry and show
@@ -82,11 +86,11 @@ abstract final class LauncherIcons {
   static const LauncherIconVariant defaultVariant =
       LauncherIconVariant(IconBackdrop.light, IconHue.blue);
 
-  // Glyph color per hue: (on the light backdrop, on the dark backdrop). The
-  // Settings accent presets, except that teal/amber/green get a slightly
-  // deeper shade on the light backdrop so every glyph keeps at least 3:1
-  // contrast against it (the presets themselves sit around 2.8:1).
-  static const Map<IconHue, (Color, Color)> _glyphColors = {
+  // Accent per hue: (light mode, dark mode). The Settings accent presets,
+  // except that teal/amber/green get a slightly deeper light-mode shade so
+  // a white glyph keeps at least 3:1 contrast on that tile (and the shade
+  // on the app's light background, where the launch animation plays).
+  static const Map<IconHue, (Color, Color)> _accents = {
     IconHue.blue: (Color(0xFF2F6FEB), Color(0xFF5588FF)),
     IconHue.teal: (Color(0xFF009B78), Color(0xFF1FD6A8)),
     IconHue.purple: (Color(0xFF6D5CE8), Color(0xFF9585FF)),
@@ -97,9 +101,22 @@ abstract final class LauncherIcons {
     IconHue.graphite: (Color(0xFF16171B), Color(0xFFF2F2F4)),
   };
 
+  /// The hue's accent shade for [backdrop]'s mode.
+  static Color accentColor(IconHue hue, IconBackdrop backdrop) {
+    final (light, dark) = _accents[hue]!;
+    return backdrop == IconBackdrop.dark ? dark : light;
+  }
+
+  static Color backgroundColor(IconHue hue, IconBackdrop backdrop) {
+    if (backdrop == IconBackdrop.dark) return darkBackdrop;
+    return hue == IconHue.graphite ? _graphiteLightTile : accentColor(hue, backdrop);
+  }
+
   static Color glyphColor(IconHue hue, IconBackdrop backdrop) {
-    final (onLight, onDark) = _glyphColors[hue]!;
-    return backdrop == IconBackdrop.dark ? onDark : onLight;
+    if (backdrop == IconBackdrop.dark || hue == IconHue.graphite) {
+      return accentColor(hue, backdrop);
+    }
+    return const Color(0xFFFFFFFF);
   }
 
   /// Every variant, light backdrop first. Each one becomes a launcher alias
@@ -166,7 +183,7 @@ abstract final class LauncherIcons {
   /// accent preset is at ~0.13).
   static const double _neutralChroma = 0.06;
 
-  /// The [IconHue] whose glyph colors are closest in hue (OKLCH hue angle,
+  /// The [IconHue] whose accent colors are closest in hue (OKLCH hue angle,
   /// lightness ignored) to [color], or [IconHue.graphite] for greys.
   static IconHue nearestHue(Color color) {
     final (chroma, hueAngle) = _oklchChromaHue(color);
@@ -184,13 +201,13 @@ abstract final class LauncherIcons {
     return best;
   }
 
-  // Each hue's anchor angle: the circular mean of its two glyph colors.
+  // Each hue's anchor angle: the circular mean of its two accent shades.
   static final Map<IconHue, double> _anchorAngles = {
     for (final hue in IconHue.values)
       if (hue != IconHue.graphite)
         hue: _circularMean([
-          _oklchChromaHue(glyphColor(hue, IconBackdrop.light)).$2,
-          _oklchChromaHue(glyphColor(hue, IconBackdrop.dark)).$2,
+          _oklchChromaHue(accentColor(hue, IconBackdrop.light)).$2,
+          _oklchChromaHue(accentColor(hue, IconBackdrop.dark)).$2,
         ]),
   };
 

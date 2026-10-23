@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -41,14 +42,10 @@ const double _weekdayGap = 4;
 // Minimum space between two month labels before the earlier one is dropped.
 const double _monthLabelGap = 4;
 
-/// GitHub's contribution-graph colours.
-///
-/// Deliberately NOT derived from [AppColors]: the previous version lerped
-/// `card2` -> `teal` so the graph followed a custom accent, but the point of
-/// this graph is to look exactly like GitHub's, and its fixed greens are what
-/// make it recognizable at a glance. Dark mode uses GitHub's "dark dimmed"
-/// ramp -- plain GitHub dark's empty-cell #161B22 would all but vanish on the
-/// app's #1A1B1F dark cards.
+/// The graph's colours, taken from the app's own palette so the calendar
+/// matches light, dark and custom mode: GitHub's layout and five-step ramp,
+/// but running from an empty cell (the card colour with a touch of the text
+/// colour, so it shows on any card) up to the primary colour the user picked.
 class HeatmapPalette {
   const HeatmapPalette._({
     required this.levels,
@@ -57,21 +54,27 @@ class HeatmapPalette {
     required this.tooltipForeground,
   });
 
-  static const light = HeatmapPalette._(
-    levels: [Color(0xFFEBEDF0), Color(0xFF9BE9A8), Color(0xFF40C463), Color(0xFF30A14E), Color(0xFF216E39)],
-    outline: Color(0x0F1B1F24), // rgba(27,31,36,0.06)
-    tooltipBackground: Color(0xFF24292F),
-    tooltipForeground: Color(0xFFFFFFFF),
-  );
+  /// How far each level 1-4 is from the empty cell toward the primary colour.
+  static const List<double> _steps = [0.3, 0.5, 0.75, 1];
 
-  static const dark = HeatmapPalette._(
-    levels: [Color(0xFF2D333B), Color(0xFF0E4429), Color(0xFF006D32), Color(0xFF26A641), Color(0xFF39D353)],
-    outline: Color(0x0DFFFFFF), // rgba(255,255,255,0.05)
-    tooltipBackground: Color(0xFF636E7B),
-    tooltipForeground: Color(0xFFFFFFFF),
-  );
+  factory HeatmapPalette.from(AppColors colors, Brightness brightness) {
+    final empty = Color.lerp(colors.card, colors.txt, 0.08)!;
+    return HeatmapPalette._(
+      levels: [empty, for (final step in _steps) Color.lerp(empty, colors.accent, step)!],
+      // GitHub's 1px inner outline: rgba(27,31,36,.06) / rgba(255,255,255,.05).
+      outline: brightness == Brightness.dark ? const Color(0x0DFFFFFF) : const Color(0x0F1B1F24),
+      // The tooltip inverts the card: text colour behind, card colour on top.
+      tooltipBackground: colors.txt,
+      tooltipForeground: colors.card,
+    );
+  }
 
-  static HeatmapPalette of(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? dark : light;
+  static HeatmapPalette of(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.extension<AppColors>() ??
+        (theme.brightness == Brightness.dark ? AppColors.dark : AppColors.light);
+    return HeatmapPalette.from(colors, theme.brightness);
+  }
 
   /// Level 0 (no workout) to 4 (top quartile).
   final List<Color> levels;
@@ -80,12 +83,25 @@ class HeatmapPalette {
   final Color outline;
   final Color tooltipBackground;
   final Color tooltipForeground;
+
+  // Built fresh on every build, so the painter compares by value.
+  @override
+  bool operator ==(Object other) =>
+      other is HeatmapPalette &&
+      listEquals(other.levels, levels) &&
+      other.outline == outline &&
+      other.tooltipBackground == tooltipBackground &&
+      other.tooltipForeground == tooltipForeground;
+
+  @override
+  int get hashCode => Object.hash(Object.hashAll(levels), outline, tooltipBackground, tooltipForeground);
 }
 
 /// GitHub-contribution-graph look-alike for logged workouts: one column per
 /// week, one row per weekday (starting at the locale's first day of the
 /// week, so Sunday-first like GitHub in English and Monday-first in German),
-/// each day shaded in GitHub's five greens by its quartile among the
+/// each day shaded in one of five steps of the primary colour
+/// ([HeatmapPalette]) by its quartile among the
 /// range's training days (see [computeHeatmapLevels]) -- so one huge day no
 /// longer washes every other day out.
 ///
@@ -468,7 +484,10 @@ class _HeatmapViewState extends State<_HeatmapView> {
               palette: palette,
               selectedIndex: widget.selectedIndex,
               todayIndex: widget.todayIndex,
-              selectionColor: colors.accent,
+              // The text colour, not the primary: the cells themselves now
+              // run up to the primary colour, and a ring in it would vanish
+              // around a top-level day.
+              selectionColor: colors.txt,
               todayColor: colors.txt.withValues(alpha: 0.45),
               describe: (index) => _describe(t, localeName, index),
               onTapIndex: onSelectDate == null ? null : (index) => onSelectDate(widget.grid.slots[index].date),

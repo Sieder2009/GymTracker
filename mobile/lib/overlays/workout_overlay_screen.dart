@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
 import '../data/constants.dart';
 import '../data/duration_format.dart';
@@ -28,7 +27,6 @@ import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/exercise_demo_gif.dart';
-import '../widgets/exercise_list_view.dart' show categoryLabel;
 import '../widgets/rest_ring.dart';
 
 String _formatElapsed(Duration d) {
@@ -49,44 +47,6 @@ int _lowRepBound(String r) {
       RegExp(r'\d+').allMatches(r).map((m) => int.parse(m.group(0)!)).toList();
   if (numbers.isEmpty) return 0;
   return numbers.reduce((a, b) => a < b ? a : b);
-}
-
-/// Short label for a just-unlocked achievement path's toast -- mirrors
-/// `progress_screen.dart`'s `_AchievementsTab._pathLabel` (kept separate
-/// rather than shared, since `achievements_engine.dart` itself stays
-/// l10n-free, matching `analytics_engine.dart`'s existing convention).
-String _pathLabel(AppLocalizations t, AchievementPathId id) {
-  switch (id) {
-    case AchievementPathId.consistency:
-      return t.achievementPathConsistency;
-    case AchievementPathId.totalWorkouts:
-      return t.achievementPathTotalWorkouts;
-    case AchievementPathId.totalVolume:
-      return t.achievementPathTotalVolume;
-    case AchievementPathId.prCount:
-      return t.achievementPathPrCount;
-    case AchievementPathId.totalSets:
-      return t.achievementPathTotalSets;
-    case AchievementPathId.totalWorkoutMinutes:
-      return t.achievementPathTotalWorkoutMinutes;
-    case AchievementPathId.distinctExercises:
-      return t.achievementPathDistinctExercises;
-    // Never actually produced by computeAchievements (only by the separate
-    // computeMuscleProgress, which newlyUnlockedTiers here is never fed) --
-    // handled anyway because the switch is exhaustive over the whole enum.
-    case AchievementPathId.chestVolume:
-      return categoryLabel(t, 'chest');
-    case AchievementPathId.backVolume:
-      return categoryLabel(t, 'back');
-    case AchievementPathId.shouldersVolume:
-      return categoryLabel(t, 'shoulders');
-    case AchievementPathId.legsVolume:
-      return categoryLabel(t, 'legs');
-    case AchievementPathId.armsVolume:
-      return categoryLabel(t, 'arms');
-    case AchievementPathId.coreVolume:
-      return categoryLabel(t, 'core');
-  }
 }
 
 /// Guided, sequential set-by-set workout session, with a live session clock,
@@ -242,9 +202,7 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
     _programs.setEffort(exercises, _exIdx, _setIdx, scale, effort);
 
     final ex = exercises[_exIdx];
-    // Only a Reps set contributes real lifted-and-repped kg-volume -- same
-    // rule `achievements_engine.dart`'s `_historyVolumeKg` already follows
-    // for all-time volume.
+    // Only a Reps set contributes real lifted-and-repped kg-volume.
     _sessionVolumeKg += ex.sets[_setIdx].w * reps;
 
     _finishSet(exercises);
@@ -349,20 +307,13 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
       _programs.finishWorkout(plan);
       final minutes = DateTime.now().difference(_startedAt).inMinutes;
 
-      final history = context.read<WorkoutHistoryProvider>();
-      final beforeAchievements = computeAchievements(
-          sessions: history.sessions, programs: _programs.programs);
-      history.logSession(
+      context.read<WorkoutHistoryProvider>().logSession(
         date: todayIso(),
         durationMinutes: minutes < 1 ? 1 : minutes,
         planName: plan.name,
         totalVolumeKg: _sessionVolumeKg,
         totalSets: _sessionSets,
       );
-      final afterAchievements = computeAchievements(
-          sessions: history.sessions, programs: _programs.programs);
-      final unlocked =
-          newlyUnlockedTiers(beforeAchievements, afterAchievements);
 
       // Best-effort, never blocks finishing the workout — Health Connect/
       // HealthKit access can fail for reasons entirely outside the app's
@@ -374,17 +325,9 @@ class _WorkoutOverlayScreenState extends State<WorkoutOverlayScreen>
           ));
 
       // ToastProvider only shows one message at a time (a second call
-      // silently drops the first) -- a PR, a newly-unlocked achievement,
-      // and "workout finished" could all be true on the same last set, so
-      // they're combined into one string rather than racing each other.
-      final parts = [
-        if (prMessage != null) prMessage,
-        for (final id in unlocked.keys)
-          t.toastAchievementUnlocked(_pathLabel(t, id)),
-      ];
-      context
-          .read<ToastProvider>()
-          .show(parts.isEmpty ? t.toastWorkoutFinished : parts.join(' • '));
+      // silently drops the first) -- a PR on the last set wins over
+      // "workout finished" rather than racing it.
+      context.read<ToastProvider>().show(prMessage ?? t.toastWorkoutFinished);
       Navigator.of(context).pop();
       return;
     }

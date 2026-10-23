@@ -157,25 +157,31 @@ abstract final class LauncherIcons {
     Color? accent,
     Color? background,
   }) {
-    final IconBackdrop backdrop;
-    if (themeMode == 'dark') {
-      backdrop = IconBackdrop.dark;
-    } else if (themeMode == 'custom') {
-      if (background != null) {
-        backdrop = background.computeLuminance() < _darkBackgroundLuminance
-            ? IconBackdrop.dark
-            : IconBackdrop.light;
-      } else {
-        backdrop = customBase == 'dark' ? IconBackdrop.dark : IconBackdrop.light;
-      }
-    } else {
-      backdrop = IconBackdrop.light;
-    }
+    final backdrop = backdropFor(
+        themeMode: themeMode, customBase: customBase, background: background);
     final color = accent ??
         (backdrop == IconBackdrop.dark
             ? AppColors.dark.accent
             : AppColors.light.accent);
     return LauncherIconVariant(backdrop, nearestHue(color));
+  }
+
+  /// Whether the app currently looks light or dark: the theme mode, or in
+  /// custom mode the brightness of its background. Also decides the
+  /// Android launch screen's day/night copy (LaunchScreenService).
+  static IconBackdrop backdropFor({
+    required String themeMode,
+    String customBase = 'light',
+    Color? background,
+  }) {
+    if (themeMode == 'dark') return IconBackdrop.dark;
+    if (themeMode != 'custom') return IconBackdrop.light;
+    if (background != null) {
+      return background.computeLuminance() < _darkBackgroundLuminance
+          ? IconBackdrop.dark
+          : IconBackdrop.light;
+    }
+    return customBase == 'dark' ? IconBackdrop.dark : IconBackdrop.light;
   }
 
   /// Below this OKLCH chroma a color counts as grey and maps to

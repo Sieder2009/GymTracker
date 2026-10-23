@@ -478,12 +478,6 @@
   "achievementPathTotalSets": "Sätze insgesamt",
   "achievementPathTotalWorkoutMinutes": "Trainingszeit",
   "achievementPathDistinctExercises": "Übungsvielfalt",
-  "rankStarter": "Anfänger",
-  "rankBronze": "Bronze",
-  "rankSilver": "Silber",
-  "rankGold": "Gold",
-  "rankPlatinum": "Platin",
-  "rankLegend": "Legende",
   "labelRank": "Rang",
   "muscleTricepsLongHead": "Trizeps (langer Kopf)",
   "muscleTricepsLateralHead": "Trizeps (lateraler Kopf)",
@@ -594,5 +588,72 @@
   "settingsAppIconAdaptive": "An Darstellung anpassen",
   "settingsAppIconAdaptiveHint": "Hell oder dunkel wie die App, in deiner Primärfarbe",
   "settingsAppIconPending": "Ändert sich, sobald du die App verlässt",
+  "settingsAppIconChoose": "Selbst auswählen",
+  "settingsAppIconChooseHint": "Ein Tipp legt das Icon fest und schaltet die Anpassung aus.",
+  "titleYourPrs": "Deine PRs",
+  "actionLogPrs": "PRs eintragen",
+  "actionLogMeasurements": "Maße eintragen",
+  "labelLastValue": "Zuletzt {value}",
+  "@labelLastValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "labelStart": "Start",
+  "errorInvalidValue": "Ungültig",
+  "rankIron": "Mortal",
+  "rankBronze": "Warrior",
+  "rankSilver": "Spartan",
+  "rankGold": "Hero",
+  "rankPlatinum": "Demigod",
+  "rankDiamond": "Titan",
+  "rankChampion": "Olympian",
+  "titleYourRank": "Dein Rang",
+  "rankNext": "Nächster Rang: {rank}",
+  "@rankNext": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankKgToNext": "Noch {kg} kg bis {rank}",
+  "@rankKgToNext": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankTop": "Höchster Rang erreicht",
+  "rankNeedBodyweight": "Trag dein Körpergewicht ein, um deinen Rang zu sehen.",
+  "rankNeedAllThree": "Trag alle drei PRs ein, um deinen Gesamtrang zu sehen.",
+  "titleAllRanks": "Alle Ränge",
+  "allRanksCaptionKg": "Ab diesen PRs beginnt der jeweilige Rang – bei {bodyweight} kg Körpergewicht.",
+  "@allRanksCaptionKg": {
+    "placeholders": {
+      "bodyweight": {
+        "type": "String"
+      }
+    }
+  },
+  "allRanksCaptionRatio": "Ab diesen PRs beginnt der jeweilige Rang, als Vielfaches deines Körpergewichts. Trag dein Gewicht ein, um Kilo zu sehen.",
+  "rankExplainer": "Aus deinen PRs in Kniebeuge, Bankdrücken und Kreuzheben im Verhältnis zu deinem Körpergewicht.",
+  "creatineTitle": "Kreatin",
+  "creatineTakenToday": "Heute genommen",
+  "creatineNotYet": "Heute noch nicht abgehakt",
+  "creatineStreak": "{count, plural, =1{1 Tag in Folge} other{{count} Tage in Folge}}",
+  "@creatineStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAppIconFooter": "Android tauscht das Icon, sobald du die App verlässt (Startbildschirm oder App-Übersicht), und schließt sie dabei. Manche Launcher brauchen ein paar Sekunden, bis das neue erscheint."
 }

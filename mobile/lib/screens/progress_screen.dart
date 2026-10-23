@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../analytics/achievements_engine.dart';
 import '../analytics/analytics_engine.dart';
 import '../analytics/body_measurement_analytics.dart';
 import '../analytics/heatmap_engine.dart';
 import '../analytics/logged_days.dart';
+import '../analytics/rest_days.dart';
 import '../data/constants.dart';
 import '../data/lift_categories.dart';
 import '../l10n/app_localizations.dart';
@@ -20,14 +20,14 @@ import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
-import '../widgets/body_shape_diagram.dart';
 import '../widgets/chart_card.dart';
 import '../widgets/contribution_heatmap.dart';
-import '../widgets/exercise_list_view.dart' show categoryLabel;
 import '../widgets/kpi_tile.dart';
 import '../widgets/plateau_notice.dart';
+import '../widgets/radar_chart.dart';
 import '../widgets/strength_line_chart.dart';
 import '../widgets/trend_value.dart';
+import '../widgets/value_entry_sheet.dart';
 import 'calendar_screen.dart';
 
 class _ProgressRow {
@@ -43,7 +43,7 @@ class _ProgressRow {
 }
 
 /// "Fortschritt"/Analytics tab — its own dedicated multi-section area
-/// (Overview / Strength / Consistency / Achievements), every number and
+/// (Overview / Strength / Consistency), every number and
 /// chart traced back to real logged data. Nothing here is guessed: charts
 /// show an honest empty state instead of a flat line when there isn't
 /// enough data yet (see analytics_engine.dart's [DataQuality]).
@@ -67,7 +67,7 @@ class ProgressScreen extends StatelessWidget {
 
     return SafeArea(
       child: DefaultTabController(
-        length: 4,
+        length: 3,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -90,7 +90,6 @@ class ProgressScreen extends StatelessWidget {
                 Tab(text: t.tabAnalyticsOverview),
                 Tab(text: t.tabAnalyticsStrength),
                 Tab(text: t.tabAnalyticsConsistency),
-                Tab(text: t.tabAnalyticsAchievements),
               ],
             ),
             Expanded(
@@ -99,7 +98,6 @@ class ProgressScreen extends StatelessWidget {
                   _OverviewTab(),
                   _StrengthTab(),
                   const _ConsistencyTab(),
-                  const _AchievementsTab(),
                 ],
               ),
             ),
@@ -134,7 +132,10 @@ class _OverviewTab extends StatelessWidget {
         : [for (final b in buckets) ChartPoint(b.weekStart, b.totalVolumeKg)];
     final totalVolume =
         sessions.fold<double>(0, (sum, s) => sum + s.totalVolumeKg);
-    final currentStreak = computeConsistency(sessions).currentStreakDays;
+    final currentStreak = computeConsistency(
+      sessions,
+      isRestDay: activePlanRestDays(context.watch<ProgramsProvider>(), context.watch<TrainStateProvider>()),
+    ).currentStreakDays;
     final recentPrs = countRecentLiftPrs(lifts);
 
     return ListView(
@@ -201,13 +202,14 @@ class _OverviewTab extends StatelessWidget {
   }
 }
 
-/// Body-circumference tracking -- six optional entry fields (a user
-/// typically only has a few measured on any given day), a chip picker to
-/// choose which single field's trend the mini chart below shows (matching
-/// how [StrengthLineChart] is already a single-series widget elsewhere,
-/// e.g. `strength_screen.dart`'s `_BodyWeightCard`), and, once at least two
-/// entries exist, an approximate visual shape (see [BodyShapeDiagram]) so
-/// growth shows up as a picture, not just numbers.
+/// Body-circumference tracking -- a chip picker to choose which single
+/// field's trend the mini chart shows (matching how [StrengthLineChart] is
+/// already a single-series widget elsewhere, e.g. `strength_screen.dart`'s
+/// `_BodyWeightCard`), one button that opens a clear entry sheet for all six
+/// fields (any subset; a user typically measures only a few on a given day),
+/// and a spider chart of every measured field on one cm scale, first value
+/// against latest, so growth shows as a shape with the change at each
+/// corner.
 class _BodyMeasurementsCard extends StatefulWidget {
   const _BodyMeasurementsCard();
 
@@ -216,45 +218,50 @@ class _BodyMeasurementsCard extends StatefulWidget {
 }
 
 class _BodyMeasurementsCardState extends State<_BodyMeasurementsCard> {
-  final _chestCtrl = TextEditingController();
-  final _waistCtrl = TextEditingController();
-  final _hipsCtrl = TextEditingController();
-  final _armCtrl = TextEditingController();
-  final _thighCtrl = TextEditingController();
-  final _calfCtrl = TextEditingController();
   BodyMeasurementField _selected = BodyMeasurementField.chest;
 
-  List<TextEditingController> get _controllers =>
-      [_chestCtrl, _waistCtrl, _hipsCtrl, _armCtrl, _thighCtrl, _calfCtrl];
+  /// Spider-chart order: chest on top, then clockwise down the arm, round
+  /// the waist and hips, and up the leg.
+  static const List<BodyMeasurementField> _radarOrder = [
+    BodyMeasurementField.chest,
+    BodyMeasurementField.arm,
+    BodyMeasurementField.waist,
+    BodyMeasurementField.hips,
+    BodyMeasurementField.thigh,
+    BodyMeasurementField.calf,
+  ];
 
-  @override
-  void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  double? _parse(TextEditingController c) {
-    final text = c.text.trim();
-    if (text.isEmpty) return null;
-    return double.tryParse(text.replaceAll(',', '.'));
-  }
-
-  void _save() {
+  Future<void> _log(AppLocalizations t, Map<BodyMeasurementField, ({double first, double latest})> spans) async {
+    const fields = BodyMeasurementField.values;
+    final values = await showValueEntrySheet(
+      context,
+      title: t.actionLogMeasurements,
+      fields: [
+        for (final f in fields)
+          ValueEntryField(label: bodyMeasurementFieldLabel(t, f), unit: 'cm', last: spans[f]?.latest),
+      ],
+    );
+    if (values == null || !mounted) return;
+    double? valueOf(BodyMeasurementField f) => values[fields.indexOf(f)];
     context.read<BodyMeasurementsProvider>().addEntry(
-          chestCm: _parse(_chestCtrl),
-          waistCm: _parse(_waistCtrl),
-          hipsCm: _parse(_hipsCtrl),
-          armCm: _parse(_armCtrl),
-          thighCm: _parse(_thighCtrl),
-          calfCm: _parse(_calfCtrl),
+          chestCm: valueOf(BodyMeasurementField.chest),
+          waistCm: valueOf(BodyMeasurementField.waist),
+          hipsCm: valueOf(BodyMeasurementField.hips),
+          armCm: valueOf(BodyMeasurementField.arm),
+          thighCm: valueOf(BodyMeasurementField.thigh),
+          calfCm: valueOf(BodyMeasurementField.calf),
         );
-    setState(() {
-      for (final c in _controllers) {
-        c.clear();
-      }
-    });
+  }
+
+  RadarAxis _axis(AppLocalizations t, BodyMeasurementField f, ({double first, double latest}) span) {
+    final delta = span.latest - span.first;
+    final change = delta == 0 ? '' : ' · ${delta > 0 ? '+' : '−'}${fmt(delta.abs())}';
+    return RadarAxis(
+      label: bodyMeasurementFieldLabel(t, f),
+      value: span.latest,
+      start: delta == 0 ? null : span.first,
+      detail: '${fmt(span.latest)} cm$change',
+    );
   }
 
   @override
@@ -262,6 +269,11 @@ class _BodyMeasurementsCardState extends State<_BodyMeasurementsCard> {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
     final entries = context.watch<BodyMeasurementsProvider>().entries;
+    final spans = measurementSpans(entries);
+    final radarAxes = [
+      for (final f in _radarOrder)
+        if (spans[f] case final span?) _axis(t, f, span),
+    ];
     final series = [
       for (final e in entries)
         if (bodyMeasurementFieldValue(e, _selected) != null) bodyMeasurementFieldValue(e, _selected)!,
@@ -320,48 +332,28 @@ class _BodyMeasurementsCardState extends State<_BodyMeasurementsCard> {
                   style: TextStyle(color: colors.mut)),
             ],
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                BodyMeasurementField.chest,
-                BodyMeasurementField.waist,
-                BodyMeasurementField.hips,
-                BodyMeasurementField.arm,
-                BodyMeasurementField.thigh,
-                BodyMeasurementField.calf,
-              ].asMap().entries.map((entry) {
-                final ctrl = _controllers[entry.key];
-                return SizedBox(
-                  width: 90,
-                  child: TextField(
-                    controller: ctrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: bodyMeasurementFieldLabel(t, entry.value),
-                      suffixText: 'cm',
-                      isDense: true,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton(onPressed: _save, child: Text(t.actionAddEntry)),
-            ),
-            if (entries.length >= 2) ...[
-              const Divider(height: 28),
-              Center(
-                child: Text(t.titleBodyShape,
-                    style: Theme.of(context).textTheme.headlineMedium),
+              child: OutlinedButton.icon(
+                onPressed: () => _log(t, spans),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: Text(t.actionLogMeasurements),
               ),
-              const SizedBox(height: 10),
-              Center(
-                child: BodyShapeDiagram(
-                  scaleFactors: measurementScaleFactors(entries),
-                ),
+            ),
+            // A web needs at least three spokes.
+            if (radarAxes.length >= 3) ...[
+              const Divider(height: 28),
+              Text(t.titleBodyShape, style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: 12),
+              RadarChart(
+                axes: radarAxes,
+                ringLabel: (v, outermost) => outermost ? '${fmt(v)} cm' : fmt(v),
+                nowLabel: t.labelCurrent,
+                startLabel: t.labelStart,
+                semanticsLabel: [
+                  t.titleBodyShape,
+                  for (final a in radarAxes) '${a.label}: ${a.detail}',
+                ].join(', '),
               ),
             ],
           ],
@@ -549,7 +541,10 @@ class _ConsistencyTab extends StatelessWidget {
     // same as the calendar; the per-week bars stay guided workouts only.
     final trainingDays = sessionsWithLoggedExercises(
         sessions, context.watch<ProgramsProvider>().programs);
-    final consistency = computeConsistency(trainingDays);
+    final consistency = computeConsistency(
+      trainingDays,
+      isRestDay: activePlanRestDays(context.watch<ProgramsProvider>(), context.watch<TrainStateProvider>()),
+    );
     final heatmapDays = aggregateHeatmapDays(trainingDays);
     // The full rolling year, however many weeks the card has room for.
     final lastYear = summarizeHeatmap(heatmapDays, range: const HeatmapRange.lastYear());
@@ -642,341 +637,6 @@ class _ConsistencyTab extends StatelessWidget {
   }
 }
 
-/// Achievement paths — every tier derived live from [WorkoutHistoryProvider]/
-/// [ProgramsProvider] (see `achievements_engine.dart`), never a separately
-/// stored "is this unlocked" flag, matching the rest of this tab's honest,
-/// nothing-is-guessed philosophy.
-class _AchievementsTab extends StatelessWidget {
-  const _AchievementsTab();
-
-  String _pathLabel(AppLocalizations t, AchievementPathId id) {
-    switch (id) {
-      case AchievementPathId.consistency:
-        return t.achievementPathConsistency;
-      case AchievementPathId.totalWorkouts:
-        return t.achievementPathTotalWorkouts;
-      case AchievementPathId.totalVolume:
-        return t.achievementPathTotalVolume;
-      case AchievementPathId.prCount:
-        return t.achievementPathPrCount;
-      case AchievementPathId.totalSets:
-        return t.achievementPathTotalSets;
-      case AchievementPathId.totalWorkoutMinutes:
-        return t.achievementPathTotalWorkoutMinutes;
-      case AchievementPathId.distinctExercises:
-        return t.achievementPathDistinctExercises;
-      case AchievementPathId.chestVolume:
-        return categoryLabel(t, 'chest');
-      case AchievementPathId.backVolume:
-        return categoryLabel(t, 'back');
-      case AchievementPathId.shouldersVolume:
-        return categoryLabel(t, 'shoulders');
-      case AchievementPathId.legsVolume:
-        return categoryLabel(t, 'legs');
-      case AchievementPathId.armsVolume:
-        return categoryLabel(t, 'arms');
-      case AchievementPathId.coreVolume:
-        return categoryLabel(t, 'core');
-    }
-  }
-
-  IconData _pathIcon(AchievementPathId id) {
-    switch (id) {
-      case AchievementPathId.consistency:
-        return Icons.local_fire_department;
-      case AchievementPathId.totalWorkouts:
-        return Icons.fitness_center;
-      case AchievementPathId.totalVolume:
-        return Icons.scale;
-      case AchievementPathId.prCount:
-        return Icons.emoji_events;
-      case AchievementPathId.totalSets:
-        return Icons.repeat;
-      case AchievementPathId.totalWorkoutMinutes:
-        return Icons.timer_outlined;
-      case AchievementPathId.distinctExercises:
-        return Icons.grid_view;
-      case AchievementPathId.chestVolume:
-        return Icons.accessibility_new;
-      case AchievementPathId.backVolume:
-        return Icons.rowing;
-      case AchievementPathId.shouldersVolume:
-        return Icons.sports_gymnastics;
-      case AchievementPathId.legsVolume:
-        return Icons.directions_walk;
-      case AchievementPathId.armsVolume:
-        return Icons.sports_martial_arts;
-      case AchievementPathId.coreVolume:
-        return Icons.self_improvement;
-    }
-  }
-
-  String _formatValue(AppLocalizations t, AchievementPathId id, double value) {
-    switch (id) {
-      case AchievementPathId.consistency:
-        return t.unitDays(value.round());
-      case AchievementPathId.totalVolume:
-      case AchievementPathId.chestVolume:
-      case AchievementPathId.backVolume:
-      case AchievementPathId.shouldersVolume:
-      case AchievementPathId.legsVolume:
-      case AchievementPathId.armsVolume:
-      case AchievementPathId.coreVolume:
-        return '${fmt(value)} kg';
-      case AchievementPathId.totalWorkouts:
-      case AchievementPathId.prCount:
-      case AchievementPathId.totalSets:
-      case AchievementPathId.distinctExercises:
-        return '${value.round()}';
-      case AchievementPathId.totalWorkoutMinutes:
-        final hours = value ~/ 60;
-        final minutes = value.round() % 60;
-        return hours > 0 ? '${hours}h ${minutes}min' : '${value.round()}min';
-    }
-  }
-
-  Widget _pathCard(AppLocalizations t, AppColors colors, AchievementPathResult path) {
-    return _AchievementPathCard(
-      label: _pathLabel(t, path.id),
-      icon: _pathIcon(path.id),
-      path: path,
-      valueLabel: _formatValue(t, path.id, path.currentValue),
-      nextLabel: path.hasNextTier
-          ? t.achievementProgressToNext(
-              _formatValue(t, path.id, path.nextThreshold! - path.currentValue))
-          : t.achievementAllTiersUnlocked,
-      colors: colors,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).extension<AppColors>()!;
-    final sessions = context.watch<WorkoutHistoryProvider>().sessions;
-    final programs = context.watch<ProgramsProvider>().programs;
-    final paths = computeAchievements(sessions: sessions, programs: programs);
-    final rank = computeRank(paths);
-    final musclePaths = computeMuscleProgress(programs);
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
-      children: [
-        _RankCard(rank: rank, colors: colors, t: t),
-        const SizedBox(height: 16),
-        for (final path in paths) ...[_pathCard(t, colors, path), const SizedBox(height: 12)],
-        const SizedBox(height: 8),
-        Text(t.headerMuscleProgress, style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 4),
-        Text(t.captionMuscleProgress, style: TextStyle(color: colors.mut, fontSize: 12)),
-        const SizedBox(height: 12),
-        for (final path in musclePaths) ...[_pathCard(t, colors, path), const SizedBox(height: 12)],
-      ],
-    );
-  }
-}
-
-String _rankLabel(AppLocalizations t, RankTier tier) {
-  switch (tier) {
-    case RankTier.starter:
-      return t.rankStarter;
-    case RankTier.bronze:
-      return t.rankBronze;
-    case RankTier.silver:
-      return t.rankSilver;
-    case RankTier.gold:
-      return t.rankGold;
-    case RankTier.platinum:
-      return t.rankPlatinum;
-    case RankTier.legend:
-      return t.rankLegend;
-  }
-}
-
-Color _rankColor(AppColors colors, RankTier tier) {
-  switch (tier) {
-    case RankTier.starter:
-      return colors.mut;
-    case RankTier.bronze:
-      return colors.green;
-    case RankTier.silver:
-      return colors.teal;
-    case RankTier.gold:
-      return colors.accent;
-    case RankTier.platinum:
-      return colors.purple;
-    case RankTier.legend:
-      return colors.yellow;
-  }
-}
-
-/// Overall progression across every achievement path combined -- shown
-/// above the individual path cards so "how am I doing overall" has one
-/// answer, not just seven separate ones.
-class _RankCard extends StatelessWidget {
-  const _RankCard({required this.rank, required this.colors, required this.t});
-
-  final RankResult rank;
-  final AppColors colors;
-  final AppLocalizations t;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _rankColor(colors, rank.tier);
-    final isMaxTier = rank.tier == RankTier.values.last;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.military_tech, size: 22, color: color),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(t.labelRank, style: TextStyle(color: colors.mut, fontSize: 12)),
-                      Text(_rankLabel(t, rank.tier),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineLarge
-                              ?.copyWith(color: color)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (!isMaxTier) ...[
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadii.pill),
-                child: LinearProgressIndicator(
-                  value: rank.progressToNext,
-                  minHeight: 6,
-                  backgroundColor: colors.card2,
-                  color: color,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AchievementPathCard extends StatelessWidget {
-  const _AchievementPathCard({
-    required this.label,
-    required this.icon,
-    required this.path,
-    required this.valueLabel,
-    required this.nextLabel,
-    required this.colors,
-  });
-
-  final String label;
-  final IconData icon;
-  final AchievementPathResult path;
-  final String valueLabel;
-  final String nextLabel;
-  final AppColors colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 20, color: colors.accent),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(label,
-                      style: Theme.of(context).textTheme.headlineMedium),
-                ),
-                Text(valueLabel,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w700, color: colors.accent)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (var i = 0; i < path.thresholds.length; i++)
-                  _TierBadge(
-                    unlocked: i <= path.unlockedTierIndex,
-                    label: '${path.thresholds[i].round()}',
-                    colors: colors,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.xs),
-              child: LinearProgressIndicator(
-                value: path.progressToNext,
-                backgroundColor: colors.card2,
-                color: colors.yellow,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(nextLabel, style: TextStyle(color: colors.mut, fontSize: 12)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TierBadge extends StatelessWidget {
-  const _TierBadge(
-      {required this.unlocked, required this.label, required this.colors});
-
-  final bool unlocked;
-  final String label;
-  final AppColors colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: unlocked
-            ? colors.yellow.withValues(alpha: 0.16)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-        border: Border.all(color: unlocked ? colors.yellow : colors.line),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            unlocked ? Icons.emoji_events : Icons.emoji_events_outlined,
-            size: 13,
-            color: unlocked ? colors.yellow : colors.mut,
-          ),
-          const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: unlocked ? FontWeight.w700 : FontWeight.w600,
-                color: unlocked ? colors.yellow : colors.mut,
-              )),
-        ],
-      ),
-    );
-  }
-}
-
 class _YourProgressCard extends StatelessWidget {
   const _YourProgressCard();
 
@@ -990,7 +650,10 @@ class _YourProgressCard extends StatelessWidget {
     final bodyWeight = context.watch<BodyWeightProvider>().entries;
 
     final week = computeWeekSummary(sessions);
-    final consistency = computeConsistency(sessions);
+    final consistency = computeConsistency(
+      sessions,
+      isRestDay: activePlanRestDays(context.watch<ProgramsProvider>(), context.watch<TrainStateProvider>()),
+    );
     final strengthTrend = bestLiftImprovement(
       lifts,
       labels: {

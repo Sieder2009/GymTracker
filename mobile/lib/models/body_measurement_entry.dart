@@ -1,8 +1,8 @@
 import '../l10n/app_localizations.dart';
 
-/// The six trackable circumference points -- shared between the entry form/
-/// chart picker (`progress_screen.dart`) and the approximate shape overlay
-/// (`body_shape_diagram.dart`), so both always agree on the same field set.
+/// The six trackable circumference points -- shared by the entry sheet, the
+/// chart picker and the measurements spider chart (`progress_screen.dart`),
+/// so they always agree on the same field set.
 enum BodyMeasurementField { chest, waist, hips, arm, thigh, calf }
 
 double? bodyMeasurementFieldValue(BodyMeasurementEntry e, BodyMeasurementField f) {

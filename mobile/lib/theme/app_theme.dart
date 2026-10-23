@@ -143,6 +143,36 @@ class AppTheme {
         titleTextStyle: GoogleFonts.sora(color: colors.txt, fontWeight: FontWeight.w800, fontSize: 18),
         contentTextStyle: GoogleFonts.inter(color: colors.mut, fontSize: 14.5),
       ),
+      // Unthemed bottom sheets take Material3's default surface, which comes
+      // from the stock purple seed (a lavender tint) -- the page color and
+      // the card radius keep every sheet on this palette. The page color
+      // rather than the card color, so cards inside a sheet still stand out.
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.bg,
+        modalBackgroundColor: colors.bg,
+        surfaceTintColor: Colors.transparent,
+        dragHandleColor: colors.line,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.lg)),
+        ),
+      ),
+      // Same purple leak for the selected segment (stock secondaryContainer):
+      // an accent tint with accent text, the hairline border of the cards.
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected)
+                  ? colors.accent.withValues(alpha: brightness == Brightness.dark ? 0.2 : 0.12)
+                  : colors.card),
+          foregroundColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected) ? colors.accent : colors.txt),
+          iconColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected) ? colors.accent : colors.txt),
+          side: WidgetStatePropertyAll(BorderSide(color: colors.line)),
+          textStyle: WidgetStatePropertyAll(
+              GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+        ),
+      ),
       listTileTheme: ListTileThemeData(
         iconColor: colors.mut,
         textColor: colors.txt,

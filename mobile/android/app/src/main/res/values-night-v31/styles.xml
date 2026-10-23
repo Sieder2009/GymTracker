@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+ (dark mode): see values-v31/styles.xml. Background is
-         AppColors.dark.bg. -->
+    <!-- Android 12+ (dark mode, i.e. the app's own theme setting, which
+         IronpeakActivity pins as the app's night mode): see
+         values-v31/styles.xml. Background is AppColors.dark.bg. -->
     <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:windowSplashScreenBackground">#101114</item>

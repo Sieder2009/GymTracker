@@ -444,12 +444,6 @@
   "achievementPathTotalSets": "Totaal aantal sets",
   "achievementPathTotalWorkoutMinutes": "Trainingstijd",
   "achievementPathDistinctExercises": "Oefeningsvariatie",
-  "rankStarter": "Beginner",
-  "rankBronze": "Brons",
-  "rankSilver": "Zilver",
-  "rankGold": "Goud",
-  "rankPlatinum": "Platina",
-  "rankLegend": "Legende",
   "labelRank": "Rang",
   "muscleTricepsLongHead": "Triceps (lange kop)",
   "muscleTricepsLateralHead": "Triceps (laterale kop)",
@@ -560,5 +554,72 @@
   "settingsAppIconAdaptive": "Weergave volgen",
   "settingsAppIconAdaptiveHint": "Licht of donker zoals de app, in je primaire kleur",
   "settingsAppIconPending": "Verandert zodra je de app verlaat",
+  "settingsAppIconChoose": "Zelf kiezen",
+  "settingsAppIconChooseHint": "Een tik zet dat icoon vast en stopt met de weergave volgen.",
+  "titleYourPrs": "Jouw PR's",
+  "actionLogPrs": "PR's invoeren",
+  "actionLogMeasurements": "Maten invoeren",
+  "labelLastValue": "Laatst: {value}",
+  "@labelLastValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "labelStart": "Start",
+  "errorInvalidValue": "Ongeldig",
+  "rankIron": "Mortal",
+  "rankBronze": "Warrior",
+  "rankSilver": "Spartan",
+  "rankGold": "Hero",
+  "rankPlatinum": "Demigod",
+  "rankDiamond": "Titan",
+  "rankChampion": "Olympian",
+  "titleYourRank": "Jouw rang",
+  "rankNext": "Volgende rang: {rank}",
+  "@rankNext": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankKgToNext": "Nog {kg} kg tot {rank}",
+  "@rankKgToNext": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankTop": "Hoogste rang bereikt",
+  "rankNeedBodyweight": "Voer je lichaamsgewicht in om je rang te zien.",
+  "rankNeedAllThree": "Voer alle drie de PR's in om je totale rang te zien.",
+  "titleAllRanks": "Alle rangen",
+  "allRanksCaptionKg": "Elke rang begint bij deze PR's – bij {bodyweight} kg lichaamsgewicht.",
+  "@allRanksCaptionKg": {
+    "placeholders": {
+      "bodyweight": {
+        "type": "String"
+      }
+    }
+  },
+  "allRanksCaptionRatio": "Elke rang begint bij deze PR's, als veelvoud van je lichaamsgewicht. Voer je gewicht in om kilo's te zien.",
+  "rankExplainer": "Op basis van je PR’s voor squat, bankdrukken en deadlift ten opzichte van je lichaamsgewicht.",
+  "creatineTitle": "Creatine",
+  "creatineTakenToday": "Vandaag genomen",
+  "creatineNotYet": "Vandaag nog niet afgevinkt",
+  "creatineStreak": "{count, plural, =1{1 dag op rij} other{{count} dagen op rij}}",
+  "@creatineStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAppIconFooter": "Android wisselt het icoon zodra je de app verlaat (startscherm of recente apps) en sluit de app daarbij. Sommige launchers hebben een paar seconden nodig om het nieuwe te tonen."
 }

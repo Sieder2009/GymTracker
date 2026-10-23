@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -29,6 +30,7 @@ import '../state/toast_provider.dart';
 import '../state/update_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
+import '../theme/launcher_icons.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/health_connect_feedback.dart';
 import '../widgets/ironpeak_logo.dart';
@@ -723,12 +725,101 @@ class _LauncherIconBlock extends StatelessWidget {
                         )
                       : const SizedBox(width: double.infinity),
                 ),
+                const Divider(height: 28),
+                Text(
+                  t.settingsAppIconChoose,
+                  style: TextStyle(color: colors.txt, fontSize: 14.5, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  t.settingsAppIconChooseHint,
+                  style: TextStyle(color: colors.mut, fontSize: 12.5, fontWeight: FontWeight.w600),
+                ),
+                for (final (backdrop, label) in [
+                  (IconBackdrop.light, t.themeModeLight),
+                  (IconBackdrop.dark, t.themeModeDark),
+                ]) ...[
+                  const SizedBox(height: 12),
+                  Text(label, style: TextStyle(color: colors.mut, fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  _IconChoiceRow(
+                    backdrop: backdrop,
+                    label: label,
+                    // Only a pinned icon is marked; while it follows the
+                    // appearance, the preview above shows which one is on.
+                    selected: icons.adaptive ? null : icons.desired,
+                    onChoose: icons.choose,
+                  ),
+                ],
               ],
             ),
           ),
         ),
         _GroupFooter(t.settingsAppIconFooter),
       ],
+    );
+  }
+}
+
+/// All eight colors of one icon style ([backdrop]) as tappable home-screen
+/// previews, sized so the row always fits on one line.
+class _IconChoiceRow extends StatelessWidget {
+  const _IconChoiceRow({
+    required this.backdrop,
+    required this.label,
+    required this.selected,
+    required this.onChoose,
+  });
+
+  final IconBackdrop backdrop;
+  final String label;
+  final LauncherIconVariant? selected;
+  final ValueChanged<LauncherIconVariant> onChoose;
+
+  static const double _gap = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const count = 8;
+        final tile = math.min(44.0, (constraints.maxWidth - (count - 1) * _gap) / count);
+        return Row(
+          children: [
+            for (final (i, hue) in IconHue.values.indexed) ...[
+              if (i > 0) const SizedBox(width: _gap),
+              Builder(builder: (context) {
+                final variant = LauncherIconVariant(backdrop, hue);
+                final isSelected = variant == selected;
+                return Semantics(
+                  button: true,
+                  selected: isSelected,
+                  label: '$label ${i + 1}/$count',
+                  child: GestureDetector(
+                    onTap: () => onChoose(variant),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: tile,
+                      height: tile,
+                      // 2 of ring, 2 of air around the icon.
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(tile * 0.34),
+                        border: Border.all(
+                          color: isSelected ? colors.accent : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: LauncherIconPreview(variant: variant, size: tile - 8),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ],
+        );
+      },
     );
   }
 }

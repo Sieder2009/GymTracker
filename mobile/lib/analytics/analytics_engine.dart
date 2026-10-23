@@ -118,42 +118,47 @@ int _calendarDaysBetween(DateTime a, DateTime b) =>
         .difference(DateTime.utc(a.year, a.month, a.day))
         .inDays;
 
-/// Longest run of consecutive calendar days containing >=1 workout, and
-/// whether that run reaches up to today/yesterday (the "current" streak).
-ConsistencyStats computeConsistency(List<WorkoutSession> sessions, {DateTime? now}) {
+/// Streaks in calendar days: a day with >=1 workout extends the run; a
+/// planned rest day ([isRestDay], see `rest_days.dart`) keeps it alive and
+/// counts too, once a run has started -- following the plan, rest days
+/// included, is the streak; any other day without a workout ends it. Today
+/// only ever adds (not having trained YET doesn't end anything), so the
+/// current streak survives until a whole planned training day is missed.
+/// Without [isRestDay] every day off breaks the run.
+ConsistencyStats computeConsistency(
+  List<WorkoutSession> sessions, {
+  DateTime? now,
+  bool Function(DateTime day)? isRestDay,
+}) {
   final today = _dateOnly(now ?? DateTime.now());
-  final dates = sessions
+  final trained = sessions
       .map((s) => _parseIso(s.date))
       .whereType<DateTime>()
       .map(_dateOnly)
-      .toSet()
-      .toList()
-    ..sort();
+      .toSet();
 
   var bestStreak = 0;
-  var runStreak = 0;
-  DateTime? prev;
   var currentStreak = 0;
-
-  for (final d in dates) {
-    if (prev != null && _calendarDaysBetween(prev, d) == 1) {
-      runStreak += 1;
-    } else {
-      runStreak = 1;
+  if (trained.isNotEmpty) {
+    final first = trained.reduce((a, b) => a.isBefore(b) ? a : b);
+    final latest = trained.reduce((a, b) => a.isAfter(b) ? a : b);
+    final end = latest.isAfter(today) ? latest : today;
+    var run = 0;
+    // One calendar day at a time, built from the date parts so a 23-hour
+    // DST night can't skip or repeat a day.
+    for (var d = first;
+        _calendarDaysBetween(d, end) >= 0;
+        d = DateTime(d.year, d.month, d.day + 1)) {
+      if (trained.contains(d)) {
+        run += 1;
+      } else if (run > 0 && (isRestDay?.call(d) ?? false)) {
+        run += 1;
+      } else if (d != today) {
+        run = 0;
+      }
+      if (run > bestStreak) bestStreak = run;
     }
-    bestStreak = runStreak > bestStreak ? runStreak : bestStreak;
-    prev = d;
-  }
-
-  if (dates.isNotEmpty) {
-    final last = dates.last;
-    final gapToToday = _calendarDaysBetween(last, today);
-    // Streak still "current" if the most recent workout was today or
-    // yesterday (rest-day-friendly — one skipped day doesn't reset it to 0,
-    // but a whole week off does).
-    if (gapToToday <= 1) {
-      currentStreak = runStreak;
-    }
+    currentStreak = run;
   }
 
   final workoutsThisMonth = sessions.where((s) {
@@ -243,8 +248,7 @@ List<ExerciseHistoryPoint> exerciseHistoryPoints(Exercise exercise) {
     // chart/e1RM/PR -- gated on the entry's OWN stamped mode (never
     // `exercise.logMode`, which can have since been flipped -- see the doc
     // comment on `HistoryEntry.mode`). This single choke point also fixes
-    // `computeExerciseTrend`, `bestEstimatedOneRepMax`, and transitively
-    // `achievements_engine.dart`'s `_prEventCount`, all three of which
+    // `computeExerciseTrend` and `bestEstimatedOneRepMax`, both of which
     // funnel through this function.
     if (h.mode != ExerciseLogMode.reps) continue;
     final d = _parseIso(h.date);

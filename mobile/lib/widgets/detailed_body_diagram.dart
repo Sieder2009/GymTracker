@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +8,7 @@ import '../l10n/app_localizations.dart';
 import '../models/muscle_group.dart';
 import '../state/athlete_settings_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 
 export '../data/body_atlas.dart' show BodyGender, kBodyDiagramAspect;
 
@@ -103,6 +106,59 @@ class BodyDiagramPainter extends CustomPainter {
   }
 }
 
+/// Each muscle's share of the whole exercise's work, in whole percent that
+/// add up to exactly 100 (largest remainder). The activation values
+/// themselves are 0-100 intensities per muscle -- shown side by side as
+/// percentages they add up to nonsense like 180 %, so every label shows
+/// this instead. Muscles at 0 are left out; nothing worked -> empty.
+Map<MuscleGroup, int> activationShares(Map<MuscleGroup, double> activation) {
+  final worked = {
+    for (final MapEntry(key: m, value: v) in activation.entries)
+      if (v > 0) m: v,
+  };
+  final total = worked.values.fold(0.0, (sum, v) => sum + v);
+  if (total <= 0) return {};
+  final exact = {for (final MapEntry(key: m, value: v) in worked.entries) m: v * 100 / total};
+  final shares = {for (final MapEntry(key: m, value: v) in exact.entries) m: v.floor()};
+  var left = 100 - shares.values.fold(0, (sum, v) => sum + v);
+  // The points rounding lost go to the biggest remainders; ties to the
+  // harder-worked muscle, then a fixed order, so labels never flicker.
+  final byRemainder = exact.keys.toList()
+    ..sort((a, b) {
+      final byRest = (exact[b]! - shares[b]!).compareTo(exact[a]! - shares[a]!);
+      if (byRest != 0) return byRest;
+      final byValue = worked[b]!.compareTo(worked[a]!);
+      return byValue != 0 ? byValue : a.index.compareTo(b.index);
+    });
+  for (final m in byRemainder) {
+    if (left <= 0) break;
+    shares[m] = shares[m]! + 1;
+    left--;
+  }
+  return shares;
+}
+
+double _activationTotal(Map<MuscleGroup, double> activation, bool front) {
+  var sum = 0.0;
+  for (final m in front ? kFrontMuscles : kBackMuscles) {
+    sum += activation[m] ?? 0;
+  }
+  return sum;
+}
+
+/// Whether [activation] is better shown from the front -- the view a
+/// diagram or thumbnail opens on: the side of the hardest-worked muscle
+/// (squats: the quads, even though glutes + hamstrings + lower back add up
+/// to more). The totals only break a tie, and a full tie goes front.
+bool preferFrontView(Map<MuscleGroup, double> activation) {
+  double peak(bool front) => (front ? kFrontMuscles : kBackMuscles)
+      .fold(0.0, (top, m) => math.max(top, activation[m] ?? 0));
+  final front = peak(true);
+  final back = peak(false);
+  if (front != back) return front > back;
+  return _activationTotal(activation, true) >= _activationTotal(activation, false);
+}
+
 /// Read-only front/back-toggleable body diagram + a text legend of every
 /// involved muscle sorted by intensity -- used to show exactly which
 /// muscles an exercise trains and how much, for every exercise in the
@@ -115,6 +171,7 @@ class DetailedBodyDiagram extends StatefulWidget {
     required this.activation,
     this.size = 220,
     this.enableZoom = false,
+    this.showLegend = true,
   });
 
   /// [MuscleGroup] -> 0-100 intensity.
@@ -126,6 +183,10 @@ class DetailedBodyDiagram extends StatefulWidget {
   /// thumbnail-sized card can't show it all (small phone screens especially).
   final bool enableZoom;
 
+  /// The pill legend under the figure; off where the caller lists the
+  /// muscles itself (the Exercises tab's detail sheet shows bars instead).
+  final bool showLegend;
+
   @override
   State<DetailedBodyDiagram> createState() => _DetailedBodyDiagramState();
 }
@@ -136,16 +197,10 @@ class _DetailedBodyDiagramState extends State<DetailedBodyDiagram> {
   @override
   void initState() {
     super.initState();
-    _front = _totalFor(true) >= _totalFor(false);
+    _front = preferFrontView(widget.activation);
   }
 
-  double _totalFor(bool front) {
-    var sum = 0.0;
-    for (final m in front ? kFrontMuscles : kBackMuscles) {
-      sum += widget.activation[m] ?? 0;
-    }
-    return sum;
-  }
+  double _totalFor(bool front) => _activationTotal(widget.activation, front);
 
   @override
   Widget build(BuildContext context) {
@@ -153,8 +208,8 @@ class _DetailedBodyDiagramState extends State<DetailedBodyDiagram> {
     final colors = Theme.of(context).extension<AppColors>()!;
     final isMale = context.watch<AthleteSettingsProvider>().isMale;
     final gender = isMale ? BodyGender.male : BodyGender.female;
-    final sorted = widget.activation.entries.where((e) => e.value > 0).toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final shares = activationShares(widget.activation);
+    final sorted = shares.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -232,7 +287,7 @@ class _DetailedBodyDiagramState extends State<DetailedBodyDiagram> {
             ],
           ),
         ),
-        if (sorted.isNotEmpty) ...[
+        if (widget.showLegend && sorted.isNotEmpty) ...[
           const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.center,
@@ -248,7 +303,7 @@ class _DetailedBodyDiagramState extends State<DetailedBodyDiagram> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    '${muscleGroupLabel(t, entry.key)} · ${entry.value.round()}%',
+                    '${muscleGroupLabel(t, entry.key)} · ${entry.value}%',
                     style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
@@ -261,6 +316,80 @@ class _DetailedBodyDiagramState extends State<DetailedBodyDiagram> {
       ],
     );
   }
+}
+
+const Set<MuscleGroup> _kLowerBody = {
+  MuscleGroup.quads,
+  MuscleGroup.hamstrings,
+  MuscleGroup.calves,
+  MuscleGroup.glutes,
+};
+
+/// A list-row-sized preview of what an exercise trains: the same painted
+/// body, but only the half that does the work -- shoulders to hips, or hips
+/// to feet -- from the side [preferFrontView] picks, filling a square
+/// [size] tile. Half the figure is exactly square (the atlas is 1:2), and at
+/// list size the whole body would shrink the muscles to specks.
+class MuscleThumbnail extends StatelessWidget {
+  const MuscleThumbnail({super.key, required this.activation, this.size = 52});
+
+  final Map<MuscleGroup, double> activation;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final isMale = context.select<AthleteSettingsProvider, bool>((s) => s.isMale);
+    var lower = 0.0;
+    var total = 0.0;
+    for (final MapEntry(key: m, value: v) in activation.entries) {
+      total += v;
+      if (_kLowerBody.contains(muscleGroupParent(m) ?? m)) lower += v;
+    }
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        child: ColoredBox(
+          color: colors.card2,
+          child: CustomPaint(
+            size: Size.square(size),
+            painter: _HalfBodyPainter(
+              body: BodyDiagramPainter(
+                front: preferFrontView(activation),
+                gender: isMale ? BodyGender.male : BodyGender.female,
+                activation: activation,
+                accent: colors.accent,
+              ),
+              lowerHalf: total > 0 && lower * 2 >= total,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HalfBodyPainter extends CustomPainter {
+  _HalfBodyPainter({required this.body, required this.lowerHalf});
+
+  final BodyDiagramPainter body;
+  final bool lowerHalf;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // One fixed figure size per tile size, so ParsedBodyAtlas parses it
+    // once for the whole list.
+    final figure = Size(size.width, size.width / kBodyDiagramAspect);
+    canvas.save();
+    canvas.clipRect(Offset.zero & size);
+    if (lowerHalf) canvas.translate(0, size.height - figure.height);
+    body.paint(canvas, figure);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _HalfBodyPainter old) =>
+      old.lowerHalf != lowerHalf || body.shouldRepaint(old.body);
 }
 
 /// Full-screen pinch-zoom-pan presentation of the same diagram, opened by
@@ -307,11 +436,11 @@ class _ZoomedBodyDiagramState extends State<_ZoomedBodyDiagram> {
     // A coarse-tagged exercise has no entry for a head-level key -- same
     // parent fallback [BodyDiagramPainter] already applies when coloring
     // the region itself, so the label always matches what's on screen.
+    // Shown as its share of the work, like every other label.
+    final shares = activationShares(widget.activation);
     final selectedValue = selected == null
         ? null
-        : widget.activation[selected] ??
-            widget.activation[muscleGroupParent(selected)] ??
-            0;
+        : shares[selected] ?? shares[muscleGroupParent(selected)] ?? 0;
     return Scaffold(
       appBar: AppBar(
         title: SegmentedButton<bool>(
@@ -377,7 +506,7 @@ class _ZoomedBodyDiagramState extends State<_ZoomedBodyDiagram> {
                       key: ValueKey(selected),
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: Text(
-                        '${muscleGroupLabel(t, selected)} · ${selectedValue!.round()}%',
+                        '${muscleGroupLabel(t, selected)} · $selectedValue%',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,

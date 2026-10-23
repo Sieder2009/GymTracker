@@ -444,12 +444,6 @@
   "achievementPathTotalSets": "Łączna liczba serii",
   "achievementPathTotalWorkoutMinutes": "Czas treningu",
   "achievementPathDistinctExercises": "Różnorodność ćwiczeń",
-  "rankStarter": "Nowicjusz",
-  "rankBronze": "Brąz",
-  "rankSilver": "Srebro",
-  "rankGold": "Złoto",
-  "rankPlatinum": "Platyna",
-  "rankLegend": "Legenda",
   "labelRank": "Ranga",
   "muscleTricepsLongHead": "Triceps (głowa długa)",
   "muscleTricepsLateralHead": "Triceps (głowa boczna)",
@@ -560,5 +554,72 @@
   "settingsAppIconAdaptive": "Dopasuj do wyglądu",
   "settingsAppIconAdaptiveHint": "Jasna lub ciemna jak aplikacja, w kolorze podstawowym",
   "settingsAppIconPending": "Zmieni się po wyjściu z aplikacji",
+  "settingsAppIconChoose": "Wybierz sam",
+  "settingsAppIconChooseHint": "Dotknięcie ustawia tę ikonę i wyłącza dopasowanie do wyglądu.",
+  "titleYourPrs": "Twoje rekordy",
+  "actionLogPrs": "Wpisz rekordy",
+  "actionLogMeasurements": "Wpisz pomiary",
+  "labelLastValue": "Ostatnio: {value}",
+  "@labelLastValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "labelStart": "Start",
+  "errorInvalidValue": "Błędna wartość",
+  "rankIron": "Mortal",
+  "rankBronze": "Warrior",
+  "rankSilver": "Spartan",
+  "rankGold": "Hero",
+  "rankPlatinum": "Demigod",
+  "rankDiamond": "Titan",
+  "rankChampion": "Olympian",
+  "titleYourRank": "Twoja ranga",
+  "rankNext": "Następna ranga: {rank}",
+  "@rankNext": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankKgToNext": "Jeszcze {kg} kg do {rank}",
+  "@rankKgToNext": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankTop": "Osiągnięto najwyższą rangę",
+  "rankNeedBodyweight": "Wpisz masę ciała, aby zobaczyć swoją rangę.",
+  "rankNeedAllThree": "Wpisz wszystkie trzy rekordy, aby zobaczyć swoją ogólną rangę.",
+  "titleAllRanks": "Wszystkie rangi",
+  "allRanksCaptionKg": "Każda ranga zaczyna się od tych rekordów – przy {bodyweight} kg masy ciała.",
+  "@allRanksCaptionKg": {
+    "placeholders": {
+      "bodyweight": {
+        "type": "String"
+      }
+    }
+  },
+  "allRanksCaptionRatio": "Każda ranga zaczyna się od tych rekordów, jako wielokrotność masy ciała. Wpisz masę ciała, aby zobaczyć kilogramy.",
+  "rankExplainer": "Na podstawie twoich rekordów w przysiadzie, wyciskaniu i martwym ciągu względem masy ciała.",
+  "creatineTitle": "Kreatyna",
+  "creatineTakenToday": "Wzięta dzisiaj",
+  "creatineNotYet": "Dziś jeszcze nie odhaczona",
+  "creatineStreak": "{count, plural, one{1 dzień z rzędu} few{{count} dni z rzędu} many{{count} dni z rzędu} other{{count} dni z rzędu}}",
+  "@creatineStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAppIconFooter": "Android zmienia ikonę po wyjściu z aplikacji (ekran główny lub ostatnie aplikacje) i przy tym ją zamyka. Niektóre launchery potrzebują kilku sekund, by pokazać nową."
 }

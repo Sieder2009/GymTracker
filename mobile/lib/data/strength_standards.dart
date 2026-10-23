@@ -64,6 +64,12 @@ const List<StrengthLevel> _kLevels = [
   StrengthLevel.elite,
 ];
 
+/// The five level thresholds (PR ÷ bodyweight, beginner..elite) for
+/// [liftKey], or null for a lift without standards. The ranked system
+/// (`lift_rank.dart`) builds its tiers on the same numbers.
+List<double>? strengthThresholds({required String liftKey, required bool isMale}) =>
+    (isMale ? _kMaleThresholds : _kFemaleThresholds)[liftKey];
+
 /// Null when [liftKg] or [bodyweightKg] isn't usable yet (mirrors how
 /// [dotsScore] callers already handle "not enough data" — see
 /// StrengthScreen's `_PowerliftingScoreCard`/`_LiftCard`).

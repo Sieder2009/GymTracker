@@ -444,12 +444,6 @@
   "achievementPathTotalSets": "Serie totali",
   "achievementPathTotalWorkoutMinutes": "Tempo di allenamento",
   "achievementPathDistinctExercises": "Varietà di esercizi",
-  "rankStarter": "Principiante",
-  "rankBronze": "Bronzo",
-  "rankSilver": "Argento",
-  "rankGold": "Oro",
-  "rankPlatinum": "Platino",
-  "rankLegend": "Leggenda",
   "labelRank": "Rango",
   "muscleTricepsLongHead": "Tricipite (capo lungo)",
   "muscleTricepsLateralHead": "Tricipite (capo laterale)",
@@ -560,5 +554,72 @@
   "settingsAppIconAdaptive": "Segui l'aspetto",
   "settingsAppIconAdaptiveHint": "Chiara o scura come l'app, nel tuo colore primario",
   "settingsAppIconPending": "Cambierà quando esci dall'app",
+  "settingsAppIconChoose": "Scegli tu",
+  "settingsAppIconChooseHint": "Un tocco imposta quell'icona e smette di seguire l'aspetto.",
+  "titleYourPrs": "I tuoi PR",
+  "actionLogPrs": "Inserisci PR",
+  "actionLogMeasurements": "Inserisci misure",
+  "labelLastValue": "Ultimo: {value}",
+  "@labelLastValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "labelStart": "Inizio",
+  "errorInvalidValue": "Non valido",
+  "rankIron": "Mortal",
+  "rankBronze": "Warrior",
+  "rankSilver": "Spartan",
+  "rankGold": "Hero",
+  "rankPlatinum": "Demigod",
+  "rankDiamond": "Titan",
+  "rankChampion": "Olympian",
+  "titleYourRank": "Il tuo rango",
+  "rankNext": "Rango successivo: {rank}",
+  "@rankNext": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankKgToNext": "Ancora {kg} kg per {rank}",
+  "@rankKgToNext": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankTop": "Rango massimo raggiunto",
+  "rankNeedBodyweight": "Inserisci il tuo peso corporeo per vedere il tuo rango.",
+  "rankNeedAllThree": "Inserisci tutti e tre i PR per vedere il tuo rango complessivo.",
+  "titleAllRanks": "Tutti i ranghi",
+  "allRanksCaptionKg": "Ogni rango inizia con questi PR – con {bodyweight} kg di peso corporeo.",
+  "@allRanksCaptionKg": {
+    "placeholders": {
+      "bodyweight": {
+        "type": "String"
+      }
+    }
+  },
+  "allRanksCaptionRatio": "Ogni rango inizia con questi PR, come multipli del tuo peso corporeo. Inserisci il tuo peso per vedere i chili.",
+  "rankExplainer": "Dai tuoi PR di squat, panca piana e stacco in rapporto al tuo peso corporeo.",
+  "creatineTitle": "Creatina",
+  "creatineTakenToday": "Presa oggi",
+  "creatineNotYet": "Non ancora spuntata oggi",
+  "creatineStreak": "{count, plural, =1{1 giorno di fila} other{{count} giorni di fila}}",
+  "@creatineStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAppIconFooter": "Android cambia l'icona quando esci dall'app (schermata Home o app recenti) e così facendo la chiude. Alcuni launcher impiegano qualche secondo a mostrare quella nuova."
 }

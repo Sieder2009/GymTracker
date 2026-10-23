@@ -444,12 +444,6 @@
   "achievementPathTotalSets": "Toplam set",
   "achievementPathTotalWorkoutMinutes": "Antrenman süresi",
   "achievementPathDistinctExercises": "Egzersiz çeşitliliği",
-  "rankStarter": "Başlangıç",
-  "rankBronze": "Bronz",
-  "rankSilver": "Gümüş",
-  "rankGold": "Altın",
-  "rankPlatinum": "Platin",
-  "rankLegend": "Efsane",
   "labelRank": "Rütbe",
   "muscleTricepsLongHead": "Triceps (uzun baş)",
   "muscleTricepsLateralHead": "Triceps (yan baş)",
@@ -560,5 +554,72 @@
   "settingsAppIconAdaptive": "Görünüme uydur",
   "settingsAppIconAdaptiveHint": "Uygulama gibi açık veya koyu, birincil renginde",
   "settingsAppIconPending": "Uygulamadan çıktığında değişir",
+  "settingsAppIconChoose": "Kendin seç",
+  "settingsAppIconChooseHint": "Bir dokunuş o simgeyi sabitler ve görünüme uydurmayı kapatır.",
+  "titleYourPrs": "PR'ların",
+  "actionLogPrs": "PR gir",
+  "actionLogMeasurements": "Ölçü gir",
+  "labelLastValue": "Son: {value}",
+  "@labelLastValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "labelStart": "Başlangıç",
+  "errorInvalidValue": "Geçersiz",
+  "rankIron": "Mortal",
+  "rankBronze": "Warrior",
+  "rankSilver": "Spartan",
+  "rankGold": "Hero",
+  "rankPlatinum": "Demigod",
+  "rankDiamond": "Titan",
+  "rankChampion": "Olympian",
+  "titleYourRank": "Rütben",
+  "rankNext": "Sonraki rütbe: {rank}",
+  "@rankNext": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankKgToNext": "{rank} için {kg} kg kaldı",
+  "@rankKgToNext": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankTop": "En yüksek rütbeye ulaşıldı",
+  "rankNeedBodyweight": "Rütbeni görmek için vücut ağırlığını gir.",
+  "rankNeedAllThree": "Genel rütbeni görmek için üç PR'ı da gir.",
+  "titleAllRanks": "Tüm rütbeler",
+  "allRanksCaptionKg": "Her rütbe bu PR'larla başlar – {bodyweight} kg vücut ağırlığında.",
+  "@allRanksCaptionKg": {
+    "placeholders": {
+      "bodyweight": {
+        "type": "String"
+      }
+    }
+  },
+  "allRanksCaptionRatio": "Her rütbe bu PR'larla başlar, vücut ağırlığının katı olarak. Kilo görmek için ağırlığını gir.",
+  "rankExplainer": "Squat, bench press ve deadlift PR’larının vücut ağırlığına oranından.",
+  "creatineTitle": "Kreatin",
+  "creatineTakenToday": "Bugün alındı",
+  "creatineNotYet": "Bugün henüz işaretlenmedi",
+  "creatineStreak": "{count, plural, =1{1 gün üst üste} other{{count} gün üst üste}}",
+  "@creatineStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAppIconFooter": "Android simgeyi uygulamadan çıktığında (ana ekran veya son uygulamalar) değiştirir ve bu sırada uygulamayı kapatır. Bazı başlatıcıların yenisini göstermesi birkaç saniye sürer."
 }

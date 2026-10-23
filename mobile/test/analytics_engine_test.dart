@@ -83,6 +83,46 @@ void main() {
       expect(stats.workoutsThisMonth, 2);
     });
 
+    group('with planned rest days', () {
+      // now = Fri 2026-08-07. Rest on Tuesdays and Thursdays.
+      bool restTueThu(DateTime d) => d.weekday == DateTime.tuesday || d.weekday == DateTime.thursday;
+      WorkoutSession on(String date) => WorkoutSession(date: date, durationMinutes: 1, planName: 'A');
+
+      test('a rest day keeps the streak going and counts as a day of it', () {
+        // Mon trained, Tue rest, Wed trained, Thu rest, Fri trained.
+        final sessions = [on('2026-08-03'), on('2026-08-05'), on('2026-08-07')];
+        final stats = computeConsistency(sessions, now: now, isRestDay: restTueThu);
+        expect(stats.currentStreakDays, 5);
+        expect(stats.bestStreakDays, 5);
+        // Without the plan, every day off still breaks it.
+        expect(computeConsistency(sessions, now: now).currentStreakDays, 1);
+      });
+
+      test('a missed training day still ends it', () {
+        // Mon trained, Tue rest, Wed missed (a training day), Thu rest, Fri trained.
+        final sessions = [on('2026-08-03'), on('2026-08-07')];
+        final stats = computeConsistency(sessions, now: now, isRestDay: restTueThu);
+        expect(stats.currentStreakDays, 1);
+        expect(stats.bestStreakDays, 2); // Mon + the Tue rest day
+      });
+
+      test('today: a rest day counts, an untrained training day just waits', () {
+        // Wed trained, today (Thu) is a rest day.
+        final restToday = computeConsistency([on('2026-08-05')],
+            now: DateTime(2026, 8, 6), isRestDay: restTueThu);
+        expect(restToday.currentStreakDays, 2);
+        // Thu trained, today (Fri) is a training day, not trained yet.
+        final notYet = computeConsistency([on('2026-08-06')], now: now, isRestDay: restTueThu);
+        expect(notYet.currentStreakDays, 1);
+      });
+
+      test('rest days before the first workout start nothing', () {
+        final stats = computeConsistency([on('2026-08-05')],
+            now: DateTime(2026, 8, 5), isRestDay: (_) => true);
+        expect(stats.currentStreakDays, 1);
+      });
+    });
+
     test('a streak survives the spring-forward DST night (23-hour day in CET/CEST)', () {
       final sessions = [
         WorkoutSession(date: '2026-03-28', durationMinutes: 1, planName: 'A'),

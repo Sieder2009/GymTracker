@@ -5,8 +5,10 @@ import '../analytics/analytics_engine.dart';
 import '../data/constants.dart';
 import '../data/dots_score.dart';
 import '../data/lift_balance.dart';
+import '../data/lift_rank.dart';
 import '../data/strength_standards.dart';
 import '../l10n/app_localizations.dart';
+import '../models/big_lift.dart';
 import '../state/athlete_settings_provider.dart';
 import '../state/big_lifts_provider.dart';
 import '../state/body_weight_provider.dart';
@@ -21,7 +23,10 @@ import '../widgets/chart_card.dart';
 import '../widgets/one_rep_max_sheet.dart';
 import '../widgets/plate_calculator_sheet.dart';
 import '../widgets/plateau_notice.dart';
+import '../widgets/radar_chart.dart';
+import '../widgets/rank_emblem.dart';
 import '../widgets/strength_line_chart.dart';
+import '../widgets/value_entry_sheet.dart';
 
 /// "Kraft" tab — a segmented view (Overview / each of the three big lifts /
 /// Tools) instead of one long scroll of every card stacked on top of each
@@ -115,6 +120,8 @@ class _OverviewTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
       children: [
+        const _RankCard(),
+        const SizedBox(height: 16),
         const _BodyWeightCard(),
         const SizedBox(height: 16),
         const _PowerliftingScoreCard(),
@@ -135,8 +142,90 @@ class _OverviewTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
+        const _PrRadarCard(),
+        const SizedBox(height: 16),
         const _LiftBalanceCard(),
       ],
+    );
+  }
+}
+
+/// The three PRs as a spider chart on one shared kg scale (rings labelled
+/// in kg, each PR at its corner), plus one place to enter all three.
+/// Saving goes through [BigLiftsProvider.savePr] -- exactly what each
+/// lift's own tab does with its PR field -- so the tiles, the tabs and this
+/// chart always agree.
+class _PrRadarCard extends StatelessWidget {
+  const _PrRadarCard();
+
+  static const List<String> _keys = ['squat', 'bench', 'deadlift'];
+
+  List<String> _labels(AppLocalizations t) => [t.labelSquat, t.labelBenchPress, t.labelDeadlift];
+
+  Future<void> _logPrs(BuildContext context, AppLocalizations t) async {
+    final provider = context.read<BigLiftsProvider>();
+    final before = [for (final key in _keys) provider.lifts.byKey(key).pr];
+    final values = await showValueEntrySheet(
+      context,
+      title: t.actionLogPrs,
+      fields: [
+        for (final (i, label) in _labels(t).indexed)
+          ValueEntryField(label: label, unit: 'kg', initial: before[i] > 0 ? before[i] : null),
+      ],
+    );
+    if (values == null) return;
+    for (final (i, key) in _keys.indexed) {
+      final value = values[i];
+      if (value != null && value != before[i]) provider.savePr(key, value);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final lifts = context.watch<BigLiftsProvider>().lifts;
+    final labels = _labels(t);
+    final prs = [for (final key in _keys) lifts.byKey(key).pr];
+    final axes = [
+      for (final (i, pr) in prs.indexed)
+        RadarAxis(label: labels[i], value: pr > 0 ? pr : null, detail: pr > 0 ? '${fmt(pr)} kg' : '—'),
+    ];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.radar_rounded, size: 18, color: colors.accent),
+                const SizedBox(width: 8),
+                Text(t.titleYourPrs, style: Theme.of(context).textTheme.headlineMedium),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (prs.every((pr) => pr <= 0))
+              Text(t.emptyNoEntries, style: TextStyle(color: colors.mut))
+            else
+              RadarChart(
+                axes: axes,
+                ringLabel: (v, outermost) => outermost ? '${fmt(v)} kg' : fmt(v),
+                semanticsLabel: [
+                  t.titleYourPrs,
+                  for (final a in axes) '${a.label}: ${a.detail}',
+                ].join(', '),
+              ),
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: () => _logPrs(context, t),
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: Text(t.actionLogPrs),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -161,9 +250,9 @@ class _LiftStatTile extends StatelessWidget {
     final bodyWeightEntries = context.watch<BodyWeightProvider>().entries;
     final isMale = context.watch<AthleteSettingsProvider>().isMale;
     final latestBodyWeight = bodyWeightEntries.isEmpty ? null : bodyWeightEntries.last.weight;
-    final standard = (lift.pr > 0 && latestBodyWeight != null)
-        ? classifyLift(liftKey: liftKey, liftKg: lift.pr, bodyweightKg: latestBodyWeight, isMale: isMale)
-        : null;
+    final rank = latestBodyWeight == null
+        ? null
+        : rankLift(liftKey: liftKey, liftKg: lift.pr, bodyweightKg: latestBodyWeight, isMale: isMale);
 
     return Material(
       color: colors.card,
@@ -198,12 +287,20 @@ class _LiftStatTile extends StatelessWidget {
                 lift.pr > 0 ? '${fmt(lift.pr)} kg' : '—',
                 style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
               ),
-              if (standard != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  _levelLabel(t, standard.level),
-                  style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700),
-                  overflow: TextOverflow.ellipsis,
+              if (rank != null) ...[
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    RankEmblem(tier: rank.tier, division: rank.division, size: 24),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        rankLabel(t, rank.tier, rank.division),
+                        style: TextStyle(color: colors.txt, fontSize: 11.5, fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ],
@@ -214,18 +311,222 @@ class _LiftStatTile extends StatelessWidget {
   }
 }
 
-String _levelLabel(AppLocalizations t, StrengthLevel level) {
-  switch (level) {
-    case StrengthLevel.beginner:
-      return t.strengthLevelBeginner;
-    case StrengthLevel.novice:
-      return t.strengthLevelNovice;
-    case StrengthLevel.intermediate:
-      return t.strengthLevelIntermediate;
-    case StrengthLevel.advanced:
-      return t.strengthLevelAdvanced;
-    case StrengthLevel.elite:
-      return t.strengthLevelElite;
+/// The overall rank -- the average of the three lifts' ranks -- as one big
+/// emblem, with the way to the next division underneath. Each lift's own
+/// rank sits on its tile below and in detail on its tab.
+class _RankCard extends StatelessWidget {
+  const _RankCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final lifts = context.watch<BigLiftsProvider>().lifts;
+    final bodyWeight = context.watch<BodyWeightProvider>().entries;
+    final isMale = context.watch<AthleteSettingsProvider>().isMale;
+    final latestBodyWeight = bodyWeight.isEmpty ? null : bodyWeight.last.weight;
+    final ranks = [
+      if (latestBodyWeight != null)
+        for (final key in BigLifts.keys)
+          rankLift(liftKey: key, liftKg: lifts.byKey(key).pr, bodyweightKg: latestBodyWeight, isMale: isMale),
+    ];
+    // An average of fewer than all three would rank one lift as all of them.
+    final rank = ranks.length == 3 && ranks.every((r) => r != null) ? overallRank(ranks) : null;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.emoji_events_outlined, size: 18, color: colors.accent),
+                const SizedBox(width: 8),
+                Expanded(child: Text(t.titleYourRank, style: Theme.of(context).textTheme.headlineMedium)),
+                TextButton(
+                  onPressed: () => _showAllRanks(context, current: rank?.tier, bodyweightKg: latestBodyWeight, isMale: isMale),
+                  child: Text(t.titleAllRanks),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            if (rank == null)
+              Text(
+                latestBodyWeight == null ? t.rankNeedBodyweight : t.rankNeedAllThree,
+                style: TextStyle(color: colors.mut),
+              )
+            else
+              Row(
+                children: [
+                  RankEmblem(
+                    tier: rank.tier,
+                    division: rank.division,
+                    size: 84,
+                    semanticsLabel: rankLabel(t, rank.tier, rank.division),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          rankLabel(t, rank.tier, rank.division),
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 24),
+                        ),
+                        const SizedBox(height: 10),
+                        _RankProgress(rank: rank),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            if (rank != null) ...[
+              const SizedBox(height: 12),
+              Text(t.rankExplainer, style: TextStyle(color: colors.mut, fontSize: 11.5, height: 1.35)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Every rank from champion down to iron, each with its badge and the PRs
+/// that start it -- in kilos at the user's bodyweight, else as multiples of
+/// bodyweight -- with the overall rank the user holds marked.
+void _showAllRanks(BuildContext context, {RankTier? current, double? bodyweightKg, required bool isMale}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    showDragHandle: true,
+    builder: (context) {
+      final t = AppLocalizations.of(context)!;
+      final colors = Theme.of(context).extension<AppColors>()!;
+      final lifts = [('squat', t.labelSquat), ('bench', t.labelBenchPress), ('deadlift', t.labelDeadlift)];
+      String startsAt(RankTier tier) => [
+            for (final (key, label) in lifts)
+              if (tierStartRatio(liftKey: key, tier: tier, isMale: isMale) case final ratio?)
+                bodyweightKg == null
+                    ? '$label ${fmt1(ratio)}×'
+                    : '$label ${fmt(((ratio * bodyweightKg) * 2).ceil() / 2)} kg',
+          ].join(' · ');
+      return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, controller) => ListView(
+          controller: controller,
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          children: [
+            Text(t.titleAllRanks, style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 4),
+            Text(
+              bodyweightKg == null ? t.allRanksCaptionRatio : t.allRanksCaptionKg(fmt(bodyweightKg)),
+              style: TextStyle(color: colors.mut, fontSize: 12.5, height: 1.35),
+            ),
+            const SizedBox(height: 14),
+            for (final tier in RankTier.values.reversed)
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.card,
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
+                  border: Border.all(
+                    color: tier == current ? colors.accent : colors.line,
+                    width: tier == current ? 2 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    RankEmblem(
+                      tier: tier,
+                      division: tier == RankTier.champion ? null : 1,
+                      size: 64,
+                      semanticsLabel: rankLabel(t, tier, null),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(rankLabel(t, tier, null), style: Theme.of(context).textTheme.headlineMedium),
+                              if (tier == current) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: colors.accent.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(AppRadii.pill),
+                                  ),
+                                  child: Text(
+                                    t.labelCurrent,
+                                    style: TextStyle(color: colors.accent, fontSize: 11, fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (tier != RankTier.iron) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              startsAt(tier),
+                              style: TextStyle(color: colors.mut, fontSize: 12.5, height: 1.35),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/// A bar through the current division and what's next: "12 kg to Gold I"
+/// when the kilos are known (a single lift), else "Next rank: Gold I".
+class _RankProgress extends StatelessWidget {
+  const _RankProgress({required this.rank});
+
+  final LiftRank rank;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final next = rank.next;
+    final kg = rank.kgToNext;
+    final text = next == null
+        ? t.rankTop
+        : (kg == null
+            ? t.rankNext(rankLabel(t, next.$1, next.$2))
+            : t.rankKgToNext(fmt(kg), rankLabel(t, next.$1, next.$2)));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          child: LinearProgressIndicator(
+            value: rank.progress,
+            minHeight: 6,
+            backgroundColor: colors.card2,
+            valueColor: AlwaysStoppedAnimation(colors.accent),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(text, style: TextStyle(color: colors.mut, fontSize: 12.5, fontWeight: FontWeight.w600)),
+      ],
+    );
   }
 }
 
@@ -601,9 +902,9 @@ class _LiftDetailTabState extends State<_LiftDetailTab> {
     final bodyWeightEntries = context.watch<BodyWeightProvider>().entries;
     final isMale = context.watch<AthleteSettingsProvider>().isMale;
     final latestBodyWeight = bodyWeightEntries.isEmpty ? null : bodyWeightEntries.last.weight;
-    final standard = (lift.pr > 0 && latestBodyWeight != null)
-        ? classifyLift(liftKey: widget.liftKey, liftKg: lift.pr, bodyweightKg: latestBodyWeight, isMale: isMale)
-        : null;
+    final rank = latestBodyWeight == null
+        ? null
+        : rankLift(liftKey: widget.liftKey, liftKg: lift.pr, bodyweightKg: latestBodyWeight, isMale: isMale);
 
     final rangeStart = _rangeStart(_range);
     final chartPoints = [
@@ -636,11 +937,32 @@ class _LiftDetailTabState extends State<_LiftDetailTab> {
           Text(prLabel, style: TextStyle(color: colors.mut, fontSize: 12.5)),
         ],
         if (lift.pr > 0) ...[
-          const SizedBox(height: 10),
-          if (standard != null)
-            _StrengthLevelIndicator(standard: standard, color: widget.color)
+          const SizedBox(height: 12),
+          if (rank != null)
+            Row(
+              children: [
+                RankEmblem(
+                  tier: rank.tier,
+                  division: rank.division,
+                  size: 60,
+                  semanticsLabel: rankLabel(t, rank.tier, rank.division),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(rankLabel(t, rank.tier, rank.division),
+                          style: Theme.of(context).textTheme.headlineMedium),
+                      const SizedBox(height: 8),
+                      _RankProgress(rank: rank),
+                    ],
+                  ),
+                ),
+              ],
+            )
           else
-            Text(t.emptyNeedBodyweightForLevel, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+            Text(t.rankNeedBodyweight, style: TextStyle(color: colors.mut, fontSize: 12.5)),
         ],
         if (plateaued) ...[
           const SizedBox(height: 10),
@@ -764,50 +1086,6 @@ class _ChartRangeSelector extends StatelessWidget {
 /// Wilks/DOTS (see [_PowerliftingScoreCard]) -- this is the legible
 /// per-lift answer to "is this PR any good?": a level name plus a thin
 /// progress bar toward the next one, both driven by [classifyLift].
-class _StrengthLevelIndicator extends StatelessWidget {
-  const _StrengthLevelIndicator({required this.standard, required this.color});
-
-  final StrengthStandardResult standard;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).extension<AppColors>()!;
-    final nextLevel = standard.nextLevel;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _levelLabel(t, standard.level),
-              style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13),
-            ),
-            if (nextLevel != null)
-              Text(
-                t.progressToNextLevel((standard.progressToNext * 100).round(), _levelLabel(t, nextLevel)),
-                style: TextStyle(color: colors.mut, fontSize: 12),
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: standard.progressToNext,
-            minHeight: 5,
-            backgroundColor: colors.card2,
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ToolsTab extends StatelessWidget {
   const _ToolsTab();
 

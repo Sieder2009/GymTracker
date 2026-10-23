@@ -45,30 +45,31 @@ abstract final class IronpeakMark {
   // `pathData` parses the identical syntax, so the generator pastes these
   // strings straight into the XML.
 
-  /// The bar: the thin grip shaft in the middle and the thicker sleeves
-  /// the plates sit on, out past the plates on both ends -- an Olympic bar,
-  /// seen from the front.
+  /// The bar: the grip shaft in the middle and the thicker sleeves the
+  /// plates sit on, out past the lock collars on both ends -- an Olympic
+  /// bar, seen from the front. Sleeve ends are flat with a small chamfer
+  /// like a real one, and the inner ends of shaft and sleeves hide under
+  /// the shoulders, so no rounded end shows where they meet.
   static const String bar =
-      'M34.5,47.5H65.5A2.5,2.5 0 0 1 68,50V50A2.5,2.5 0 0 1 65.5,52.5H34.5A2.5,2.5 0 0 1 32,50V50A2.5,2.5 0 0 1 34.5,47.5Z'
-      'M6,46.5H29A3.5,3.5 0 0 1 32.5,50V50A3.5,3.5 0 0 1 29,53.5H6A3.5,3.5 0 0 1 2.5,50V50A3.5,3.5 0 0 1 6,46.5Z'
-      'M71,46.5H94A3.5,3.5 0 0 1 97.5,50V50A3.5,3.5 0 0 1 94,53.5H71A3.5,3.5 0 0 1 67.5,50V50A3.5,3.5 0 0 1 71,46.5Z';
+      'M33,47H67A1,1 0 0 1 68,48V52A1,1 0 0 1 67,53H33A1,1 0 0 1 32,52V48A1,1 0 0 1 33,47Z'
+      'M4,46H32A1.5,1.5 0 0 1 33.5,47.5V52.5A1.5,1.5 0 0 1 32,54H4A1.5,1.5 0 0 1 2.5,52.5V47.5A1.5,1.5 0 0 1 4,46Z'
+      'M68,46H96A1.5,1.5 0 0 1 97.5,47.5V52.5A1.5,1.5 0 0 1 96,54H68A1.5,1.5 0 0 1 66.5,52.5V47.5A1.5,1.5 0 0 1 68,46Z';
 
   /// The load, mirrored on both sides, from the middle out: the inner
-  /// shoulder, two big plates, two smaller ones, the lock collar. Real
-  /// plates have barely rounded edges, so the corners stay tight.
+  /// shoulder, two big plates, one smaller plate, the lock collar -- few,
+  /// solid pieces with even gaps, so the stack still reads at launcher
+  /// size. Real plates have barely rounded edges, so the corners stay tight.
   static const String plates =
-      'M31,44H31A1,1 0 0 1 32,45V55A1,1 0 0 1 31,56H31A1,1 0 0 1 30,55V45A1,1 0 0 1 31,44Z'
-      'M69,44H69A1,1 0 0 1 70,45V55A1,1 0 0 1 69,56H69A1,1 0 0 1 68,55V45A1,1 0 0 1 69,44Z'
-      'M23.3,21H27.9A1.2,1.2 0 0 1 29.1,22.2V77.8A1.2,1.2 0 0 1 27.9,79H23.3A1.2,1.2 0 0 1 22.1,77.8V22.2A1.2,1.2 0 0 1 23.3,21Z'
-      'M72.1,21H76.7A1.2,1.2 0 0 1 77.9,22.2V77.8A1.2,1.2 0 0 1 76.7,79H72.1A1.2,1.2 0 0 1 70.9,77.8V22.2A1.2,1.2 0 0 1 72.1,21Z'
-      'M15.9,21H20A1.2,1.2 0 0 1 21.2,22.2V77.8A1.2,1.2 0 0 1 20,79H15.9A1.2,1.2 0 0 1 14.7,77.8V22.2A1.2,1.2 0 0 1 15.9,21Z'
-      'M80,21H84.1A1.2,1.2 0 0 1 85.3,22.2V77.8A1.2,1.2 0 0 1 84.1,79H80A1.2,1.2 0 0 1 78.8,77.8V22.2A1.2,1.2 0 0 1 80,21Z'
-      'M11.5,31H12.6A1.2,1.2 0 0 1 13.8,32.2V67.8A1.2,1.2 0 0 1 12.6,69H11.5A1.2,1.2 0 0 1 10.3,67.8V32.2A1.2,1.2 0 0 1 11.5,31Z'
-      'M87.4,31H88.5A1.2,1.2 0 0 1 89.7,32.2V67.8A1.2,1.2 0 0 1 88.5,69H87.4A1.2,1.2 0 0 1 86.2,67.8V32.2A1.2,1.2 0 0 1 87.4,31Z'
-      'M8.1,37H8.2A1.2,1.2 0 0 1 9.4,38.2V61.8A1.2,1.2 0 0 1 8.2,63H8.1A1.2,1.2 0 0 1 6.9,61.8V38.2A1.2,1.2 0 0 1 8.1,37Z'
-      'M91.8,37H91.9A1.2,1.2 0 0 1 93.1,38.2V61.8A1.2,1.2 0 0 1 91.9,63H91.8A1.2,1.2 0 0 1 90.6,61.8V38.2A1.2,1.2 0 0 1 91.8,37Z'
-      'M5,44H5A1,1 0 0 1 6,45V55A1,1 0 0 1 5,56H5A1,1 0 0 1 4,55V45A1,1 0 0 1 5,44Z'
-      'M95,44H95A1,1 0 0 1 96,45V55A1,1 0 0 1 95,56H95A1,1 0 0 1 94,55V45A1,1 0 0 1 95,44Z';
+      'M32.5,42H33.5A1,1 0 0 1 34.5,43V57A1,1 0 0 1 33.5,58H32.5A1,1 0 0 1 31.5,57V43A1,1 0 0 1 32.5,42Z'
+      'M66.5,42H67.5A1,1 0 0 1 68.5,43V57A1,1 0 0 1 67.5,58H66.5A1,1 0 0 1 65.5,57V43A1,1 0 0 1 66.5,42Z'
+      'M24.3,21H28.8A1.5,1.5 0 0 1 30.3,22.5V77.5A1.5,1.5 0 0 1 28.8,79H24.3A1.5,1.5 0 0 1 22.8,77.5V22.5A1.5,1.5 0 0 1 24.3,21Z'
+      'M71.2,21H75.7A1.5,1.5 0 0 1 77.2,22.5V77.5A1.5,1.5 0 0 1 75.7,79H71.2A1.5,1.5 0 0 1 69.7,77.5V22.5A1.5,1.5 0 0 1 71.2,21Z'
+      'M15.6,21H20.1A1.5,1.5 0 0 1 21.6,22.5V77.5A1.5,1.5 0 0 1 20.1,79H15.6A1.5,1.5 0 0 1 14.1,77.5V22.5A1.5,1.5 0 0 1 15.6,21Z'
+      'M79.9,21H84.4A1.5,1.5 0 0 1 85.9,22.5V77.5A1.5,1.5 0 0 1 84.4,79H79.9A1.5,1.5 0 0 1 78.4,77.5V22.5A1.5,1.5 0 0 1 79.9,21Z'
+      'M9.6,31H11.7A1.2,1.2 0 0 1 12.9,32.2V67.8A1.2,1.2 0 0 1 11.7,69H9.6A1.2,1.2 0 0 1 8.4,67.8V32.2A1.2,1.2 0 0 1 9.6,31Z'
+      'M88.3,31H90.4A1.2,1.2 0 0 1 91.6,32.2V67.8A1.2,1.2 0 0 1 90.4,69H88.3A1.2,1.2 0 0 1 87.1,67.8V32.2A1.2,1.2 0 0 1 88.3,31Z'
+      'M5.6,42.5H6.2A1,1 0 0 1 7.2,43.5V56.5A1,1 0 0 1 6.2,57.5H5.6A1,1 0 0 1 4.6,56.5V43.5A1,1 0 0 1 5.6,42.5Z'
+      'M93.8,42.5H94.4A1,1 0 0 1 95.4,43.5V56.5A1,1 0 0 1 94.4,57.5H93.8A1,1 0 0 1 92.8,56.5V43.5A1,1 0 0 1 93.8,42.5Z';
 
   /// Every shape of the mark, in drawing order, with the names the launch
   /// animation targets them by.
@@ -309,11 +310,12 @@ AppColors _colorsOf(BuildContext context) {
 /// moving icon, since neither Android nor iOS lets a third-party launcher
 /// icon animate.
 ///
-/// Follows the theme like the launcher icon does: in a light theme an
-/// accent-colored tile with the glyph in the accent's text color, in a dark
-/// one a card-colored tile (hairline border) with an accent glyph -- the
-/// user's exact colors in light, dark and custom mode ([background]/[glyph]
-/// override them). Honors the OS
+/// Follows the theme: in a light theme an accent-colored tile with the
+/// glyph in the accent's text color, like the launcher icon; in a dark one
+/// a card-colored tile (hairline border) with the glyph in the text color
+/// (white), like the dark launch screen -- the user's exact colors in
+/// light, dark and custom mode ([background]/[glyph] override them).
+/// Honors the OS
 /// "remove animations" setting (shows the resting pose), only repaints its
 /// own tiny canvas, and pauses with its route/tab like any other ticker.
 /// With [replayOnTap] a tap restarts the intro.
@@ -394,7 +396,7 @@ class _AnimatedIronpeakLogoState extends State<AnimatedIronpeakLogo>
         painter: _LogoPainter(
           _controller,
           background: widget.background ?? (dark ? colors.card : colors.accent),
-          glyph: widget.glyph ?? (dark ? colors.accent : colors.onAccent),
+          glyph: widget.glyph ?? (dark ? colors.txt : colors.onAccent),
           border: dark ? colors.line : null,
         ),
       ),

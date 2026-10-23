@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ironpeak_mobile/theme/app_colors.dart';
 import 'package:ironpeak_mobile/theme/launcher_icons.dart';
 import 'package:ironpeak_mobile/widgets/ironpeak_logo.dart';
 
@@ -106,8 +107,8 @@ void main() {
     final dark = _read('$_res/drawable-night/ic_splash_animated.xml');
     expect(light, contains(_hex(LauncherIcons.accentColor(
         LauncherIcons.defaultVariant.hue, IconBackdrop.light))));
-    expect(dark, contains(_hex(LauncherIcons.accentColor(
-        LauncherIcons.defaultVariant.hue, IconBackdrop.dark))));
+    // Dark mode: white (the dark theme's text color), like the in-app logo.
+    expect(dark, contains(_hex(AppColors.dark.txt)));
 
     int ms(double seconds) => (seconds * 1000).round();
     for (final xml in [light, dark]) {

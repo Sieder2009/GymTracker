@@ -31,6 +31,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ironpeak_mobile/theme/app_colors.dart';
 import 'package:ironpeak_mobile/theme/launcher_icons.dart';
 import 'package:ironpeak_mobile/widgets/ironpeak_logo.dart';
 
@@ -223,12 +224,14 @@ Future<void> _writeAndroid() async {
   await _writeText('$_res/mipmap-anydpi-v26/ic_launcher.xml', _adaptiveIcon(_default));
   await _writeText('$_res/drawable/ic_launcher_monochrome.xml', _glyphVector(const Color(0xFF000000)));
 
-  // The launch animation plays the bare glyph on the app's background, so
-  // it takes the accent itself (the light icon's white glyph would vanish).
+  // The launch animation plays the bare glyph on the app's background: in
+  // light mode in the accent (the light icon's white glyph would vanish),
+  // in dark mode in the dark theme's text color (white), like the in-app
+  // logo there.
   await _writeText('$_res/drawable/ic_splash_animated.xml',
       _splashAnimatedVector(LauncherIcons.accentColor(_default.hue, IconBackdrop.light)));
   await _writeText('$_res/drawable-night/ic_splash_animated.xml',
-      _splashAnimatedVector(LauncherIcons.accentColor(_default.hue, IconBackdrop.dark)));
+      _splashAnimatedVector(AppColors.dark.txt));
 
   await _writeText('android/app/src/release/AndroidManifest.xml', _releaseManifest());
 }
@@ -346,7 +349,9 @@ $_generated
      unit safe zone of the 108 unit canvas, inside the circle the splash
      screen masks its icon to; the masked circle also hides the barbell
      while it is still above it. Total length stays under the 1000ms limit.
-     drawable-night holds the dark mode copy (lighter glyph color). -->
+     drawable-night holds the dark mode copy (white glyph); IronpeakActivity
+     pins the app's night mode to its own theme setting, so that copy shows
+     whenever the app is dark, whatever the phone is set to. -->
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt">
     <aapt:attr name="android:drawable">

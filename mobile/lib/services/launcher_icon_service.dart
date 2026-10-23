@@ -11,11 +11,12 @@ import '../theme/launcher_icons.dart';
 import 'storage_service.dart';
 
 const String _kAdaptiveKey = 'ironpeak:launcherIcon:adaptive';
+const String _kChosenKey = 'ironpeak:launcherIcon:variant';
 
 /// Keeps the Android home-screen icon in step with the app's appearance:
 /// light or dark backdrop like the theme, glyph in the accent color (see
-/// [LauncherIcons.forAppearance]), or the default icon when [adaptive] is
-/// off.
+/// [LauncherIcons.forAppearance]) -- or, with [adaptive] off, the icon the
+/// user picked themselves ([choose]; the default icon until they do).
 ///
 /// Android can only switch between launcher entries declared ahead of time
 /// (one `<activity-alias>` per [LauncherIcons.all] variant, release builds
@@ -34,7 +35,8 @@ class LauncherIconService extends ChangeNotifier with WidgetsBindingObserver {
     this._appearance, {
     bool? platformSupported,
   })  : _platformSupported = platformSupported ?? (!kIsWeb && Platform.isAndroid),
-        _adaptive = _storage.readString(_kAdaptiveKey) != 'false' {
+        _adaptive = _storage.readString(_kAdaptiveKey) != 'false',
+        _chosen = LauncherIcons.byId(_storage.readString(_kChosenKey) ?? '') {
     _desired = _computeDesired();
     _theme.addListener(_onAppearanceChanged);
     _appearance.addListener(_onAppearanceChanged);
@@ -78,6 +80,8 @@ class LauncherIconService extends ChangeNotifier with WidgetsBindingObserver {
   final bool _platformSupported;
 
   bool _adaptive;
+  // The user's own pick, used while [_adaptive] is off (null: the default).
+  LauncherIconVariant? _chosen;
   late LauncherIconVariant _desired;
   bool _supported = false;
   // Aliases Android reported as enabled at the last getState.
@@ -96,9 +100,13 @@ class LauncherIconService extends ChangeNotifier with WidgetsBindingObserver {
   /// release build whose manifest declares the aliases.
   bool get supported => _supported;
 
-  /// Whether the icon follows the appearance (default) or stays the
-  /// default icon.
+  /// Whether the icon follows the appearance (default) or stays the one
+  /// the user picked.
   bool get adaptive => _adaptive;
+
+  /// The user's own pick (kept while [adaptive] is on, so switching it off
+  /// again returns to it), or null for none yet.
+  LauncherIconVariant? get chosen => _chosen;
 
   /// The icon the home screen should show.
   LauncherIconVariant get desired => _desired;
@@ -116,6 +124,21 @@ class LauncherIconService extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  /// Pins [variant] as the icon, whatever the appearance: turns [adaptive]
+  /// off and remembers the pick.
+  void choose(LauncherIconVariant variant) {
+    if (!_adaptive && _chosen == variant) return;
+    _chosen = variant;
+    _storage.writeString(_kChosenKey, variant.id);
+    if (_adaptive) {
+      _adaptive = false;
+      _storage.writeString(_kAdaptiveKey, 'false');
+    }
+    _desired = _computeDesired();
+    _syncTarget();
+    notifyListeners();
+  }
+
   LauncherIconVariant _computeDesired() => _adaptive
       ? LauncherIcons.forAppearance(
           themeMode: _theme.mode,
@@ -123,7 +146,7 @@ class LauncherIconService extends ChangeNotifier with WidgetsBindingObserver {
           accent: _appearance.accent,
           background: _appearance.bg,
         )
-      : LauncherIcons.defaultVariant;
+      : _chosen ?? LauncherIcons.defaultVariant;
 
   // Most theme/appearance changes (secondary color, card color, ...) leave
   // the icon as it is; only a different variant is worth a rebuild or a

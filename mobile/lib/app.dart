@@ -8,6 +8,7 @@ import 'l10n/app_localizations.dart';
 import 'services/exercise_database_service.dart';
 import 'services/exercise_media_service.dart';
 import 'services/health_service.dart';
+import 'services/launch_screen_service.dart';
 import 'services/launcher_icon_service.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
@@ -18,6 +19,7 @@ import 'state/bar_weight_provider.dart';
 import 'state/big_lifts_provider.dart';
 import 'state/body_measurements_provider.dart';
 import 'state/body_weight_provider.dart';
+import 'state/creatine_provider.dart';
 import 'state/custom_exercises_provider.dart';
 import 'state/effort_scale_provider.dart';
 import 'state/exercise_database_provider.dart';
@@ -67,6 +69,7 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AthleteSettingsProvider(storage)),
         ChangeNotifierProvider(create: (_) => EffortScaleProvider(storage)),
         ChangeNotifierProvider(create: (_) => BarWeightProvider(storage)),
+        ChangeNotifierProvider(create: (_) => CreatineProvider(storage)),
         ChangeNotifierProvider(create: (_) => WorkoutHistoryProvider(storage)),
         ChangeNotifierProvider(
             create: (_) => GymPhotosProvider(storage, photosDir)),
@@ -88,6 +91,13 @@ class IronpeakApp extends StatelessWidget {
             lazy: false,
             create: (context) => LauncherIconService(storage,
                 context.read<ThemeProvider>(), context.read<AppearanceProvider>())),
+        // Not lazy either: the next launch screen should already match the
+        // theme, whatever screens this session gets to.
+        Provider(
+            lazy: false,
+            create: (context) => LaunchScreenService(
+                context.read<ThemeProvider>(), context.read<AppearanceProvider>()),
+            dispose: (_, LaunchScreenService service) => service.dispose()),
         ChangeNotifierProvider(
             create: (context) =>
                 UpdateProvider(storage, notificationService, context.read<LocaleProvider>())),

@@ -1,5 +1,6 @@
 package com.ironpeak.ironpeak_mobile
 
+import android.app.UiModeManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.IntentSender
@@ -46,6 +47,34 @@ class IronpeakActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler(::onLauncherIconCall)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LAUNCH_SCREEN_CHANNEL)
+            .setMethodCallHandler(::onLaunchScreenCall)
+    }
+
+    /**
+     * Android 12+ draws the launch screen from the day or night resources
+     * before Flutter starts, by default following the phone's dark mode. The
+     * app has its own light/dark setting, so Dart
+     * (lib/services/launch_screen_service.dart) pins the app's night mode to
+     * it -- `dark: null` while no theme is picked, which means "follow the
+     * phone" again. Android remembers that for the next launch. uiMode is in
+     * the manifest's configChanges, so this never recreates the activity.
+     */
+    private fun onLaunchScreenCall(call: MethodCall, result: MethodChannel.Result) {
+        if (call.method != "setDark") return result.notImplemented()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val mode = when (call.argument<Boolean>("dark")) {
+                true -> UiModeManager.MODE_NIGHT_YES
+                false -> UiModeManager.MODE_NIGHT_NO
+                null -> UiModeManager.MODE_NIGHT_AUTO
+            }
+            try {
+                getSystemService(UiModeManager::class.java)?.setApplicationNightMode(mode)
+            } catch (e: Exception) {
+                Log.w(TAG, "Setting the launch screen's night mode failed", e)
+            }
+        }
+        result.success(null)
     }
 
     override fun onResume() {
@@ -260,6 +289,7 @@ class IronpeakActivity : FlutterActivity() {
 
     private companion object {
         const val CHANNEL = "ironpeak/launcher_icon"
+        const val LAUNCH_SCREEN_CHANNEL = "ironpeak/launch_screen"
         const val TAG = "IronpeakLauncherIcon"
 
         // Relative android:name values resolve against the manifest namespace

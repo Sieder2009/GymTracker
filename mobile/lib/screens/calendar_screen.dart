@@ -3,11 +3,13 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../analytics/analytics_engine.dart';
+import '../analytics/rest_days.dart';
 import '../analytics/heatmap_engine.dart';
 import '../analytics/logged_days.dart';
 import '../data/constants.dart' show isoOf;
 import '../l10n/app_localizations.dart';
 import '../state/programs_provider.dart';
+import '../state/train_state_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/contribution_heatmap.dart';
@@ -59,7 +61,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     final days = aggregateHeatmapDays(sessions);
     final summary = summarizeHeatmap(days, range: _range, today: today);
-    final streaks = computeConsistency(sessions);
+    final streaks = computeConsistency(
+      sessions,
+      isRestDay: activePlanRestDays(context.watch<ProgramsProvider>(), context.watch<TrainStateProvider>()),
+    );
     final years = heatmapYears(days, today: today);
     final shownYear = _range.year;
     // A year opened via initialDate without any sessions still needs its chip.

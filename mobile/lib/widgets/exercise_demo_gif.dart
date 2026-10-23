@@ -61,6 +61,7 @@ class ExerciseDemoGif extends StatefulWidget {
     this.exerciseName,
     this.onTap,
     this.showCredit = true,
+    this.bordered = true,
   }) : assert(size > 0);
 
   /// Media basename, e.g. `0025-EIeI8Vf`.
@@ -71,6 +72,10 @@ class ExerciseDemoGif extends StatefulWidget {
   final String? exerciseName;
   final VoidCallback? onTap;
   final bool showCredit;
+
+  /// The hairline around the white card; off where the animation already
+  /// sits inside a card of its own (it would draw a second frame there).
+  final bool bordered;
 
   @override
   State<ExerciseDemoGif> createState() => _ExerciseDemoGifState();
@@ -209,7 +214,7 @@ class _ExerciseDemoGifState extends State<ExerciseDemoGif> {
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: radius,
-            side: BorderSide(color: colors.line),
+            side: widget.bordered ? BorderSide(color: colors.line) : BorderSide.none,
           ),
           child: InkWell(
             onTap: onTap,

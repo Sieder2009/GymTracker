@@ -444,12 +444,6 @@
   "achievementPathTotalSets": "Всего подходов",
   "achievementPathTotalWorkoutMinutes": "Время тренировок",
   "achievementPathDistinctExercises": "Разнообразие упражнений",
-  "rankStarter": "Новичок",
-  "rankBronze": "Бронза",
-  "rankSilver": "Серебро",
-  "rankGold": "Золото",
-  "rankPlatinum": "Платина",
-  "rankLegend": "Легенда",
   "labelRank": "Ранг",
   "muscleTricepsLongHead": "Трицепс (длинная головка)",
   "muscleTricepsLateralHead": "Трицепс (латеральная головка)",
@@ -560,5 +554,72 @@
   "settingsAppIconAdaptive": "Подстраивать под внешний вид",
   "settingsAppIconAdaptiveHint": "Светлый или тёмный, как приложение, в вашем основном цвете",
   "settingsAppIconPending": "Изменится, когда вы выйдете из приложения",
+  "settingsAppIconChoose": "Выбрать самому",
+  "settingsAppIconChooseHint": "Нажатие закрепляет этот значок и отключает подстройку под внешний вид.",
+  "titleYourPrs": "Твои рекорды",
+  "actionLogPrs": "Внести рекорды",
+  "actionLogMeasurements": "Внести замеры",
+  "labelLastValue": "Последнее: {value}",
+  "@labelLastValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "labelStart": "Старт",
+  "errorInvalidValue": "Неверно",
+  "rankIron": "Mortal",
+  "rankBronze": "Warrior",
+  "rankSilver": "Spartan",
+  "rankGold": "Hero",
+  "rankPlatinum": "Demigod",
+  "rankDiamond": "Titan",
+  "rankChampion": "Olympian",
+  "titleYourRank": "Твой ранг",
+  "rankNext": "Следующий ранг: {rank}",
+  "@rankNext": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankKgToNext": "Ещё {kg} кг до {rank}",
+  "@rankKgToNext": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankTop": "Высший ранг достигнут",
+  "rankNeedBodyweight": "Внеси свой вес тела, чтобы увидеть ранг.",
+  "rankNeedAllThree": "Внеси все три рекорда, чтобы увидеть общий ранг.",
+  "titleAllRanks": "Все ранги",
+  "allRanksCaptionKg": "Каждый ранг начинается с этих рекордов – при весе тела {bodyweight} кг.",
+  "@allRanksCaptionKg": {
+    "placeholders": {
+      "bodyweight": {
+        "type": "String"
+      }
+    }
+  },
+  "allRanksCaptionRatio": "Каждый ранг начинается с этих рекордов, кратно весу тела. Внеси вес, чтобы увидеть килограммы.",
+  "rankExplainer": "По твоим рекордам в приседе, жиме лёжа и становой тяге относительно веса тела.",
+  "creatineTitle": "Креатин",
+  "creatineTakenToday": "Принят сегодня",
+  "creatineNotYet": "Сегодня ещё не отмечен",
+  "creatineStreak": "{count, plural, one{{count} день подряд} few{{count} дня подряд} many{{count} дней подряд} other{{count} дня подряд}}",
+  "@creatineStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAppIconFooter": "Android меняет значок, когда вы выходите из приложения (на главный экран или в недавние приложения), и при этом закрывает его. Некоторым лаунчерам нужно несколько секунд, чтобы показать новый."
 }

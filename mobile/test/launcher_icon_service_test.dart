@@ -298,6 +298,42 @@ void main() {
     });
   });
 
+  group('own pick', () {
+    test('pins the icon, turns following the appearance off, and is remembered', () async {
+      final service = await start();
+      const pick = LauncherIconVariant(IconBackdrop.dark, IconHue.amber);
+      service.choose(pick);
+      await pumpEventQueue();
+      expect(service.adaptive, isFalse);
+      expect(service.desired, pick);
+      expect(activity.targets.last, '.LauncherIcon_dark_amber');
+
+      // The theme no longer moves it.
+      theme.setMode('dark');
+      appearance.setAccent(const Color(0xFFE24B4A));
+      await pumpEventQueue();
+      expect(service.desired, pick);
+
+      final reloaded = LauncherIconService(storage, theme, appearance, platformSupported: false);
+      addTearDown(reloaded.dispose);
+      expect(reloaded.adaptive, isFalse);
+      expect(reloaded.desired, pick);
+    });
+
+    test('following the appearance again keeps the pick for later', () async {
+      final service = await start();
+      const pick = LauncherIconVariant(IconBackdrop.light, IconHue.teal);
+      service.choose(pick);
+      service.setAdaptive(true);
+      await pumpEventQueue();
+      expect(service.desired, LauncherIcons.defaultVariant); // light theme, default accent
+      expect(service.chosen, pick);
+
+      service.setAdaptive(false);
+      expect(service.desired, pick);
+    });
+  });
+
   group('errors', () {
     test('a failing channel leaves the service unsupported, never throwing', () async {
       activity.failEverything = true;

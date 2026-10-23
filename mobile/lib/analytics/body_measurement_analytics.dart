@@ -1,29 +1,26 @@
 import '../models/body_measurement_entry.dart';
 
-/// For each measurement field with at least 2 logged (non-null) values,
-/// the ratio of the latest reading to the user's own first-ever reading --
-/// a *relative growth* indicator against their own baseline, not an
-/// absolute anthropometric measurement. Clamped to ±15%: the illustrated
-/// body has no per-limb rig, so [BodyShapeDiagram] can only nudge existing
-/// muscle-overlay regions, not truly reshape the figure -- a modest,
-/// visually-plausible range keeps that nudge from ever looking broken.
-/// Fields with fewer than 2 data points are omitted (nothing to compare).
-Map<BodyMeasurementField, double> measurementScaleFactors(
+/// Per measurement field, the first and the latest value ever logged --
+/// what the measurements radar compares. Entries are sparse (a user logs
+/// whichever fields they measured that day), so each field is looked up on
+/// its own: "latest" is the newest entry that HAS that field, not simply the
+/// newest entry. [entries] is in logging order, oldest first (as
+/// BodyMeasurementsProvider keeps it). Fields never logged are left out;
+/// a field logged once has the same first and latest value.
+Map<BodyMeasurementField, ({double first, double latest})> measurementSpans(
   List<BodyMeasurementEntry> entries,
 ) {
-  final result = <BodyMeasurementField, double>{};
+  final spans = <BodyMeasurementField, ({double first, double latest})>{};
   for (final field in BodyMeasurementField.values) {
-    double? baseline;
+    double? first;
     double? latest;
-    for (final e in entries) {
-      final v = bodyMeasurementFieldValue(e, field);
-      if (v == null) continue;
-      baseline ??= v;
-      latest = v;
+    for (final entry in entries) {
+      final value = bodyMeasurementFieldValue(entry, field);
+      if (value == null) continue;
+      first ??= value;
+      latest = value;
     }
-    if (baseline == null || latest == null || baseline == latest) continue;
-    final ratio = (latest / baseline).clamp(0.85, 1.15);
-    result[field] = ratio;
+    if (first != null && latest != null) spans[field] = (first: first, latest: latest);
   }
-  return result;
+  return spans;
 }

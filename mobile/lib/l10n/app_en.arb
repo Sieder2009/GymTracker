@@ -739,12 +739,6 @@
   "achievementPathTotalSets": "Total sets",
   "achievementPathTotalWorkoutMinutes": "Training time",
   "achievementPathDistinctExercises": "Exercise variety",
-  "rankStarter": "Starter",
-  "rankBronze": "Bronze",
-  "rankSilver": "Silver",
-  "rankGold": "Gold",
-  "rankPlatinum": "Platinum",
-  "rankLegend": "Legend",
   "labelRank": "Rank",
   "muscleTricepsLongHead": "Triceps (long head)",
   "muscleTricepsLateralHead": "Triceps (lateral head)",
@@ -996,5 +990,72 @@
   "settingsAppIconAdaptive": "Match appearance",
   "settingsAppIconAdaptiveHint": "Light or dark like the app, in your primary color",
   "settingsAppIconPending": "Changes when you leave the app",
+  "settingsAppIconChoose": "Pick your own",
+  "settingsAppIconChooseHint": "A tap sets that icon and turns off matching the appearance.",
+  "titleYourPrs": "Your PRs",
+  "actionLogPrs": "Log PRs",
+  "actionLogMeasurements": "Log measurements",
+  "labelLastValue": "Last: {value}",
+  "@labelLastValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "labelStart": "Start",
+  "errorInvalidValue": "Invalid",
+  "rankIron": "Mortal",
+  "rankBronze": "Warrior",
+  "rankSilver": "Spartan",
+  "rankGold": "Hero",
+  "rankPlatinum": "Demigod",
+  "rankDiamond": "Titan",
+  "rankChampion": "Olympian",
+  "titleYourRank": "Your rank",
+  "rankNext": "Next rank: {rank}",
+  "@rankNext": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankKgToNext": "{kg} kg to {rank}",
+  "@rankKgToNext": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "rankTop": "Top rank reached",
+  "rankNeedBodyweight": "Log your bodyweight to see your rank.",
+  "rankNeedAllThree": "Log all three PRs to see your overall rank.",
+  "titleAllRanks": "All ranks",
+  "allRanksCaptionKg": "Each rank starts at these PRs – at {bodyweight} kg bodyweight.",
+  "@allRanksCaptionKg": {
+    "placeholders": {
+      "bodyweight": {
+        "type": "String"
+      }
+    }
+  },
+  "allRanksCaptionRatio": "Each rank starts at these PRs, as multiples of your bodyweight. Log your bodyweight to see kilos.",
+  "rankExplainer": "From your squat, bench press and deadlift PRs relative to your bodyweight.",
+  "creatineTitle": "Creatine",
+  "creatineTakenToday": "Taken today",
+  "creatineNotYet": "Not ticked off yet today",
+  "creatineStreak": "{count, plural, =1{1 day in a row} other{{count} days in a row}}",
+  "@creatineStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAppIconFooter": "Android swaps the icon once you leave the app (Home or the app switcher), which also closes the app. Some launchers take a few seconds to show the new one."
 }

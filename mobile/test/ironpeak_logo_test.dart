@@ -180,6 +180,44 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('dark: white barbell on a card tile; light: on an accent tile', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true); // resting pose
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+
+      for (final (colors, tile, glyph) in [
+        (AppColors.dark, AppColors.dark.card, AppColors.dark.txt),
+        (AppColors.light, AppColors.light.accent, AppColors.light.onAccent),
+      ]) {
+        final key = GlobalKey();
+        await tester.pumpWidget(MaterialApp(
+          theme: ThemeData(
+            brightness: colors == AppColors.dark ? Brightness.dark : Brightness.light,
+            extensions: [colors],
+          ),
+          home: Center(
+            child: RepaintBoundary(key: key, child: const AnimatedIronpeakLogo(size: 100)),
+          ),
+        ));
+        await tester.pump(const Duration(seconds: 1)); // past MaterialApp's theme cross-fade
+        final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final image = (await tester.runAsync(() => boundary.toImage()))!;
+        final data = (await tester.runAsync(
+            () => image.toByteData(format: ui.ImageByteFormat.rawStraightRgba)))!;
+        // Glyph box = 72% of the badge: logo unit u -> 14 + u * 0.72.
+        Color at(double ux, double uy) {
+          final i = ((14 + uy * 0.72).round() * image.width + (14 + ux * 0.72).round()) * 4;
+          return Color.fromARGB(
+              data.getUint8(i + 3), data.getUint8(i), data.getUint8(i + 1), data.getUint8(i + 2));
+        }
+
+        // Inside the left big plate: glyph. Above the barbell: tile.
+        expect(at(25, 50), glyph);
+        expect(at(50, 8), tile);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('stands still when the OS asks to remove animations',
         (tester) async {
       tester.platformDispatcher.accessibilityFeaturesTestValue =

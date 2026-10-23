@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,6 +18,7 @@ import '../overlays/import_log_screen.dart';
 import '../overlays/plan_editor_screen.dart';
 import '../overlays/settings_screen.dart';
 import '../overlays/workout_overlay_screen.dart';
+import '../state/creatine_provider.dart';
 import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../state/train_state_provider.dart';
@@ -284,6 +286,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           // greeting for the same line.
           Row(
             children: [
+              const _VersionPill(),
               const Spacer(),
               _OverflowMenuButton(
                 t: t,
@@ -298,7 +301,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
           ),
           const SizedBox(height: 4),
           const _HomeCalendarCard(),
-          const _UpdateAvailableCard(),
+          const SizedBox(height: 12),
+          const _CreatineCard(),
           const SizedBox(height: 16),
           Text(plan.name, style: Theme.of(context).textTheme.headlineMedium),
           Text(
@@ -565,70 +569,281 @@ class _HomeCalendarCard extends StatelessWidget {
   }
 }
 
-/// Surfaces a ready-to-install (or, lacking a platform build asset, just
-/// available) app update right on the home screen — previously this state
-/// was only visible if the user happened to open Settings, easy to miss
-/// since [UpdateProvider] checks and downloads silently in the background.
-/// Gone once [UpdateProvider.status] moves past updateAvailable/downloaded
-/// (e.g. back to upToDate once the user has installed and relaunched).
-class _UpdateAvailableCard extends StatelessWidget {
-  const _UpdateAvailableCard();
+/// Ticking off the daily creatine: one big check for today, the last
+/// seven days as dots underneath (tap one to fix a forgotten or wrong
+/// tick), and the days in a row so far.
+class _CreatineCard extends StatelessWidget {
+  const _CreatineCard();
+
+  static void _toggle(BuildContext context, DateTime day) {
+    HapticFeedback.selectionClick();
+    context.read<CreatineProvider>().toggle(day);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final update = context.watch<UpdateProvider>();
-    final isDownloaded = update.status == UpdateStatus.downloaded;
-    final isAvailable = update.status == UpdateStatus.updateAvailable;
-    if (!isDownloaded && !isAvailable) return const SizedBox.shrink();
-
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
-    final version =
-        (isDownloaded ? update.downloadedVersion : update.result?.latestVersion) ?? '';
-    final releaseUrl = update.result?.releaseUrl;
-    final onTap = isDownloaded
-        ? () => update.openDownloadedUpdate()
-        : (releaseUrl == null ? null : () => launchUrl(Uri.parse(releaseUrl)));
+    final creatine = context.watch<CreatineProvider>();
+    final localeName = Localizations.localeOf(context).toString();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final takenToday = creatine.takenOn(today);
+    final streak = creatine.streak(now: now);
+    final week = [for (var i = 6; i >= 0; i--) DateTime(today.year, today.month, today.day - i)];
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Card(
-        margin: EdgeInsets.zero,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: colors.accent,
+                    color: colors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadii.sm),
                   ),
-                  child: Icon(Icons.arrow_circle_up_rounded,
-                      color: colors.onAccent, size: 20),
+                  child: Icon(Icons.medication_rounded, size: 20, color: colors.accent),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(t.labelUpdateAvailable(version),
-                          style: Theme.of(context).textTheme.headlineMedium),
+                      Text(t.creatineTitle, style: Theme.of(context).textTheme.headlineMedium),
                       const SizedBox(height: 2),
                       Text(
-                        isDownloaded ? t.actionInstallUpdate : t.actionDownloadUpdate,
-                        style: TextStyle(color: colors.mut, fontSize: 13),
+                        takenToday ? t.creatineTakenToday : t.creatineNotYet,
+                        style: TextStyle(
+                          color: takenToday ? colors.green : colors.mut,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Icon(Icons.chevron_right_rounded, color: colors.mut),
+                const SizedBox(width: 12),
+                Semantics(
+                  button: true,
+                  checked: takenToday,
+                  label: t.creatineTitle,
+                  child: GestureDetector(
+                    onTap: () => _toggle(context, today),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: takenToday ? colors.accent : colors.card2,
+                        border: Border.all(color: takenToday ? colors.accent : colors.line, width: 1.5),
+                      ),
+                      child: Icon(
+                        Icons.check_rounded,
+                        size: 26,
+                        color: takenToday ? colors.onAccent : colors.mut,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                for (final day in week)
+                  _CreatineDay(
+                    weekday: DateFormat.E(localeName).format(day),
+                    date: DateFormat.MMMd(localeName).format(day),
+                    taken: creatine.takenOn(day),
+                    isToday: day == today,
+                    onTap: () => _toggle(context, day),
+                  ),
+              ],
+            ),
+            if (streak > 0) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.local_fire_department_rounded, size: 16, color: colors.accent),
+                  const SizedBox(width: 4),
+                  Text(
+                    t.creatineStreak(streak),
+                    style: TextStyle(color: colors.mut, fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One of the last seven days: weekday above a dot that's filled once
+/// ticked; today's has a ring.
+class _CreatineDay extends StatelessWidget {
+  const _CreatineDay({
+    required this.weekday,
+    required this.date,
+    required this.taken,
+    required this.isToday,
+    required this.onTap,
+  });
+
+  final String weekday;
+  final String date;
+  final bool taken;
+  final bool isToday;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    return Semantics(
+      button: true,
+      checked: taken,
+      label: '$weekday, $date',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: ExcludeSemantics(
+          child: Column(
+            children: [
+              Text(
+                weekday,
+                style: TextStyle(
+                  color: isToday ? colors.txt : colors.mut,
+                  fontSize: 11,
+                  fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: taken ? colors.accent : colors.card2,
+                  border: isToday && !taken ? Border.all(color: colors.accent, width: 1.5) : null,
+                ),
+                child: taken ? Icon(Icons.check_rounded, size: 17, color: colors.onAccent) : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The app version, small, in the header's top-left corner (the menu has
+/// the right one) -- and the one-tap way to update. [UpdateProvider] checks and
+/// downloads silently in the background; once it has found a newer release
+/// this turns into an accent "↑ v2.14.0" pill that installs it on tap (with
+/// a progress ring while the download runs), retries a failed download, or
+/// -- where this platform has no download -- opens the release page. Up to
+/// date it shows the installed version, muted, and a tap checks again.
+class _VersionPill extends StatelessWidget {
+  const _VersionPill();
+
+  @override
+  Widget build(BuildContext context) {
+    final update = context.watch<UpdateProvider>();
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final status = update.status;
+    final latest = update.result?.latestVersion;
+    final newer = switch (status) {
+      UpdateStatus.downloaded => update.downloadedVersion ?? latest,
+      UpdateStatus.updateAvailable || UpdateStatus.downloading => latest,
+      _ => null,
+    };
+    final installed = update.installedVersion;
+    final version = newer ?? installed;
+    if (version == null) return const SizedBox.shrink();
+
+    final releaseUrl = update.result?.releaseUrl;
+    final VoidCallback? onTap;
+    final String tooltip;
+    switch (status) {
+      case UpdateStatus.downloaded:
+        onTap = update.openDownloadedUpdate;
+        tooltip = t.labelUpdateReady(version);
+      case UpdateStatus.updateAvailable:
+        // Still "available" after a failed download: checking again starts
+        // a fresh one. Without a build for this platform, the release page.
+        onTap = update.result?.assetForThisPlatform != null
+            ? update.checkNow
+            : (releaseUrl == null
+                ? null
+                : () => launchUrl(Uri.parse(releaseUrl), mode: LaunchMode.externalApplication));
+        tooltip = t.labelUpdateAvailable(version);
+      case UpdateStatus.downloading:
+        onTap = null;
+        tooltip = t.labelDownloadingUpdate((update.downloadProgress * 100).round());
+      case UpdateStatus.checking:
+        onTap = null;
+        tooltip = t.actionChecking;
+      case UpdateStatus.upToDate:
+        onTap = update.checkNow;
+        tooltip = t.labelUpToDate;
+      case UpdateStatus.idle:
+      case UpdateStatus.error:
+        onTap = update.checkNow;
+        tooltip = t.labelInstalledVersion(version);
+    }
+
+    final highlight = newer != null;
+    final foreground = highlight ? colors.onAccent : colors.mut;
+    final Widget? lead = switch (status) {
+      UpdateStatus.downloading => SizedBox.square(
+          dimension: 12,
+          child: CircularProgressIndicator(
+            value: update.downloadProgress > 0 ? update.downloadProgress : null,
+            strokeWidth: 2,
+            color: foreground,
+          ),
+        ),
+      UpdateStatus.checking => SizedBox.square(
+          dimension: 11,
+          child: CircularProgressIndicator(strokeWidth: 1.5, color: foreground),
+        ),
+      _ when highlight => Icon(Icons.arrow_upward_rounded, size: 15, color: foreground),
+      _ => null,
+    };
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: highlight ? colors.accent : colors.card2,
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (lead != null) ...[lead, const SizedBox(width: 5)],
+                Text(
+                  'v$version',
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 12.5,
+                    fontWeight: highlight ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -655,10 +870,22 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return SafeArea(
+      child: Stack(
+        children: [
+          _buildBody(context, t),
+          // Same corner as on a plan's screen.
+          const Positioned(top: 12, left: 16, child: _VersionPill()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, AppLocalizations t) {
+    return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               t.emptyNoPlan,

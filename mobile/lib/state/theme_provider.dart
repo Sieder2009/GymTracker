@@ -11,10 +11,12 @@ const String _kCustomBaseKey = 'ironpeak:theme:customBase';
 class ThemeProvider extends ChangeNotifier {
   ThemeProvider(this._storage)
       : _mode = _initial(_storage),
-        _customBase = _initialCustomBase(_storage);
+        _customBase = _initialCustomBase(_storage),
+        _chosen = _isSaved(_storage.readString(_kThemeKey));
 
   final StorageService _storage;
   String _mode;
+  bool _chosen;
   // Which brightness ('light'/'dark') the user was in right before
   // switching to Custom -- AppColors' un-overridden tokens (line/mut/teal/
   // purple/yellow/green) are tuned for one brightness, so a dark custom
@@ -27,9 +29,16 @@ class ThemeProvider extends ChangeNotifier {
   bool get isCustom => _mode == 'custom';
   String get customBase => _customBase;
 
+  /// Nothing picked yet: [mode] came from the phone at this launch and will
+  /// again at the next one.
+  bool get followsSystem => !_chosen;
+
+  static bool _isSaved(String? saved) =>
+      saved == 'light' || saved == 'dark' || saved == 'custom';
+
   static String _initial(StorageService storage) {
     final saved = storage.readString(_kThemeKey);
-    if (saved == 'light' || saved == 'dark' || saved == 'custom') return saved!;
+    if (_isSaved(saved)) return saved!;
     final brightness =
         WidgetsBinding.instance.platformDispatcher.platformBrightness;
     return brightness == Brightness.dark ? 'dark' : 'light';
@@ -45,6 +54,7 @@ class ThemeProvider extends ChangeNotifier {
   /// degrades out of Custom mode for free without needing its own case.
   void toggle() {
     _mode = _mode == 'dark' ? 'light' : 'dark';
+    _chosen = true;
     _storage.writeString(_kThemeKey, _mode);
     notifyListeners();
   }
@@ -56,6 +66,7 @@ class ThemeProvider extends ChangeNotifier {
       _storage.writeString(_kCustomBaseKey, _customBase);
     }
     _mode = mode;
+    _chosen = true;
     _storage.writeString(_kThemeKey, _mode);
     notifyListeners();
   }

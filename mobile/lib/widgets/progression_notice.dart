@@ -13,9 +13,13 @@ import '../theme/app_radii.dart';
 /// `ExerciseAnalyticsSection`) so an exercise card can carry either, both,
 /// or neither depending on what the data actually supports.
 class ProgressionNotice extends StatelessWidget {
-  const ProgressionNotice({super.key, required this.suggestion});
+  const ProgressionNotice({super.key, required this.suggestion, this.compact = false});
 
   final ProgressionSuggestion suggestion;
+
+  /// One tighter line without the title, for inside another card -- the
+  /// icon and the sentence already say it's a suggestion.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +50,24 @@ class ProgressionNotice extends StatelessWidget {
         color = colors.yellow;
         body = t.progressionDeload(weightLabel);
         break;
+    }
+
+    if (compact) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 8),
+            Expanded(child: Text(body, style: TextStyle(color: colors.txt, fontSize: 12))),
+          ],
+        ),
+      );
     }
 
     return Container(

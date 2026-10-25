@@ -4,8 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../analytics/analytics_engine.dart';
 import '../analytics/heatmap_engine.dart';
 import '../analytics/logged_days.dart';
+import '../analytics/rest_days.dart';
 import '../data/constants.dart';
 import '../data/example_log.dart';
 import '../data/example_ppl_plan.dart';
@@ -37,6 +39,7 @@ import '../widgets/language_picker_sheet.dart';
 import '../widgets/move_day_sheet.dart';
 import '../widgets/move_exercise_sheet.dart';
 import '../widgets/plan_picker_sheet.dart';
+import '../widgets/streak_flame.dart';
 import '../state/theme_provider.dart';
 import 'calendar_screen.dart';
 import 'gallery_screen.dart';
@@ -290,6 +293,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
             children: [
               const _VersionPill(),
               const Spacer(),
+              const _StreakBadge(),
+              const SizedBox(width: 8),
               _OverflowMenuButton(
                 t: t,
                 programs: programs,
@@ -565,6 +570,58 @@ class _HomeCalendarCard extends StatelessWidget {
                 onSelectDate: (day) => _open(context, day),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The current training streak in the header: a flame that grows with it
+/// and the number of days. Counted like the calendar and the Consistency
+/// tab -- guided workouts plus days of single saved exercises, rest days
+/// from the plan don't break it. A tap opens the full calendar.
+class _StreakBadge extends StatelessWidget {
+  const _StreakBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final programs = context.watch<ProgramsProvider>();
+    final streak = computeConsistency(
+      sessionsWithLoggedExercises(context.watch<WorkoutHistoryProvider>().sessions, programs.programs),
+      isRestDay: activePlanRestDays(programs, context.watch<TrainStateProvider>()),
+    ).currentStreakDays;
+
+    return Semantics(
+      button: true,
+      label: '${t.labelCurrentStreak}: ${t.trainingStreak(streak)}',
+      child: ExcludeSemantics(
+        child: Tooltip(
+          message: t.trainingStreak(streak),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CalendarScreen())),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  StreakFlame(days: streak),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$streak',
+                    style: TextStyle(
+                      color: streak > 0 ? colors.txt : colors.mut,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

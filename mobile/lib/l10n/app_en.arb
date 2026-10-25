@@ -1058,5 +1058,18 @@
   "settingsShowNextWorkout": "Show next workout",
   "settingsShowNextWorkoutHint": "Number of exercises and estimated duration of today’s session.",
   "settingsShowStartWorkout": "Show “Start workout”",
-  "settingsShowStartWorkoutHint": "Goes through today’s plan set by set, with a rest timer."
+  "settingsShowStartWorkoutHint": "Goes through today’s plan set by set, with a rest timer.",
+  "historyShowAll": "Show all {count}",
+  "@historyShowAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "historyShowLess": "Show less",
+  "trainingStreak": "{count, plural, =1{1 day in a row} other{{count} days in a row}}",
+  "@trainingStreak": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

@@ -656,5 +656,8 @@
   "settingsShowNextWorkout": "Nächstes Workout anzeigen",
   "settingsShowNextWorkoutHint": "Anzahl der Übungen und geschätzte Dauer des heutigen Trainings.",
   "settingsShowStartWorkout": "„Workout starten“ anzeigen",
-  "settingsShowStartWorkoutHint": "Führt Satz für Satz durch den heutigen Plan, mit Pausentimer."
+  "settingsShowStartWorkoutHint": "Führt Satz für Satz durch den heutigen Plan, mit Pausentimer.",
+  "historyShowAll": "Alle {count} anzeigen",
+  "historyShowLess": "Weniger anzeigen",
+  "trainingStreak": "{count, plural, =1{1 Tag in Folge} other{{count} Tage in Folge}}"
 }

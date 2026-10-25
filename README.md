@@ -67,10 +67,10 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
 
 <table>
 <tr>
-<td width="25%"><img src="screenshots/screenshot-training.png" alt="Training tab: today's workout with set tracking and rest timer"/></td>
-<td width="25%"><img src="screenshots/screenshot-strength.png" alt="Strength tab: bodyweight log, DOTS score, and a Bench Press card"/></td>
-<td width="25%"><img src="screenshots/screenshot-analytics.png" alt="Analytics tab: overview stats and weekly volume"/></td>
-<td width="25%"><img src="screenshots/screenshot-exercises.png" alt="Exercise database with muscle activation diagram"/></td>
+<td width="25%"><img src="screenshots/screenshot-training.png" alt="Home screen: training calendar, creatine tracker and today's plan"/></td>
+<td width="25%"><img src="screenshots/screenshot-strength.png" alt="Strength tab: overall rank with its crystal badge, and the bodyweight log"/></td>
+<td width="25%"><img src="screenshots/screenshot-analytics.png" alt="Analytics tab: workouts, volume, streak, PRs and the progress summary"/></td>
+<td width="25%"><img src="screenshots/screenshot-exercises.png" alt="Exercise database with 546 exercises and their muscle diagrams"/></td>
 </tr>
 <tr>
 <td align="center"><sub><b>Training</b></sub></td>
@@ -80,9 +80,8 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
 </tr>
 </table>
 
-> Real captures from the iOS Simulator (iPhone 17, iOS 26), taken in
-> August 2026 — before the Kilo redesign, so the home screen, the ranks
-> and the radar charts described below aren't in them yet.
+> Real captures from the Android emulator (Pixel 7, Android 15) with the
+> demo data from `mobile/tool/seed_demo_data.dart`, app language German.
 
 ## Features
 
@@ -94,6 +93,11 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
   full calendar). Below it sits a compact **creatine tracker**: one tap
   ticks off today, the last seven days are small dots you can fix
   afterwards, and a 🔥 shows how many days in a row you've taken it.
+- At the top right burns your **training streak** as an animated flame
+  with the number of days: it grows with the streak (full size from about
+  two months), throws sparks from three days on and gets a white-hot core
+  from 30 — grey and small at zero. Rest days from your plan don't break
+  it; a tap opens the calendar (`widgets/streak_flame.dart`).
 - Then **today's plan**: day pills to look at any weekday, "Move to
   another day" to reschedule a session, today's exercises plus the ones
   you do on every training day — drag to reorder, link two exercises into
@@ -125,6 +129,11 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
   row suggest a deload instead of grinding at a stuck weight
   (`analytics/progression_engine.dart`). Built only from real numeric reps
   you logged — never a guess when a set only carries a '✓'/'x'/'m' marker.
+- **Every exercise keeps its history** in one compact card: best estimated
+  1RM (Epley) and the 30-day trend, a chart of the estimated 1RM per
+  session, the suggestion for next time, and the sessions as a list —
+  date, weight, reps per set — showing the latest five until you expand
+  it (`widgets/exercise_analytics_section.dart`).
 - **Animated exercise demos.** 354 of the 546 exercises in the database
   show a short animation of how the movement is done: in the Exercises
   tab, in the exercise editor, during a guided workout, and as an
@@ -377,7 +386,8 @@ mobile/
     widgets/             Reusable UI building blocks (charts, rank badges,
                          editors, sheets, …)
   test/                  Unit/widget tests
-  tool/seed_demo_data.dart  Developer script: fills demo data into the local DB
+  tool/seed_demo_data.dart  Developer script: fills six months of demo data into a
+                             database (used for the screenshots above)
   tool/generate_icons.dart  Developer script: re-renders every app icon (the 16
                              Android launcher variants and their release-only
                              aliases, animated launch icon, web, Windows .ico,

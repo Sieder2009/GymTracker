@@ -622,5 +622,8 @@
   "settingsShowNextWorkout": "Mostra prossimo allenamento",
   "settingsShowNextWorkoutHint": "Numero di esercizi e durata stimata dell’allenamento di oggi.",
   "settingsShowStartWorkout": "Mostra «Inizia allenamento»",
-  "settingsShowStartWorkoutHint": "Percorre il piano di oggi serie per serie, con timer di recupero."
+  "settingsShowStartWorkoutHint": "Percorre il piano di oggi serie per serie, con timer di recupero.",
+  "historyShowAll": "Mostra tutti ({count})",
+  "historyShowLess": "Mostra meno",
+  "trainingStreak": "{count, plural, =1{1 giorno di fila} other{{count} giorni di fila}}"
 }

@@ -622,5 +622,8 @@
   "settingsShowNextWorkout": "Sıradaki antrenmanı göster",
   "settingsShowNextWorkoutHint": "Bugünkü antrenmanın egzersiz sayısı ve tahmini süresi.",
   "settingsShowStartWorkout": "“Antrenmanı başlat” düğmesini göster",
-  "settingsShowStartWorkoutHint": "Bugünkü planda set set ilerler, dinlenme zamanlayıcısıyla."
+  "settingsShowStartWorkoutHint": "Bugünkü planda set set ilerler, dinlenme zamanlayıcısıyla.",
+  "historyShowAll": "Tümünü göster ({count})",
+  "historyShowLess": "Daha az göster",
+  "trainingStreak": "{count, plural, =1{1 gün üst üste} other{{count} gün üst üste}}"
 }

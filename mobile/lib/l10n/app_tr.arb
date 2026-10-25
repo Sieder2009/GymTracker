@@ -391,7 +391,6 @@
   "infoPlateApprox": "En yakın mümkün: {value} {unit} (hedef bu disklerle tam olarak yüklenemiyor)",
   "emptyPlateTargetBelowBar": "Hedef, barın kendisinden daha hafif.",
   "tabStrengthOverview": "Genel Bakış",
-  "tabStrengthTools": "Araçlar",
   "rangeLabel4Weeks": "4H",
   "rangeLabel3Months": "3A",
   "rangeLabel6Months": "6A",
@@ -405,8 +404,6 @@
   "balanceFlagBalanced": "tipik",
   "balanceFlagHigh": "tipik üstü",
   "balanceRatioValue": "{ratio}× Squat",
-  "infoTool1rmDescription": "Daha hafif bir setten tek tekrar maksimumunu tahmin et.",
-  "infoToolPlateDescription": "Bara hangi disklerin takılacağını hesapla.",
   "labelRepMaxTable": "Tekrar maksimum tablosu",
   "repMaxRow": "{reps} RM",
   "actionShowInFinder": "Finder'da göster",
@@ -485,7 +482,6 @@
   "exerciseGuideExtension": "Hareketi yalnızca ilgili ekleme sınırla, vücudunun geri kalanını sabit tut. Ağırlığı düşürmek yerine kontrollü şekilde başlangıç noktasına geri getir — iniş aşaması da gerçekten çalıştırır.",
   "exerciseGuideCore": "Zor kısımda nefesini tutmak yerine kontrollü hareket et ve düzenli nefes al. Temiz form, hız ya da alelacele yapılan fazladan tekrardan daha önemlidir.",
   "titleCalorieCalculator": "Kalori hesaplayıcı",
-  "infoToolCalorieDescription": "Vücut ağırlığına ve hedefine göre günlük kalori ve makro ihtiyacını tahmin eder.",
   "hintHeightCm": "Boy (cm)",
   "hintAgeYears": "Yaş",
   "labelActivityLevel": "Aktivite düzeyi",
@@ -621,5 +617,10 @@
       }
     }
   },
-  "settingsAppIconFooter": "Android simgeyi uygulamadan çıktığında (ana ekran veya son uygulamalar) değiştirir ve bu sırada uygulamayı kapatır. Bazı başlatıcıların yenisini göstermesi birkaç saniye sürer."
+  "settingsAppIconFooter": "Android simgeyi uygulamadan çıktığında (ana ekran veya son uygulamalar) değiştirir ve bu sırada uygulamayı kapatır. Bazı başlatıcıların yenisini göstermesi birkaç saniye sürer.",
+  "headerHomeScreen": "ANA EKRAN",
+  "settingsShowNextWorkout": "Sıradaki antrenmanı göster",
+  "settingsShowNextWorkoutHint": "Bugünkü antrenmanın egzersiz sayısı ve tahmini süresi.",
+  "settingsShowStartWorkout": "“Antrenmanı başlat” düğmesini göster",
+  "settingsShowStartWorkoutHint": "Bugünkü planda set set ilerler, dinlenme zamanlayıcısıyla."
 }

@@ -391,7 +391,6 @@
   "infoPlateApprox": "Najbliżej możliwe: {value} {unit} (celu nie da się dokładnie osiągnąć tymi talerzami)",
   "emptyPlateTargetBelowBar": "Cel jest lżejszy niż sama sztanga.",
   "tabStrengthOverview": "Przegląd",
-  "tabStrengthTools": "Narzędzia",
   "rangeLabel4Weeks": "4T",
   "rangeLabel3Months": "3M",
   "rangeLabel6Months": "6M",
@@ -405,8 +404,6 @@
   "balanceFlagBalanced": "typowy",
   "balanceFlagHigh": "powyżej typowego",
   "balanceRatioValue": "{ratio}× przysiadu",
-  "infoTool1rmDescription": "Oszacuj swój ciężar maksymalny na podstawie lżejszej serii.",
-  "infoToolPlateDescription": "Oblicz, które talerze założyć na sztangę.",
   "labelRepMaxTable": "Tabela maksimów powtórzeniowych",
   "repMaxRow": "{reps} RM",
   "actionShowInFinder": "Pokaż w Finderze",
@@ -485,7 +482,6 @@
   "exerciseGuideExtension": "Ogranicz ruch tylko do zaangażowanego stawu, reszta ciała pozostaje nieruchoma. Sprowadzaj ciężar do pozycji wyjściowej w kontrolowany sposób zamiast go opuszczać swobodnie — faza opuszczania też realnie trenuje mięsień.",
   "exerciseGuideCore": "Poruszaj się z kontrolą i oddychaj równomiernie, zamiast wstrzymywać oddech w trudniejszej fazie. Czysta technika liczy się bardziej niż tempo czy pospieszne dodatkowe powtórzenia.",
   "titleCalorieCalculator": "Kalkulator kalorii",
-  "infoToolCalorieDescription": "Szacuje dzienne zapotrzebowanie na kalorie i makroskładniki na podstawie masy ciała i celu.",
   "hintHeightCm": "Wzrost (cm)",
   "hintAgeYears": "Wiek",
   "labelActivityLevel": "Poziom aktywności",
@@ -621,5 +617,10 @@
       }
     }
   },
-  "settingsAppIconFooter": "Android zmienia ikonę po wyjściu z aplikacji (ekran główny lub ostatnie aplikacje) i przy tym ją zamyka. Niektóre launchery potrzebują kilku sekund, by pokazać nową."
+  "settingsAppIconFooter": "Android zmienia ikonę po wyjściu z aplikacji (ekran główny lub ostatnie aplikacje) i przy tym ją zamyka. Niektóre launchery potrzebują kilku sekund, by pokazać nową.",
+  "headerHomeScreen": "EKRAN GŁÓWNY",
+  "settingsShowNextWorkout": "Pokazuj następny trening",
+  "settingsShowNextWorkoutHint": "Liczba ćwiczeń i szacowany czas dzisiejszego treningu.",
+  "settingsShowStartWorkout": "Pokazuj „Rozpocznij trening”",
+  "settingsShowStartWorkoutHint": "Prowadzi seria po serii przez dzisiejszy plan, z timerem przerwy."
 }

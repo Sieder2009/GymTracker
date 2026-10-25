@@ -6,7 +6,6 @@ import '../data/constants.dart';
 import '../data/dots_score.dart';
 import '../data/lift_balance.dart';
 import '../data/lift_rank.dart';
-import '../data/strength_standards.dart';
 import '../l10n/app_localizations.dart';
 import '../models/big_lift.dart';
 import '../state/athlete_settings_provider.dart';
@@ -28,14 +27,14 @@ import '../widgets/rank_emblem.dart';
 import '../widgets/strength_line_chart.dart';
 import '../widgets/value_entry_sheet.dart';
 
-/// "Kraft" tab — a segmented view (Overview / each of the three big lifts /
-/// Tools) instead of one long scroll of every card stacked on top of each
+/// "Kraft" tab — a segmented view (Overview / each of the three big lifts)
+/// instead of one long scroll of every card stacked on top of each
 /// other, same pattern the Analytics tab's own TabBar already uses (see
 /// ProgressScreen). Overview stays a quick glance (bodyweight, Total/DOTS,
 /// a compact tile per lift, a balance check across all three); each lift
 /// gets its own full screen with a real date-based, range-filterable trend
 /// chart and its logged history, not just the last 8 points squeezed into
-/// a card.
+/// a card. The calculators live in the header's icon buttons.
 class StrengthScreen extends StatelessWidget {
   const StrengthScreen({super.key});
 
@@ -46,7 +45,7 @@ class StrengthScreen extends StatelessWidget {
 
     return SafeArea(
       child: DefaultTabController(
-        length: 5,
+        length: 4,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -88,7 +87,6 @@ class StrengthScreen extends StatelessWidget {
                 Tab(text: t.labelBenchPress),
                 Tab(text: t.labelDeadlift),
                 Tab(text: t.labelSquat),
-                Tab(text: t.tabStrengthTools),
               ],
             ),
             Expanded(
@@ -98,7 +96,6 @@ class StrengthScreen extends StatelessWidget {
                   _LiftDetailTab(liftKey: 'bench', label: t.labelBenchPress, color: colors.teal, tabIndex: 1),
                   _LiftDetailTab(liftKey: 'deadlift', label: t.labelDeadlift, color: colors.purple, tabIndex: 2),
                   _LiftDetailTab(liftKey: 'squat', label: t.labelSquat, color: colors.yellow, tabIndex: 3),
-                  const _ToolsTab(),
                 ],
               ),
             ),
@@ -1077,90 +1074,6 @@ class _ChartRangeSelector extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-/// A bare DOTS number means nothing to someone who's never heard of
-/// Wilks/DOTS (see [_PowerliftingScoreCard]) -- this is the legible
-/// per-lift answer to "is this PR any good?": a level name plus a thin
-/// progress bar toward the next one, both driven by [classifyLift].
-class _ToolsTab extends StatelessWidget {
-  const _ToolsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
-      children: [
-        _ToolCard(
-          icon: Icons.calculate_outlined,
-          title: t.title1rmCalculator,
-          description: t.infoTool1rmDescription,
-          onTap: () => showOneRepMaxCalculator(context),
-        ),
-        const SizedBox(height: 12),
-        _ToolCard(
-          icon: Icons.fitness_center_outlined,
-          title: t.titlePlateCalculator,
-          description: t.infoToolPlateDescription,
-          onTap: () => showPlateCalculator(context),
-        ),
-        const SizedBox(height: 12),
-        _ToolCard(
-          icon: Icons.local_fire_department_outlined,
-          title: t.titleCalorieCalculator,
-          description: t.infoToolCalorieDescription,
-          onTap: () => showCalorieCalculator(context),
-        ),
-      ],
-    );
-  }
-}
-
-class _ToolCard extends StatelessWidget {
-  const _ToolCard({required this.icon, required this.title, required this.description, required this.onTap});
-
-  final IconData icon;
-  final String title;
-  final String description;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppColors>()!;
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(color: colors.accentSoft, borderRadius: BorderRadius.circular(AppRadii.sm)),
-                child: Icon(icon, color: colors.accent),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 2),
-                    Text(description, style: TextStyle(color: colors.mut, fontSize: 12.5)),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right, color: colors.mut),
-            ],
-          ),
-        ),
       ),
     );
   }

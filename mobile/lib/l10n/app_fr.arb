@@ -391,7 +391,6 @@
   "infoPlateApprox": "Plus proche possible : {value} {unit} (la cible n'est pas exactement atteignable avec ces disques)",
   "emptyPlateTargetBelowBar": "La cible est plus légère que la barre elle-même.",
   "tabStrengthOverview": "Aperçu",
-  "tabStrengthTools": "Outils",
   "rangeLabel4Weeks": "4S",
   "rangeLabel3Months": "3M",
   "rangeLabel6Months": "6M",
@@ -405,8 +404,6 @@
   "balanceFlagBalanced": "dans la moyenne",
   "balanceFlagHigh": "au-dessus de la moyenne",
   "balanceRatioValue": "{ratio}× Squat",
-  "infoTool1rmDescription": "Estime ta répétition maximale à partir d'une série plus légère.",
-  "infoToolPlateDescription": "Calcule quels disques mettre sur la barre.",
   "labelRepMaxTable": "Table des répétitions maximales",
   "repMaxRow": "{reps} RM",
   "actionShowInFinder": "Afficher dans le Finder",
@@ -485,7 +482,6 @@
   "exerciseGuideExtension": "Isole le mouvement sur la seule articulation concernée et garde le reste du corps immobile. Contrôle le poids jusqu'au point de départ au lieu de le laisser tomber — la phase de descente travaille aussi vraiment.",
   "exerciseGuideCore": "Bouge avec contrôle et respire régulièrement au lieu de bloquer ta respiration dans la partie difficile. Une exécution propre compte plus que la vitesse ou des répétitions bâclées en plus.",
   "titleCalorieCalculator": "Calculateur de calories",
-  "infoToolCalorieDescription": "Estime tes calories et macros quotidiennes à partir de ton poids et de ton objectif.",
   "hintHeightCm": "Taille (cm)",
   "hintAgeYears": "Âge",
   "labelActivityLevel": "Niveau d'activité",
@@ -621,5 +617,10 @@
       }
     }
   },
-  "settingsAppIconFooter": "Android change l'icône une fois que tu quittes l'application (écran d'accueil ou applications récentes), ce qui la ferme aussi. Certains lanceurs mettent quelques secondes à afficher la nouvelle."
+  "settingsAppIconFooter": "Android change l'icône une fois que tu quittes l'application (écran d'accueil ou applications récentes), ce qui la ferme aussi. Certains lanceurs mettent quelques secondes à afficher la nouvelle.",
+  "headerHomeScreen": "ÉCRAN D’ACCUEIL",
+  "settingsShowNextWorkout": "Afficher la prochaine séance",
+  "settingsShowNextWorkoutHint": "Nombre d’exercices et durée estimée de la séance du jour.",
+  "settingsShowStartWorkout": "Afficher « Démarrer la séance »",
+  "settingsShowStartWorkoutHint": "Parcourt le programme du jour série par série, avec minuteur de repos."
 }

@@ -26,6 +26,7 @@ import 'state/exercise_database_provider.dart';
 import 'state/exercise_media_provider.dart';
 import 'state/gym_photos_provider.dart';
 import 'state/health_provider.dart';
+import 'state/home_layout_provider.dart';
 import 'state/locale_provider.dart';
 import 'state/programs_provider.dart';
 import 'state/reminder_provider.dart';
@@ -70,6 +71,7 @@ class IronpeakApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EffortScaleProvider(storage)),
         ChangeNotifierProvider(create: (_) => BarWeightProvider(storage)),
         ChangeNotifierProvider(create: (_) => CreatineProvider(storage)),
+        ChangeNotifierProvider(create: (_) => HomeLayoutProvider(storage)),
         ChangeNotifierProvider(create: (_) => WorkoutHistoryProvider(storage)),
         ChangeNotifierProvider(
             create: (_) => GymPhotosProvider(storage, photosDir)),

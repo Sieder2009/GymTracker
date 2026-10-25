@@ -24,6 +24,7 @@ import '../state/bar_weight_provider.dart';
 import '../state/effort_scale_provider.dart';
 import '../state/exercise_media_provider.dart';
 import '../state/health_provider.dart';
+import '../state/home_layout_provider.dart';
 import '../state/reminder_provider.dart';
 import '../state/theme_provider.dart';
 import '../state/toast_provider.dart';
@@ -105,6 +106,8 @@ class SettingsScreen extends StatelessWidget {
             _UpdateSection(),
             SizedBox(height: 24),
             _AppearanceSection(),
+            SizedBox(height: 24),
+            _HomeScreenSection(),
             SizedBox(height: 24),
             _ExerciseMediaSection(),
             SizedBox(height: 24),
@@ -1090,6 +1093,45 @@ class _ExerciseMediaSectionState extends State<_ExerciseMediaSection> {
             onTap: media.cacheBytes > 0 ? () => _confirmClear(media, t) : null,
           ),
         ],
+      ],
+    );
+  }
+}
+
+/// The home screen's optional parts (see [HomeLayoutProvider]).
+class _HomeScreenSection extends StatelessWidget {
+  const _HomeScreenSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final layout = context.watch<HomeLayoutProvider>();
+
+    return _SettingsGroup(
+      header: t.headerHomeScreen,
+      children: [
+        _SettingsRow(
+          icon: Icons.timer_outlined,
+          iconColor: colors.accent,
+          label: t.settingsShowNextWorkout,
+          trailing: Switch.adaptive(value: layout.showNextWorkout, onChanged: layout.setShowNextWorkout),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(58, 0, 16, 12),
+          child: Text(t.settingsShowNextWorkoutHint, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+        ),
+        const _RowDivider(),
+        _SettingsRow(
+          icon: Icons.play_arrow_rounded,
+          iconColor: colors.green,
+          label: t.settingsShowStartWorkout,
+          trailing: Switch.adaptive(value: layout.showStartWorkout, onChanged: layout.setShowStartWorkout),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(58, 0, 16, 12),
+          child: Text(t.settingsShowStartWorkoutHint, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+        ),
       ],
     );
   }

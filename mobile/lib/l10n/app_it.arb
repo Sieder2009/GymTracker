@@ -391,7 +391,6 @@
   "infoPlateApprox": "Più vicino possibile: {value} {unit} (l'obiettivo non è esattamente raggiungibile con questi dischi)",
   "emptyPlateTargetBelowBar": "L'obiettivo è più leggero del bilanciere stesso.",
   "tabStrengthOverview": "Panoramica",
-  "tabStrengthTools": "Strumenti",
   "rangeLabel4Weeks": "4S",
   "rangeLabel3Months": "3M",
   "rangeLabel6Months": "6M",
@@ -405,8 +404,6 @@
   "balanceFlagBalanced": "nella norma",
   "balanceFlagHigh": "sopra la norma",
   "balanceRatioValue": "{ratio}× Squat",
-  "infoTool1rmDescription": "Stima il tuo massimale da una serie più leggera.",
-  "infoToolPlateDescription": "Calcola quali dischi mettere sul bilanciere.",
   "labelRepMaxTable": "Tabella massimali per ripetizioni",
   "repMaxRow": "{reps} RM",
   "actionShowInFinder": "Mostra nel Finder",
@@ -485,7 +482,6 @@
   "exerciseGuideExtension": "Isola il movimento alla sola articolazione coinvolta e tieni fermo il resto del corpo. Controlla il peso tornando al punto di partenza invece di farlo cadere — anche la fase di discesa lavora davvero.",
   "exerciseGuideCore": "Muoviti con controllo e respira in modo regolare invece di trattenere il fiato nella parte più dura. Un'esecuzione pulita conta più della velocità o di ripetizioni extra affrettate.",
   "titleCalorieCalculator": "Calcolatore calorie",
-  "infoToolCalorieDescription": "Stima le tue calorie e i macro giornalieri in base al peso corporeo e all'obiettivo.",
   "hintHeightCm": "Altezza (cm)",
   "hintAgeYears": "Età",
   "labelActivityLevel": "Livello di attività",
@@ -621,5 +617,10 @@
       }
     }
   },
-  "settingsAppIconFooter": "Android cambia l'icona quando esci dall'app (schermata Home o app recenti) e così facendo la chiude. Alcuni launcher impiegano qualche secondo a mostrare quella nuova."
+  "settingsAppIconFooter": "Android cambia l'icona quando esci dall'app (schermata Home o app recenti) e così facendo la chiude. Alcuni launcher impiegano qualche secondo a mostrare quella nuova.",
+  "headerHomeScreen": "SCHERMATA HOME",
+  "settingsShowNextWorkout": "Mostra prossimo allenamento",
+  "settingsShowNextWorkoutHint": "Numero di esercizi e durata stimata dell’allenamento di oggi.",
+  "settingsShowStartWorkout": "Mostra «Inizia allenamento»",
+  "settingsShowStartWorkoutHint": "Percorre il piano di oggi serie per serie, con timer di recupero."
 }

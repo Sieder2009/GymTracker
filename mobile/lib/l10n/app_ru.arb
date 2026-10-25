@@ -622,5 +622,8 @@
   "settingsShowNextWorkout": "Показывать следующую тренировку",
   "settingsShowNextWorkoutHint": "Число упражнений и примерная длительность сегодняшней тренировки.",
   "settingsShowStartWorkout": "Показывать «Начать тренировку»",
-  "settingsShowStartWorkoutHint": "Проводит по сегодняшнему плану подход за подходом, с таймером отдыха."
+  "settingsShowStartWorkoutHint": "Проводит по сегодняшнему плану подход за подходом, с таймером отдыха.",
+  "historyShowAll": "Показать все ({count})",
+  "historyShowLess": "Свернуть",
+  "trainingStreak": "{count, plural, one{{count} день подряд} few{{count} дня подряд} many{{count} дней подряд} other{{count} дня подряд}}"
 }

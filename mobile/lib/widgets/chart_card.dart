@@ -47,8 +47,6 @@ class LineChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
-    final lineColor = color ?? colors.accent;
-    final sorted = [...points]..sort((a, b) => a.date.compareTo(b.date));
 
     return Card(
       child: Padding(
@@ -63,26 +61,59 @@ class LineChartCard extends StatelessWidget {
                   style: TextStyle(color: colors.mut, fontSize: 12.5)),
             ],
             const SizedBox(height: 16),
-            SizedBox(
+            TrendLineChart(
+              points: points,
+              emptyLabel: emptyLabel,
+              valueSuffix: valueSuffix,
+              color: color,
               height: height,
-              child: sorted.length < 2
-                  ? Center(
-                      child: Text(
-                        emptyLabel,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: colors.mut, fontSize: 12.5),
-                      ),
-                    )
-                  : _buildChart(sorted, lineColor, colors),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+/// [LineChartCard]'s chart on its own -- same styling and the same honest
+/// empty state -- for a card that brings its own header (e.g. an
+/// exercise's history card).
+class TrendLineChart extends StatelessWidget {
+  const TrendLineChart({
+    super.key,
+    required this.points,
+    required this.emptyLabel,
+    this.valueSuffix = '',
+    this.color,
+    this.height = 180,
+  });
+
+  final List<ChartPoint> points;
+  final String emptyLabel;
+  final String valueSuffix;
+  final Color? color;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final sorted = [...points]..sort((a, b) => a.date.compareTo(b.date));
+    return SizedBox(
+      height: height,
+      child: sorted.length < 2
+          ? Center(
+              child: Text(
+                emptyLabel,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: colors.mut, fontSize: 12.5),
+              ),
+            )
+          : _buildChart(sorted, color ?? colors.accent, colors, Localizations.localeOf(context).toString()),
+    );
+  }
 
   Widget _buildChart(
-      List<ChartPoint> sorted, Color lineColor, AppColors colors) {
+      List<ChartPoint> sorted, Color lineColor, AppColors colors, String localeName) {
     final minY = sorted.map((p) => p.value).reduce((a, b) => a < b ? a : b);
     final maxY = sorted.map((p) => p.value).reduce((a, b) => a > b ? a : b);
     final pad = ((maxY - minY).abs() * 0.15).clamp(1.0, double.infinity);
@@ -121,6 +152,11 @@ class LineChartCard extends StatelessWidget {
               showTitles: true,
               reservedSize: 40,
               interval: interval,
+              // The padded min/max edges sit off the interval grid, so
+              // labelling them too printed a near-duplicate next to the
+              // closest gridline label (e.g. "27" twice at the top).
+              minIncluded: false,
+              maxIncluded: false,
               getTitlesWidget: (value, meta) => Text(
                 value.toStringAsFixed(labelDecimals),
                 style: TextStyle(color: colors.mut, fontSize: 10),
@@ -139,7 +175,7 @@ class LineChartCard extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    DateFormat.Md().format(sorted[i].date),
+                    DateFormat.Md(localeName).format(sorted[i].date),
                     style: TextStyle(color: colors.mut, fontSize: 10),
                   ),
                 );
@@ -153,7 +189,7 @@ class LineChartCard extends StatelessWidget {
             getTooltipItems: (touched) => touched.map((t) {
               final p = sorted[t.x.toInt()];
               return LineTooltipItem(
-                '${p.value.toStringAsFixed(1)}$valueSuffix\n${DateFormat.yMMMd().format(p.date)}',
+                '${p.value.toStringAsFixed(1)}$valueSuffix\n${DateFormat.yMMMd(localeName).format(p.date)}',
                 TextStyle(
                     color: colors.txt,
                     fontWeight: FontWeight.w600,

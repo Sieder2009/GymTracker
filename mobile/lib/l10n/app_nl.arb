@@ -622,5 +622,8 @@
   "settingsShowNextWorkout": "Volgende training tonen",
   "settingsShowNextWorkoutHint": "Aantal oefeningen en geschatte duur van de training van vandaag.",
   "settingsShowStartWorkout": "‘Training starten’ tonen",
-  "settingsShowStartWorkoutHint": "Loopt set voor set door het plan van vandaag, met rusttimer."
+  "settingsShowStartWorkoutHint": "Loopt set voor set door het plan van vandaag, met rusttimer.",
+  "historyShowAll": "Alle {count} tonen",
+  "historyShowLess": "Minder tonen",
+  "trainingStreak": "{count, plural, =1{1 dag op rij} other{{count} dagen op rij}}"
 }

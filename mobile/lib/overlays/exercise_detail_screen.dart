@@ -24,8 +24,6 @@ import '../widgets/exercise_demo_gif.dart';
 import '../widgets/exercise_list_view.dart';
 import '../widgets/weight_ruler.dart';
 
-String _formatRep(Object v) => v is int ? '$v' : v.toString().toUpperCase();
-
 /// [Exercise.muscleActivation] is keyed by [MuscleGroup.name] (set via
 /// [showMuscleActivationEditor] on a user-authored custom exercise) --
 /// [DetailedBodyDiagram] wants the enum itself, so unknown/stale keys
@@ -553,9 +551,6 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     final canShowHistoryPaste = widget.onImportHistory != null &&
         !_hasRepsEntered &&
         _logMode == ExerciseLogMode.reps;
-    // Reverse chronological order, newest first — history entries are
-    // appended oldest-first, so this list needs reversing before display.
-    final history = ex.history.reversed.toList();
     // Re-resolved from the current name on every build, so it follows a
     // swipe/arrow-key move to another exercise and a rename alike; null
     // (no card) for names the shared database doesn't know.
@@ -792,31 +787,6 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 ),
                 const SizedBox(height: 28),
                 ExerciseAnalyticsSection(exercise: ex),
-                if (history.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Text(t.headerHistory,
-                      style: Theme.of(context).textTheme.labelSmall),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 78,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: history.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (context, i) => _HistoryCard(
-                        entry: history[i],
-                        isLatest: i == 0,
-                        colors: colors,
-                        t: t,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    t.infoHistoryLegend,
-                    style: TextStyle(color: colors.mut, fontSize: 11),
-                  ),
-                ],
                 const SizedBox(height: 28),
                 _UpNextCard(
                   next: isLastExercise ? null : widget.exercises[_idx + 1],
@@ -881,114 +851,6 @@ class _ExerciseDemoCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// One session in the horizontally-scrolling history strip — newest entry
-/// (highlighted) on the left, oldest entries trailing to the right, weight
-/// as the leading (top-left) label per entry.
-class _HistoryCard extends StatelessWidget {
-  const _HistoryCard(
-      {required this.entry,
-      required this.isLatest,
-      required this.colors,
-      required this.t});
-
-  final HistoryEntry entry;
-  final bool isLatest;
-  final AppColors colors;
-  final AppLocalizations t;
-
-  /// The bold headline value -- rendered from [entry]'s OWN stamped
-  /// [HistoryEntry.mode], never the exercise's current toggle (see the doc
-  /// comment on that field), so switching an exercise's mode later never
-  /// recolors how an older entry displays.
-  String _primaryLabel(AppLocalizations t) {
-    switch (entry.mode) {
-      case ExerciseLogMode.reps:
-        return entry.weight > 0 ? '${fmt1(entry.weight)} kg' : t.labelBodyweightAbbr;
-      case ExerciseLogMode.timed:
-        final durations = entry.durations ?? const <int>[];
-        final best = durations.fold(0, (m, d) => d > m ? d : m);
-        final hold = formatSeconds(best);
-        return entry.weight > 0 ? '$hold · ${fmt1(entry.weight)} kg' : hold;
-      case ExerciseLogMode.cardio:
-        final speeds = entry.speeds ?? const <double>[];
-        final best = speeds.fold(0.0, (m, s) => s > m ? s : m);
-        return '${fmt1(best)} ${t.unitKmh}';
-    }
-  }
-
-  String _secondaryLabel() {
-    switch (entry.mode) {
-      case ExerciseLogMode.reps:
-        return entry.reps.map(_formatRep).join(' · ');
-      case ExerciseLogMode.timed:
-      case ExerciseLogMode.cardio:
-        return (entry.durations ?? const <int>[]).map(formatSeconds).join(' · ');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 128,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: colors.card,
-        border: Border(
-            left: BorderSide(
-                color: isLatest ? colors.green : colors.line, width: 3)),
-        borderRadius: BorderRadius.circular(AppRadii.md),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              // Flexible+ellipsis: unlike a plain Reps weight ("60 kg"), a
-              // Timed/Cardio primary label can run noticeably longer (e.g.
-              // "1:30 · 12,5 kg") and must never overflow this card's fixed
-              // 128px width alongside the "Current" badge.
-              Flexible(
-                child: Text(
-                  _primaryLabel(t),
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isLatest) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: colors.green.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppRadii.xs),
-                  ),
-                  child: Text(
-                    t.labelCurrent,
-                    style: TextStyle(
-                        color: colors.green,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _secondaryLabel(),
-            style: TextStyle(color: colors.mut, fontSize: 12),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }

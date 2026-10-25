@@ -622,5 +622,8 @@
   "settingsShowNextWorkout": "Afficher la prochaine séance",
   "settingsShowNextWorkoutHint": "Nombre d’exercices et durée estimée de la séance du jour.",
   "settingsShowStartWorkout": "Afficher « Démarrer la séance »",
-  "settingsShowStartWorkoutHint": "Parcourt le programme du jour série par série, avec minuteur de repos."
+  "settingsShowStartWorkoutHint": "Parcourt le programme du jour série par série, avec minuteur de repos.",
+  "historyShowAll": "Tout afficher ({count})",
+  "historyShowLess": "Afficher moins",
+  "trainingStreak": "{count, plural, =1{1 jour d'affilée} other{{count} jours d'affilée}}"
 }

@@ -166,7 +166,6 @@
   },
   "emptyPlateTargetBelowBar": "Zielgewicht ist leichter als die Stange selbst.",
   "tabStrengthOverview": "Übersicht",
-  "tabStrengthTools": "Werkzeuge",
   "rangeLabel4Weeks": "4W",
   "rangeLabel3Months": "3M",
   "rangeLabel6Months": "6M",
@@ -187,8 +186,6 @@
       }
     }
   },
-  "infoTool1rmDescription": "Schätze dein Einer-Maximum aus einem leichteren Satz.",
-  "infoToolPlateDescription": "Berechne, welche Scheiben auf die Stange kommen.",
   "labelRepMaxTable": "Wiederholungs-Maxima",
   "repMaxRow": "{reps} RM",
   "@repMaxRow": {
@@ -519,7 +516,6 @@
   "exerciseGuideExtension": "Bewege nur das beteiligte Gelenk, der Rest vom Körper bleibt ruhig. Das Gewicht kontrolliert zurückführen statt fallen lassen — die Bewegung nach unten trainiert mit.",
   "exerciseGuideCore": "Bewege dich kontrolliert und atme gleichmäßig, statt beim schweren Teil die Luft anzuhalten. Saubere Ausführung zählt mehr als Tempo oder gehetzte Extra-Wiederholungen.",
   "titleCalorieCalculator": "Kalorienrechner",
-  "infoToolCalorieDescription": "Schätzt deinen täglichen Kalorien- und Makrobedarf aus Körpergewicht und Ziel.",
   "hintHeightCm": "Größe (cm)",
   "hintAgeYears": "Alter",
   "labelActivityLevel": "Aktivitätslevel",
@@ -655,5 +651,10 @@
       }
     }
   },
-  "settingsAppIconFooter": "Android tauscht das Icon, sobald du die App verlässt (Startbildschirm oder App-Übersicht), und schließt sie dabei. Manche Launcher brauchen ein paar Sekunden, bis das neue erscheint."
+  "settingsAppIconFooter": "Android tauscht das Icon, sobald du die App verlässt (Startbildschirm oder App-Übersicht), und schließt sie dabei. Manche Launcher brauchen ein paar Sekunden, bis das neue erscheint.",
+  "headerHomeScreen": "STARTSEITE",
+  "settingsShowNextWorkout": "Nächstes Workout anzeigen",
+  "settingsShowNextWorkoutHint": "Anzahl der Übungen und geschätzte Dauer des heutigen Trainings.",
+  "settingsShowStartWorkout": "„Workout starten“ anzeigen",
+  "settingsShowStartWorkoutHint": "Führt Satz für Satz durch den heutigen Plan, mit Pausentimer."
 }

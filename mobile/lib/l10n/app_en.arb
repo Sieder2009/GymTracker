@@ -237,7 +237,6 @@
   },
   "emptyPlateTargetBelowBar": "Target is lighter than the bar itself.",
   "tabStrengthOverview": "Overview",
-  "tabStrengthTools": "Tools",
   "rangeLabel4Weeks": "4W",
   "rangeLabel3Months": "3M",
   "rangeLabel6Months": "6M",
@@ -258,8 +257,6 @@
       }
     }
   },
-  "infoTool1rmDescription": "Estimate your one-rep max from a lighter set.",
-  "infoToolPlateDescription": "Work out which plates go on the bar.",
   "labelRepMaxTable": "Rep max table",
   "repMaxRow": "{reps} RM",
   "@repMaxRow": {
@@ -818,7 +815,6 @@
   "exerciseGuideExtension": "Isolate the movement to just the joint involved and keep the rest of your body still. Control the weight back to the start instead of letting it drop — the lowering half does real work too.",
   "exerciseGuideCore": "Move with control and breathe steadily instead of holding your breath through the hard part. Clean form matters more than speed or rushing out extra reps.",
   "titleCalorieCalculator": "Calorie Calculator",
-  "infoToolCalorieDescription": "Estimate your daily calories and macros from your body weight and goal.",
   "hintHeightCm": "Height (cm)",
   "hintAgeYears": "Age",
   "labelActivityLevel": "Activity level",
@@ -1057,5 +1053,10 @@
       }
     }
   },
-  "settingsAppIconFooter": "Android swaps the icon once you leave the app (Home or the app switcher), which also closes the app. Some launchers take a few seconds to show the new one."
+  "settingsAppIconFooter": "Android swaps the icon once you leave the app (Home or the app switcher), which also closes the app. Some launchers take a few seconds to show the new one.",
+  "headerHomeScreen": "HOME SCREEN",
+  "settingsShowNextWorkout": "Show next workout",
+  "settingsShowNextWorkoutHint": "Number of exercises and estimated duration of today’s session.",
+  "settingsShowStartWorkout": "Show “Start workout”",
+  "settingsShowStartWorkoutHint": "Goes through today’s plan set by set, with a rest timer."
 }

@@ -19,6 +19,7 @@ import '../overlays/plan_editor_screen.dart';
 import '../overlays/settings_screen.dart';
 import '../overlays/workout_overlay_screen.dart';
 import '../state/creatine_provider.dart';
+import '../state/home_layout_provider.dart';
 import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../state/train_state_provider.dart';
@@ -275,6 +276,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     final dailyExercises = isRestDay ? const <Exercise>[] : plan.dailyExercises;
 
     final localeName = Localizations.localeOf(context).toString();
+    final homeLayout = context.watch<HomeLayoutProvider>();
 
     return SafeArea(
       child: ListView(
@@ -359,7 +361,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             ),
           ],
           const SizedBox(height: 16),
-          if (!isRestDay && exercises.isNotEmpty) ...[
+          if (!isRestDay && exercises.isNotEmpty && homeLayout.showNextWorkout) ...[
             _NextWorkoutCard(exercises: exercises),
             const SizedBox(height: 12),
           ],
@@ -378,7 +380,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ),
             )
           else ...[
-            if (exercises.isNotEmpty)
+            if (exercises.isNotEmpty && homeLayout.showStartWorkout)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: SizedBox(
@@ -487,6 +489,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
 /// How big today's session is, at a glance. The workout/volume/PR counters
 /// and the recent-PR list used to sit here too; the home screen is now just
 /// the calendar and today's plan, the numbers live in the Analytics tab.
+/// Off unless turned on in Settings (see [HomeLayoutProvider]).
 class _NextWorkoutCard extends StatelessWidget {
   const _NextWorkoutCard({required this.exercises});
 
@@ -569,9 +572,10 @@ class _HomeCalendarCard extends StatelessWidget {
   }
 }
 
-/// Ticking off the daily creatine: one big check for today, the last
-/// seven days as dots underneath (tap one to fix a forgotten or wrong
-/// tick), and the days in a row so far.
+/// Ticking off the daily creatine, kept compact so it doesn't push today's
+/// plan down: a check for today, the last seven days as small dots
+/// underneath (tap one to fix a forgotten or wrong tick), and the days in
+/// a row as a flame next to the title.
 class _CreatineCard extends StatelessWidget {
   const _CreatineCard();
 
@@ -595,40 +599,70 @@ class _CreatineCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        padding: const EdgeInsets.fromLTRB(14, 10, 12, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 28,
+                  height: 28,
                   decoration: BoxDecoration(
                     color: colors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadii.sm),
                   ),
-                  child: Icon(Icons.medication_rounded, size: 20, color: colors.accent),
+                  child: Icon(Icons.medication_rounded, size: 16, color: colors.accent),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(t.creatineTitle, style: Theme.of(context).textTheme.headlineMedium),
-                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              t.creatineTitle,
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 14.5),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (streak > 0) ...[
+                            const SizedBox(width: 6),
+                            Semantics(
+                              label: t.creatineStreak(streak),
+                              child: ExcludeSemantics(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.local_fire_department_rounded, size: 14, color: colors.accent),
+                                    Text(
+                                      '$streak',
+                                      style: TextStyle(color: colors.accent, fontSize: 12, fontWeight: FontWeight.w800),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                       Text(
                         takenToday ? t.creatineTakenToday : t.creatineNotYet,
                         style: TextStyle(
                           color: takenToday ? colors.green : colors.mut,
-                          fontSize: 12.5,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Semantics(
                   button: true,
                   checked: takenToday,
@@ -638,8 +672,8 @@ class _CreatineCard extends StatelessWidget {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOut,
-                      width: 48,
-                      height: 48,
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: takenToday ? colors.accent : colors.card2,
@@ -647,7 +681,7 @@ class _CreatineCard extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.check_rounded,
-                        size: 26,
+                        size: 19,
                         color: takenToday ? colors.onAccent : colors.mut,
                       ),
                     ),
@@ -655,7 +689,7 @@ class _CreatineCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -669,19 +703,6 @@ class _CreatineCard extends StatelessWidget {
                   ),
               ],
             ),
-            if (streak > 0) ...[
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Icon(Icons.local_fire_department_rounded, size: 16, color: colors.accent),
-                  const SizedBox(width: 4),
-                  Text(
-                    t.creatineStreak(streak),
-                    style: TextStyle(color: colors.mut, fontSize: 12.5, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ],
           ],
         ),
       ),
@@ -723,21 +744,21 @@ class _CreatineDay extends StatelessWidget {
                 weekday,
                 style: TextStyle(
                   color: isToday ? colors.txt : colors.mut,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 3),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 30,
-                height: 30,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: taken ? colors.accent : colors.card2,
                   border: isToday && !taken ? Border.all(color: colors.accent, width: 1.5) : null,
                 ),
-                child: taken ? Icon(Icons.check_rounded, size: 17, color: colors.onAccent) : null,
+                child: taken ? Icon(Icons.check_rounded, size: 13, color: colors.onAccent) : null,
               ),
             ],
           ),

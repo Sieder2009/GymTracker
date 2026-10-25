@@ -391,7 +391,6 @@
   "infoPlateApprox": "Dichtstbijzijnde mogelijke: {value} {unit} (doel is niet exact haalbaar met deze schijven)",
   "emptyPlateTargetBelowBar": "Doel is lichter dan de stang zelf.",
   "tabStrengthOverview": "Overzicht",
-  "tabStrengthTools": "Hulpmiddelen",
   "rangeLabel4Weeks": "4W",
   "rangeLabel3Months": "3M",
   "rangeLabel6Months": "6M",
@@ -405,8 +404,6 @@
   "balanceFlagBalanced": "gemiddeld",
   "balanceFlagHigh": "boven gemiddeld",
   "balanceRatioValue": "{ratio}× squat",
-  "infoTool1rmDescription": "Schat je one-rep max op basis van een lichtere set.",
-  "infoToolPlateDescription": "Bereken welke schijven op de stang moeten.",
   "labelRepMaxTable": "Tabel met repetitiemaxima",
   "repMaxRow": "{reps} RM",
   "actionShowInFinder": "Weergeven in Finder",
@@ -485,7 +482,6 @@
   "exerciseGuideExtension": "Isoleer de beweging tot alleen het betrokken gewricht en houd de rest van je lichaam stil. Breng het gewicht gecontroleerd terug in plaats van het te laten vallen — de neerwaartse fase traint net zo goed mee.",
   "exerciseGuideCore": "Beweeg met controle en adem gelijkmatig, in plaats van je adem in te houden tijdens het zware deel. Nette uitvoering telt meer dan snelheid of gehaaste extra herhalingen.",
   "titleCalorieCalculator": "Calorieënrekenaar",
-  "infoToolCalorieDescription": "Schat je dagelijkse calorieën en macro's op basis van je lichaamsgewicht en doel.",
   "hintHeightCm": "Lengte (cm)",
   "hintAgeYears": "Leeftijd",
   "labelActivityLevel": "Activiteitsniveau",
@@ -621,5 +617,10 @@
       }
     }
   },
-  "settingsAppIconFooter": "Android wisselt het icoon zodra je de app verlaat (startscherm of recente apps) en sluit de app daarbij. Sommige launchers hebben een paar seconden nodig om het nieuwe te tonen."
+  "settingsAppIconFooter": "Android wisselt het icoon zodra je de app verlaat (startscherm of recente apps) en sluit de app daarbij. Sommige launchers hebben een paar seconden nodig om het nieuwe te tonen.",
+  "headerHomeScreen": "STARTSCHERM",
+  "settingsShowNextWorkout": "Volgende training tonen",
+  "settingsShowNextWorkoutHint": "Aantal oefeningen en geschatte duur van de training van vandaag.",
+  "settingsShowStartWorkout": "‘Training starten’ tonen",
+  "settingsShowStartWorkoutHint": "Loopt set voor set door het plan van vandaag, met rusttimer."
 }

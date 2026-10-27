@@ -60,21 +60,25 @@ class AppColors extends ThemeExtension<AppColors> {
     green: Color(0xFF1FA76A),
   );
 
+  // GitHub's dark theme: near-black canvas, #0d1117 cards (the surface its
+  // contribution graph sits on), and its green as the accent. White on
+  // that green is only ~2.5:1, so text on an accent fill is the canvas
+  // colour instead.
   static const AppColors dark = AppColors(
-    bg: Color(0xFF101114),
-    card: Color(0xFF1A1B1F),
-    card2: Color(0xFF232428),
-    line: Color(0xFF2D2E34),
-    txt: Color(0xFFF2F2F4),
-    mut: Color(0xFF8D8D96),
-    accent: Color(0xFF5588FF),
-    accentSoft: Color(0x295588FF), // rgba(85,136,255,.16)
-    onAccent: Color(0xFFFFFFFF),
-    secondary: Color(0xFF1FD6A8),
+    bg: Color(0xFF010409),
+    card: Color(0xFF0D1117),
+    card2: Color(0xFF161B22),
+    line: Color(0xFF30363D),
+    txt: Color(0xFFE6EDF3),
+    mut: Color(0xFF8B949E),
+    accent: Color(0xFF3FB950),
+    accentSoft: Color(0x293FB950), // rgba(63,185,80,.16)
+    onAccent: Color(0xFF0D1117),
+    secondary: Color(0xFF3FB950),
     teal: Color(0xFF1FD6A8),
-    purple: Color(0xFF9585FF),
-    yellow: Color(0xFFE0A83A),
-    green: Color(0xFF35C98A),
+    purple: Color(0xFFA371F7),
+    yellow: Color(0xFFD29922),
+    green: Color(0xFF3FB950),
   );
 
   @override

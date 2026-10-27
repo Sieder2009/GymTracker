@@ -35,7 +35,9 @@ class TrendValue extends StatelessWidget {
 
     final isUp = delta > 0;
     final isFlat = delta == 0;
-    final color = isFlat ? colors.mut : (isUp ? colors.green : colors.accent);
+    // Down is purple, not the accent: a green accent (dark mode, or a green
+    // custom pick) would make both directions the same colour.
+    final color = isFlat ? colors.mut : (isUp ? colors.green : colors.purple);
     final arrow = isFlat ? '→' : (isUp ? '↑' : '↓');
 
     return Text(

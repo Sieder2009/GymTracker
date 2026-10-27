@@ -182,6 +182,16 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  test('dark mode uses GitHub greens unless the primary colour is custom', () {
+    expect(HeatmapPalette.from(AppColors.dark, Brightness.dark).levels, HeatmapPalette.githubDark);
+
+    const custom = Color(0xFFE040A0);
+    final customLevels = HeatmapPalette.from(AppColors.dark.copyWith(accent: custom), Brightness.dark).levels;
+    expect(customLevels.last, custom);
+
+    expect(HeatmapPalette.from(AppColors.light, Brightness.light).levels.last, AppColors.light.accent);
+  });
+
   testWidgets('survives a narrow box and large text without overflowing', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);

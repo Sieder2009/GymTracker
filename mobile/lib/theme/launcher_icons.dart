@@ -66,8 +66,10 @@ class LauncherIconVariant {
 }
 
 abstract final class LauncherIcons {
-  /// The app's own backgrounds ([AppColors.light] / [AppColors.dark] `bg`):
-  /// the dark icons' tile, and what the launch animation plays on.
+  /// The tiles of the light and dark icons. Light is [AppColors.light] `bg`;
+  /// dark is the app's earlier dark background, kept when the dark theme
+  /// moved to GitHub's near-black so the shipped icon assets stay as they
+  /// are -- on a home screen the two blacks are indistinguishable.
   static const Color lightBackdrop = Color(0xFFF5F5F7);
   static const Color darkBackdrop = Color(0xFF101114);
 
@@ -159,10 +161,12 @@ abstract final class LauncherIcons {
   }) {
     final backdrop = backdropFor(
         themeMode: themeMode, customBase: customBase, background: background);
+    // The default accent of the palette the app really builds, which in
+    // custom mode is its base -- not the backdrop, which a dark custom
+    // background can flip without changing the (light) accent.
+    final darkPalette = themeMode == 'dark' || (themeMode == 'custom' && customBase == 'dark');
     final color = accent ??
-        (backdrop == IconBackdrop.dark
-            ? AppColors.dark.accent
-            : AppColors.light.accent);
+        (darkPalette ? AppColors.dark.accent : AppColors.light.accent);
     return LauncherIconVariant(backdrop, nearestHue(color));
   }
 

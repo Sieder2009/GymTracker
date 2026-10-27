@@ -136,7 +136,7 @@ void main() {
     test('off Android the channel is never touched', () async {
       final service = await start(themeMode: 'dark', android: false);
       expect(service.supported, isFalse);
-      expect(service.desired.id, 'dark_blue');
+      expect(service.desired.id, 'dark_green');
 
       theme.setMode('light');
       await pumpEventQueue();
@@ -158,14 +158,14 @@ void main() {
     test('arms the matching alias when the icon is outdated', () async {
       final service = await start(themeMode: 'dark');
       expect(service.pending, isTrue);
-      expect(activity.targets, ['.LauncherIcon_dark_blue']);
+      expect(activity.targets, ['.LauncherIcon_dark_green']);
     });
 
     test('repairs a missing launcher entry right away', () async {
       activity.enabled = [];
       final service = await start(themeMode: 'dark');
       expect(activity.methods, ['getState', 'enableNow', 'setTarget']);
-      expect((activity.calls[1].arguments as Map)['target'], '.LauncherIcon_dark_blue');
+      expect((activity.calls[1].arguments as Map)['target'], '.LauncherIcon_dark_green');
       // Repaired with the right icon already, so nothing is left to switch.
       expect(activity.targets, [null]);
       expect(service.pending, isFalse);
@@ -187,14 +187,14 @@ void main() {
 
       theme.setMode('dark');
       await pumpEventQueue();
-      expect(service.desired.id, 'dark_blue');
+      expect(service.desired.id, 'dark_green');
       expect(service.pending, isTrue);
-      expect(activity.targets, [null, '.LauncherIcon_dark_blue']);
+      expect(activity.targets, [null, '.LauncherIcon_dark_green']);
 
       theme.setMode('light');
       await pumpEventQueue();
       expect(service.pending, isFalse);
-      expect(activity.targets, [null, '.LauncherIcon_dark_blue', null]);
+      expect(activity.targets, [null, '.LauncherIcon_dark_green', null]);
       expect(notified, 2);
     });
 
@@ -229,20 +229,20 @@ void main() {
       expect(service.pending, isTrue);
 
       // The activity applied the switch on exit and outlived it.
-      activity.enabled = ['.LauncherIcon_dark_blue'];
+      activity.enabled = ['.LauncherIcon_dark_green'];
       await _lifecycle(AppLifecycleState.paused);
       await _lifecycle(AppLifecycleState.resumed);
       await pumpEventQueue();
       expect(activity.methods.where((m) => m == 'getState'), hasLength(2));
       expect(service.pending, isFalse);
-      expect(activity.targets, ['.LauncherIcon_dark_blue', null]);
+      expect(activity.targets, ['.LauncherIcon_dark_green', null]);
     });
   });
 
   group('guided workout guard', () {
     test('holds the switch while a workout is open', () async {
       await start(themeMode: 'dark');
-      expect(activity.targets, ['.LauncherIcon_dark_blue']);
+      expect(activity.targets, ['.LauncherIcon_dark_green']);
 
       LauncherIconService.holdSwitch();
       await pumpEventQueue();
@@ -261,7 +261,7 @@ void main() {
 
       LauncherIconService.releaseSwitch();
       await pumpEventQueue();
-      expect(activity.targets, ['.LauncherIcon_dark_blue', null, '.LauncherIcon_dark_red']);
+      expect(activity.targets, ['.LauncherIcon_dark_green', null, '.LauncherIcon_dark_red']);
     });
 
     test('an unbalanced release never goes below zero', () async {
@@ -277,13 +277,13 @@ void main() {
     test('off pins the default icon and is remembered', () async {
       final service = await start(themeMode: 'dark');
       expect(service.adaptive, isTrue);
-      expect(activity.targets, ['.LauncherIcon_dark_blue']);
+      expect(activity.targets, ['.LauncherIcon_dark_green']);
 
       service.setAdaptive(false);
       await pumpEventQueue();
       expect(service.desired, LauncherIcons.defaultVariant);
       expect(service.pending, isFalse);
-      expect(activity.targets, ['.LauncherIcon_dark_blue', null]);
+      expect(activity.targets, ['.LauncherIcon_dark_green', null]);
       expect(storage.readString('ironpeak:launcherIcon:adaptive'), 'false');
 
       final reloaded = LauncherIconService(storage, theme, appearance, platformSupported: false);
@@ -293,8 +293,8 @@ void main() {
 
       service.setAdaptive(true);
       await pumpEventQueue();
-      expect(service.desired.id, 'dark_blue');
-      expect(activity.targets.last, '.LauncherIcon_dark_blue');
+      expect(service.desired.id, 'dark_green');
+      expect(activity.targets.last, '.LauncherIcon_dark_green');
     });
   });
 

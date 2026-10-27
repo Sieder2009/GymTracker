@@ -63,9 +63,9 @@ const List<Color> _kSurfaceColorPresets = [
   Color(0xFF84848C), // mid grey
   Color(0xFF44444A), // charcoal
   Color(0xFF16171B), // near-black
-  Color(0xFF101114), // ink
-  Color(0xFF1A1B1F), // dark card
-  Color(0xFF232428), // dark card 2
+  Color(0xFF010409), // ink
+  Color(0xFF0D1117), // dark card
+  Color(0xFF161B22), // dark card 2
 ];
 
 String _updateErrorMessage(AppLocalizations t, UpdateCheckError error) {

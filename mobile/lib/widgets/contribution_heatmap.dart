@@ -42,10 +42,11 @@ const double _weekdayGap = 4;
 // Minimum space between two month labels before the earlier one is dropped.
 const double _monthLabelGap = 4;
 
-/// The graph's colours, taken from the app's own palette so the calendar
-/// matches light, dark and custom mode: GitHub's layout and five-step ramp,
-/// but running from an empty cell (the card colour with a touch of the text
-/// colour, so it shows on any card) up to the primary colour the user picked.
+/// The graph's colours. Plain dark mode uses GitHub's own black-and-green
+/// dark ramp; light mode and a custom primary colour use GitHub's layout
+/// and five-step ramp, but running from an empty cell (the card colour with
+/// a touch of the text colour, so it shows on any card) up to the primary
+/// colour the user picked.
 class HeatmapPalette {
   const HeatmapPalette._({
     required this.levels,
@@ -57,10 +58,23 @@ class HeatmapPalette {
   /// How far each level 1-4 is from the empty cell toward the primary colour.
   static const List<double> _steps = [0.3, 0.5, 0.75, 1];
 
+  /// GitHub's dark-mode contribution colours, empty cell to top level.
+  @visibleForTesting
+  static const List<Color> githubDark = [
+    Color(0xFF161B22),
+    Color(0xFF0E4429),
+    Color(0xFF006D32),
+    Color(0xFF26A641),
+    Color(0xFF39D353),
+  ];
+
   factory HeatmapPalette.from(AppColors colors, Brightness brightness) {
     final empty = Color.lerp(colors.card, colors.txt, 0.08)!;
+    // A custom primary colour is the user's choice, so only the stock dark
+    // accent switches to GitHub's greens.
+    final github = brightness == Brightness.dark && colors.accent == AppColors.dark.accent;
     return HeatmapPalette._(
-      levels: [empty, for (final step in _steps) Color.lerp(empty, colors.accent, step)!],
+      levels: github ? githubDark : [empty, for (final step in _steps) Color.lerp(empty, colors.accent, step)!],
       // GitHub's 1px inner outline: rgba(27,31,36,.06) / rgba(255,255,255,.05).
       outline: brightness == Brightness.dark ? const Color(0x0DFFFFFF) : const Color(0x0F1B1F24),
       // The tooltip inverts the card: text colour behind, card colour on top.
@@ -100,8 +114,8 @@ class HeatmapPalette {
 /// GitHub-contribution-graph look-alike for logged workouts: one column per
 /// week, one row per weekday (starting at the locale's first day of the
 /// week, so Sunday-first like GitHub in English and Monday-first in German),
-/// each day shaded in one of five steps of the primary colour
-/// ([HeatmapPalette]) by its quartile among the
+/// each day shaded in one of five steps ([HeatmapPalette]: GitHub's greens
+/// in dark mode, else the primary colour) by its quartile among the
 /// range's training days (see [computeHeatmapLevels]) -- so one huge day no
 /// longer washes every other day out.
 ///

@@ -82,9 +82,11 @@ void main() {
       }
     });
 
-    test('the backdrops are the app backgrounds', () {
+    test('the backdrops match the app backgrounds', () {
       expect(LauncherIcons.lightBackdrop, AppColors.light.bg);
-      expect(LauncherIcons.darkBackdrop, AppColors.dark.bg);
+      // Not the exact dark bg (see darkBackdrop), but just as black.
+      expect(LauncherIcons.darkBackdrop.computeLuminance(), lessThan(0.01));
+      expect(AppColors.dark.bg.computeLuminance(), lessThan(0.01));
     });
 
     test('light icons are accent tiles, dark icons accent glyphs on black', () {
@@ -165,9 +167,22 @@ void main() {
   });
 
   group('LauncherIcons.forAppearance', () {
-    test('light and dark mode with the default accent are blue', () {
+    test('the default accent is blue in light mode and green in dark mode', () {
       expect(LauncherIcons.forAppearance(themeMode: 'light').id, 'light_blue');
-      expect(LauncherIcons.forAppearance(themeMode: 'dark').id, 'dark_blue');
+      expect(LauncherIcons.forAppearance(themeMode: 'dark').id, 'dark_green');
+    });
+
+    test('custom mode takes the default accent from its base, not its background', () {
+      expect(
+        LauncherIcons.forAppearance(themeMode: 'custom', background: const Color(0xFF101114)).id,
+        'dark_blue',
+      );
+      expect(
+        LauncherIcons.forAppearance(
+                themeMode: 'custom', customBase: 'dark', background: const Color(0xFF101114))
+            .id,
+        'dark_green',
+      );
     });
 
     test('the glyph follows a custom accent', () {
@@ -207,7 +222,7 @@ void main() {
     test('custom mode without a background follows its base', () {
       expect(
         LauncherIcons.forAppearance(themeMode: 'custom', customBase: 'dark').id,
-        'dark_blue',
+        'dark_green',
       );
       expect(
         LauncherIcons.forAppearance(themeMode: 'custom', customBase: 'light').id,

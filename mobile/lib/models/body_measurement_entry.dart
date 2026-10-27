@@ -1,7 +1,7 @@
 import '../l10n/app_localizations.dart';
 
 /// The six trackable circumference points -- shared by the entry sheet, the
-/// chart picker and the measurements spider chart (`progress_screen.dart`),
+/// chart picker and the measurements spider chart (`body_measurements_card.dart`),
 /// so they always agree on the same field set.
 enum BodyMeasurementField { chest, waist, hips, arm, thigh, calf }
 

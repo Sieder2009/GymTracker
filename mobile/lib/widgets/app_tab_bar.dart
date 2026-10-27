@@ -7,7 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import 'nav_icons.dart';
 
-/// Bottom nav for the 4 tabs (Training/Kraft/Fortschritt/Übungen), using the same
+/// Bottom nav for the 3 tabs (Training/Kraft/Übungen), using the same
 /// hand-drawn barbell/plates/bar-chart glyphs as the web app's tab bar.
 /// Built from plain [InkWell]s rather than [BottomNavigationBar] — the
 /// latter assumes it owns the full screen-edge-to-edge Material surface,
@@ -24,7 +24,6 @@ class AppTabBar extends StatelessWidget {
     final tabs = [
       (icon: NavIconType.training, label: t.tabTraining),
       (icon: NavIconType.strength, label: t.tabStrength),
-      (icon: NavIconType.progress, label: t.tabProgress),
       (icon: NavIconType.exercises, label: t.tabExercises),
     ];
 

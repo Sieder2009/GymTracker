@@ -12,19 +12,22 @@ import '../state/programs_provider.dart';
 import '../state/train_state_provider.dart';
 import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/chart_card.dart';
 import '../widgets/contribution_heatmap.dart';
 import '../widgets/kpi_tile.dart';
 
 /// The training calendar, laid out like a GitHub profile: "N workouts in
 /// the last year" over a full contribution graph ([ContributionHeatmap]),
 /// GitHub's year list as chips, a volume/duration toggle for what the shade
-/// means, the current/best streak (GitHub's classic graph showed those right
-/// below it), and the tapped day's sessions underneath. Every number comes
-/// from [WorkoutHistoryProvider], which every finished workout feeds.
+/// means, the current/best streak and this month's workouts (GitHub's
+/// classic graph showed the streaks right below it), the tapped day's
+/// sessions, and workouts per week -- everything the old Analytics tab's
+/// Consistency page had. Every number comes from [WorkoutHistoryProvider],
+/// which every finished workout feeds.
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key, this.initialDate});
 
-  /// Day to select on open -- e.g. a cell tapped on the Analytics card.
+  /// Day to select on open -- e.g. a cell tapped on the home screen's card.
   /// Older than the rolling year, its calendar year is shown instead.
   final DateTime? initialDate;
 
@@ -58,6 +61,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context.watch<ProgramsProvider>().programs,
     );
     final today = heatmapDateOnly(DateTime.now());
+    // Per-week bars count guided workouts only, as they always have.
+    final weekBars = [
+      for (final b in weeklyBuckets(context.watch<WorkoutHistoryProvider>().sessions))
+        BarPoint('${b.weekStart.day}.${b.weekStart.month}', b.workoutCount.toDouble()),
+    ];
 
     final days = aggregateHeatmapDays(sessions);
     final summary = summarizeHeatmap(days, range: _range, today: today);
@@ -166,6 +174,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     color: colors.yellow,
                   ),
                 ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: KpiTile(
+                    icon: Icons.event_available_rounded,
+                    value: '${streaks.workoutsThisMonth}',
+                    label: t.labelWorkoutsThisMonth,
+                    color: colors.teal,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 22),
@@ -194,6 +211,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         : null,
                   ),
                 ),
+            const SizedBox(height: 16),
+            BarChartCard(
+              title: t.chartTitleWorkoutsPerWeek,
+              subtitle: t.labelLast8Weeks,
+              bars: weekBars,
+              emptyLabel: t.chartEmptyConsistency,
+              color: colors.purple,
+            ),
           ],
         ),
       ),

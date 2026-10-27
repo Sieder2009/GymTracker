@@ -32,6 +32,7 @@ import '../theme/app_radii.dart';
 import '../widgets/add_exercise_sheet.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/backup_sheet.dart';
+import '../widgets/calculators_menu.dart';
 import '../widgets/contribution_heatmap.dart';
 import '../widgets/day_pill_selector.dart';
 import '../widgets/exercise_card.dart';
@@ -493,7 +494,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
 /// How big today's session is, at a glance. The workout/volume/PR counters
 /// and the recent-PR list used to sit here too; the home screen is now just
-/// the calendar and today's plan, the numbers live in the Analytics tab.
+/// the calendar and today's plan, the numbers live in the Strength tab and
+/// the calendar.
 /// Off unless turned on in Settings (see [HomeLayoutProvider]).
 class _NextWorkoutCard extends StatelessWidget {
   const _NextWorkoutCard({required this.exercises});
@@ -578,8 +580,7 @@ class _HomeCalendarCard extends StatelessWidget {
 }
 
 /// The current training streak in the header: a flame that grows with it
-/// and the number of days. Counted like the calendar and the Consistency
-/// tab -- guided workouts plus days of single saved exercises, rest days
+/// and the number of days. Counted like the calendar -- guided workouts plus days of single saved exercises, rest days
 /// from the plan don't break it. A tap opens the full calendar.
 class _StreakBadge extends StatelessWidget {
   const _StreakBadge();
@@ -1021,7 +1022,9 @@ enum _OverflowAction {
 }
 
 /// One persistent dropdown for every header action, settings included —
-/// calendar, gallery, plan switcher, theme, language, backup all live here
+/// calendar, gallery, plan switcher, the calculators (shared with the
+/// other tabs' ⋮ menus, see [calculatorMenuItems]), theme, language,
+/// backup all live here
 /// instead of as a row of separate icon buttons. A row of 5+ icon buttons
 /// reads as cluttered on a phone-width header; one recognizable "more" icon
 /// pinned to the very top-right corner that opens all of them does the same
@@ -1050,10 +1053,12 @@ class _OverflowMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<_OverflowAction>(
+    return PopupMenuButton<Object>(
       icon: const Icon(Icons.more_vert),
       onSelected: (action) async {
         switch (action) {
+          case Calculator calculator:
+            showCalculator(context, calculator);
           case _OverflowAction.settings:
             Navigator.of(context).push(MaterialPageRoute(
               fullscreenDialog: true,
@@ -1119,6 +1124,8 @@ class _OverflowMenuButton extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
             ),
           ),
+          const PopupMenuDivider(),
+          ...calculatorMenuItems(t),
           const PopupMenuDivider(),
           PopupMenuItem(
             value: _OverflowAction.theme,

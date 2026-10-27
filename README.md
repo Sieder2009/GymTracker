@@ -31,7 +31,6 @@ native app for Android, iOS, Windows, and macOS.** All your data stays
 - [Features](#features)
   - [Training & home screen](#training)
   - [Strength & ranks](#strength)
-  - [Analytics — its own tab](#analytics--its-own-tab)
   - [Exercise database](#exercise-database)
   - [Settings & more](#more-features)
 - [Download the app](#download-the-app)
@@ -49,33 +48,32 @@ native app for Android, iOS, Windows, and macOS.** All your data stays
 Kilo (formerly Ironpeak Fitness) is one single, native **Flutter app**. It
 is not a web app with a separate build, and not an Electron app. One
 codebase runs on **Android, iOS, Windows, and macOS**. The app is built
-around **four main tabs**, so you don't need to search through many menus:
+around **three main tabs**, so you don't need to search through many menus:
 
 | Tab | What it's for |
 |---|---|
 | **Training** | Your home screen: training calendar, creatine tracker, today's plan; choose/create/import a plan |
-| **Strength** | Bench Press / Deadlift / Squat: ranks, PRs, history, trend, DOTS, plus 1RM, plate and calorie calculators |
-| **Analytics** | Progress, body measurements, strength trends and consistency — see below |
+| **Strength** | Bench Press / Deadlift / Squat: ranks, PRs, history, trend, DOTS, body measurements, plus 1RM, plate and calorie calculators |
 | **Exercises** | A searchable database of 546 exercises with muscle diagrams and demo animations |
 
 The calendar, photo gallery, settings, backup, theme, and language are
 **not** extra tabs at the bottom. They live together in one ⋮ menu at the
-top right of the Training tab. The app version sits as a small pill at the
+top right of the Training tab. Strength and Exercises have a ⋮ menu of
+their own with just the three calculators (plate, 1RM, calorie), which
+the Training menu lists too. The app version sits as a small pill at the
 top left; when an update is available it turns into a "↑ vX.Y.Z" button.
 
 ## <img src="https://api.iconify.design/lucide:image.svg?color=%232f6feb" width="20" height="20" alt=""/> Screenshots
 
 <table>
 <tr>
-<td width="25%"><img src="screenshots/screenshot-training.png" alt="Home screen: training calendar, creatine tracker and today's plan"/></td>
-<td width="25%"><img src="screenshots/screenshot-strength.png" alt="Strength tab: overall rank with its crystal badge, and the bodyweight log"/></td>
-<td width="25%"><img src="screenshots/screenshot-analytics.png" alt="Analytics tab: workouts, volume, streak, PRs and the progress summary"/></td>
-<td width="25%"><img src="screenshots/screenshot-exercises.png" alt="Exercise database with 546 exercises and their muscle diagrams"/></td>
+<td width="33%"><img src="screenshots/screenshot-training.png" alt="Home screen: training calendar, creatine tracker and today's plan"/></td>
+<td width="33%"><img src="screenshots/screenshot-strength.png" alt="Strength tab: overall rank with its crystal badge, and the bodyweight log"/></td>
+<td width="33%"><img src="screenshots/screenshot-exercises.png" alt="Exercise database with 546 exercises and their muscle diagrams"/></td>
 </tr>
 <tr>
 <td align="center"><sub><b>Training</b></sub></td>
 <td align="center"><sub><b>Strength</b></sub></td>
-<td align="center"><sub><b>Analytics</b></sub></td>
 <td align="center"><sub><b>Exercises</b></sub></td>
 </tr>
 </table>
@@ -143,18 +141,19 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
 - The **full training calendar**: every day of the last 12 months is a
   small square, shaded by that day's training volume or time, with
   GitHub's five levels and "Less … More" legend, a year selector and your
-  current and best streak. Rest days from your plan don't break a streak.
-  Tapping a day shows its sessions. Open it from the home screen, the
-  Analytics tab (Consistency), or the ⋮ menu. There's also a photo
+  current and best streak, this month's workouts and a bar chart of
+  workouts per week. Rest days from your plan don't break a streak.
+  Tapping a day shows its sessions. Open it by tapping the calendar on the
+  home screen, the streak flame, or the ⋮ menu. There's also a photo
   gallery for your progress.
-- Swipe between the four main tabs, or use the tab bar at the bottom.
+- Swipe between the three main tabs, or use the tab bar at the bottom.
 
 <a id="strength"></a>
 ### <img src="https://api.iconify.design/lucide:trophy.svg?color=%232f6feb" width="20" height="20" alt=""/> Strength & ranks
 
-The Strength tab has an **Overview** and one tab each for **Bench
-Press, Deadlift and Squat**. The three calculators sit as icons in its
-header.
+The Strength tab is one overview. Tap the **Bench Press, Deadlift or
+Squat** tile (weight and rank, below the Powerlifting Score) to open that
+lift's own page. The three calculators sit in its ⋮ menu.
 
 - **Ranks.** Every lift gets a game-style rank from your PR relative to
   your bodyweight: **Mortal, Warrior, Spartan, Hero, Demigod, Titan and
@@ -163,11 +162,13 @@ header.
   crossed axes, Corinthian helmet, Greek hero, winged helmet, Atlas and
   Zeus (`widgets/rank_emblem.dart`). The Overview shows your **overall
   rank** (the average of the three) with a progress bar to the next
-  division and an "All ranks" list; each lift's tab also tells you how
+  division and an "All ranks" list; each lift's page also tells you how
   many kilograms are still missing. Built on bodyweight-relative strength
   standards (`data/lift_rank.dart`, `data/strength_standards.dart`).
   Ranks need a logged bodyweight.
-- Log your bodyweight and your PRs. The three PRs also appear as a
+- Log your bodyweight, your **body measurements** (chest, waist, hips,
+  arm, thigh, calf — a trend chart per field and a radar chart of first
+  vs. latest value) and your PRs. The three PRs also appear as a
   **radar chart** on one shared kg scale, with one place to enter all
   three at once.
 - Total (Bench+Deadlift+Squat) and **DOTS score** for anyone who wants the
@@ -175,39 +176,21 @@ header.
   (`data/dots_score.dart`).
 - A **lift balance** check: is your bench press around 0.65–0.85× and
   your deadlift around 1.1–1.35× your squat? (`data/lift_balance.dart`)
-- Each lift's own tab: its rank badge and progress, a date-based trend
-  chart with a 4W/3M/6M/1Y/All range selector, plateau detection
-  (`plateau_notice.dart`), PR entry, and the logged history as a list.
-- Three built-in calculators, all pure scratchpad tools that don't read or
+- Each lift's own page: its rank badge and progress, a date-based trend
+  chart with a 4W/3M/6M/1Y/All range selector, its 30-day trend, plateau
+  detection (`plateau_notice.dart`), PR entry, and the logged history as
+  a list.
+- Three built-in calculators, all scratchpad tools that don't read or
   write your logged data: a **1RM calculator** (Epley formula), a **plate
-  calculator** — given a target weight and bar weight, it works out which
-  plates go on each side from a standard kg or lb set
-  (`data/plate_calculator.dart`) — and a **calorie & macro calculator**
+  calculator** with two modes: give it a target weight and an empty
+  weight (the bar from Settings, or 0 for a leg press) and it works out
+  which plates go on each side, using only the plates you've switched on
+  (say, a gym without 20s) and searching exactly, so 30 kg a side from
+  25s and 15s comes out as 15+15 (`data/plate_calculator.dart`); or tap
+  the plates you load on one side (20, then 10, then 25 …) and it adds
+  them up to the total — and a **calorie & macro calculator**
   (Mifflin-St Jeor with an activity level and a goal of losing,
   maintaining or gaining; `data/calorie_calculator.dart`).
-
-<a id="analytics--its-own-tab"></a>
-### <img src="https://api.iconify.design/lucide:bar-chart-3.svg?color=%232f6feb" width="20" height="20" alt=""/> Analytics — its own tab
-
-A full tab with three sections. Every number and every chart comes from
-your real logged data — **never from placeholder values**. If there isn't
-enough data yet for an honest chart, the app shows a short message
-instead of a made-up line (`DataQuality` in `analytics_engine.dart`).
-
-- **Overview** — workouts, volume, current streak and PRs at a glance; a
-  plain-text status ("getting better" / "staying stable" / not enough
-  data yet) for strength and volume; **body measurements** (chest, waist,
-  hips, arm, thigh, calf) with a trend chart per field and a radar chart
-  of first vs. latest value; and a weekly volume chart for the last 8
-  weeks.
-- **Strength** — a trend chart for Bench Press, Deadlift, and Squat, with
-  start-vs-now numbers for every detected variant of these lifts in your
-  current plan (tap one to enter its PR). This is the Analytics tab's
-  own strength *trend* view, a different screen from the bottom
-  "Strength" tab despite the shared name.
-- **Consistency** — your current and best training streak, the
-  GitHub-style activity graph of your training days (tap a day to open
-  the full calendar), and a bar chart of workouts per week.
 
 <a id="exercise-database"></a>
 ### <img src="https://api.iconify.design/lucide:database.svg?color=%232f6feb" width="20" height="20" alt=""/> Exercise database
@@ -250,8 +233,9 @@ instead of a made-up line (`DataQuality` in `analytics_engine.dart`).
 - **Home screen:** show or hide the "Next workout" card and the "Start
   workout" button.
 - **Appearance:** custom primary and secondary colors (full color picker),
-  automatic system light/dark mode with a manual override, and a custom
-  theme for background, card and text colors.
+  automatic system light/dark mode with a manual override (dark mode is
+  GitHub's black and green, down to the training calendar's five greens),
+  and a custom theme for background, card and text colors.
 - **App icon:** a barbell icon that follows the app's look — a tile in
   your primary color in light mode, a dark tile in dark mode. On Android
   the home-screen icon switches between 16 variants once you leave the
@@ -354,7 +338,8 @@ flutter test
 
 Every release runs through `flutter analyze` and `flutter test` in all
 four platform workflows, before anything gets built. The calculation
-engines behind the Analytics tab (`lib/analytics/analytics_engine.dart`,
+engines behind the training calendar and the trends
+(`lib/analytics/analytics_engine.dart`,
 `lib/analytics/progression_engine.dart`, `lib/analytics/heatmap_engine.dart`,
 `lib/analytics/rest_days.dart`) and the Strength tab
 (`lib/data/lift_rank.dart`, `lib/data/dots_score.dart`,
@@ -378,7 +363,7 @@ mobile/
     l10n/                ARB translation files (10 languages)
     models/              Data models (Exercise, Program, BigLift, …)
     overlays/            Full-screen screens (plan editor, workout, settings, …)
-    screens/             The 4 main tabs (Training/Strength/Analytics/Exercises)
+    screens/             The 3 main tabs (Training/Strength/Exercises)
                          + calendar/gallery (reachable from the ⋮ menu)
     services/            External integrations (Health, GitHub, storage, update)
     state/               Providers (app-wide state via package:provider)

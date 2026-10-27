@@ -3,11 +3,9 @@
 /// grip/stance variants like "Bankdrücken (eng)" match while accessory
 /// lifts merely containing the word (e.g. "Hack Squat") do not.
 ///
-/// Shared by [ProgressScreen] (matching logged exercises against the big
-/// three for the "start to now" list) and the guided workout's PR bridge
-/// (matching a just-finished exercise against the big three to also update
-/// [BigLiftsProvider], so a bench-press PR set during a guided session
-/// shows up in both places).
+/// Used by the guided workout's PR bridge (matching a just-finished
+/// exercise against the big three to also update [BigLiftsProvider], so a
+/// bench-press PR set during a guided session shows up in both places).
 library;
 
 final RegExp bigThreePattern = RegExp(

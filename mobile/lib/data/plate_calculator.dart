@@ -1,12 +1,23 @@
-/// Which plates to load on each side of a barbell to hit a target total
-/// weight. Greedy from largest plate to smallest is exact (not just a good
-/// guess) for the standard denominations below, because each is at least
-/// double the next smallest — the same property that makes greedy coin-
-/// change optimal for currencies like EUR/USD.
+/// Which plates to load on each side of a barbell, EZ bar, dumbbell or leg
+/// press to hit a target total weight. Not greedy: once some plates can be
+/// switched off (a gym without 20s, say), largest-first misses real
+/// answers -- with only 25s and 15s, 30 per side is 15+15, not "25 and
+/// stuck". So it searches exactly, like coin change: the fewest plates
+/// that make the per-side load, ties going to the larger plates.
 library;
+
+import 'dart:math' as math;
 
 const List<double> kStandardPlatesKg = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5];
 const List<double> kStandardPlatesLb = [45, 35, 25, 10, 5, 2.5];
+
+/// Plate weights are whole multiples of this (0.5 kg, 1.25 kg, 2.5 lb, …),
+/// so the search runs on whole steps of it instead of doubles.
+const double _step = 0.05;
+
+/// The heaviest load per side the search goes up to -- far beyond any real
+/// bar or sled, and it keeps a typo like 99999 from stalling the sheet.
+const double _maxPerSide = 1000;
 
 class PlateCalculatorResult {
   const PlateCalculatorResult({
@@ -29,30 +40,55 @@ class PlateCalculatorResult {
 
 double _round2(double v) => (v * 100).round() / 100;
 
-/// Null when [targetKg] is lighter than [barWeightKg] alone, or the bar
-/// weight itself isn't set — there's nothing meaningful to load.
+/// Null when [targetKg] is lighter than [barWeightKg] alone, or the empty
+/// weight is negative -- there's nothing meaningful to load. An empty
+/// weight of 0 is fine: a leg press whose sled isn't counted.
 PlateCalculatorResult? calculatePlates({
   required double targetKg,
   required double barWeightKg,
   List<double> availablePlates = kStandardPlatesKg,
 }) {
-  if (barWeightKg <= 0 || targetKg < barWeightKg) return null;
+  if (barWeightKg < 0 || targetKg < barWeightKg) return null;
 
-  var perSideRemaining = (targetKg - barWeightKg) / 2;
-  final perSide = <double>[];
-  final sortedPlates = [...availablePlates]..sort((a, b) => b.compareTo(a));
-  for (final plate in sortedPlates) {
-    if (plate <= 0) continue;
-    while (perSideRemaining + 1e-9 >= plate) {
-      perSide.add(plate);
-      perSideRemaining -= plate;
+  final perSideTarget = math.min((targetKg - barWeightKg) / 2, _maxPerSide);
+  final goal = (perSideTarget / _step + 1e-6).floor();
+  final plates = [
+    for (final plate in {...availablePlates})
+      if (plate > 0) plate,
+  ]..sort((a, b) => b.compareTo(a));
+  final steps = [for (final plate in plates) (plate / _step).round()];
+
+  // fewest[a]: fewest plates that make exactly `a` steps (-1: impossible);
+  // last[a]: index of the plate added last to get there. Plates are tried
+  // largest first and only a strictly smaller count replaces a found one,
+  // so ties keep the larger plates.
+  final fewest = List<int>.filled(goal + 1, -1)..[0] = 0;
+  final last = List<int>.filled(goal + 1, -1);
+  for (var a = 1; a <= goal; a++) {
+    for (var i = 0; i < steps.length; i++) {
+      final rest = a - steps[i];
+      if (rest < 0 || fewest[rest] < 0) continue;
+      if (fewest[a] < 0 || fewest[rest] + 1 < fewest[a]) {
+        fewest[a] = fewest[rest] + 1;
+        last[a] = i;
+      }
     }
   }
 
-  final achievedTotal = _round2(targetKg - perSideRemaining * 2);
+  // The heaviest load the plates can make without going over.
+  var reached = goal;
+  while (fewest[reached] < 0) {
+    reached--;
+  }
+  final perSide = <double>[];
+  for (var a = reached; a > 0; a -= steps[last[a]]) {
+    perSide.add(plates[last[a]]);
+  }
+  perSide.sort((a, b) => b.compareTo(a));
+
   return PlateCalculatorResult(
     perSide: perSide,
-    achievedTotal: achievedTotal,
+    achievedTotal: _round2(barWeightKg + 2 * reached * _step),
     targetTotal: _round2(targetKg),
   );
 }

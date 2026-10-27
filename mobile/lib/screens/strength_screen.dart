@@ -17,97 +17,53 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../overlays/settings_screen.dart';
 import '../widgets/app_shell.dart';
-import '../widgets/calorie_calculator_sheet.dart';
+import '../widgets/body_measurements_card.dart';
+import '../widgets/calculators_menu.dart';
 import '../widgets/chart_card.dart';
-import '../widgets/one_rep_max_sheet.dart';
-import '../widgets/plate_calculator_sheet.dart';
 import '../widgets/plateau_notice.dart';
 import '../widgets/radar_chart.dart';
 import '../widgets/rank_emblem.dart';
 import '../widgets/strength_line_chart.dart';
+import '../widgets/trend_value.dart';
 import '../widgets/value_entry_sheet.dart';
 
-/// "Kraft" tab — a segmented view (Overview / each of the three big lifts)
-/// instead of one long scroll of every card stacked on top of each
-/// other, same pattern the Analytics tab's own TabBar already uses (see
-/// ProgressScreen). Overview stays a quick glance (bodyweight, Total/DOTS,
-/// a compact tile per lift, a balance check across all three); each lift
-/// gets its own full screen with a real date-based, range-filterable trend
-/// chart and its logged history, not just the last 8 points squeezed into
-/// a card. The calculators live in the header's icon buttons.
+/// "Kraft" tab — one overview (overall rank, bodyweight, body measurements,
+/// Total/DOTS, a compact tile per lift, the PR radar and a balance check
+/// across all three) instead of a row of sub-tabs. Each lift tile opens
+/// that lift's own screen ([_LiftDetailScreen]) with a real date-based,
+/// range-filterable trend chart, its 30-day trend and its logged history,
+/// not just the last 8 points squeezed into a card. The calculators live in
+/// the header's ⋮ menu.
 class StrengthScreen extends StatelessWidget {
   const StrengthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).extension<AppColors>()!;
-
     return SafeArea(
-      child: DefaultTabController(
-        length: 4,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(t.tabStrength, style: Theme.of(context).textTheme.headlineLarge),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.fitness_center_outlined),
-                    tooltip: t.titlePlateCalculator,
-                    onPressed: () => showPlateCalculator(context),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.calculate_outlined),
-                    tooltip: t.title1rmCalculator,
-                    onPressed: () => showOneRepMaxCalculator(context),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.local_fire_department_outlined),
-                    tooltip: t.titleCalorieCalculator,
-                    onPressed: () => showCalorieCalculator(context),
-                  ),
-                ],
-              ),
-            ),
-            TabBar(
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelColor: colors.accent,
-              unselectedLabelColor: colors.mut,
-              indicatorColor: colors.accent,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-              tabs: [
-                Tab(text: t.tabStrengthOverview),
-                Tab(text: t.labelBenchPress),
-                Tab(text: t.labelDeadlift),
-                Tab(text: t.labelSquat),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(t.tabStrength, style: Theme.of(context).textTheme.headlineLarge),
+                ),
+                const CalculatorsMenuButton(),
               ],
             ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  const _OverviewTab(),
-                  _LiftDetailTab(liftKey: 'bench', label: t.labelBenchPress, color: colors.teal, tabIndex: 1),
-                  _LiftDetailTab(liftKey: 'deadlift', label: t.labelDeadlift, color: colors.purple, tabIndex: 2),
-                  _LiftDetailTab(liftKey: 'squat', label: t.labelSquat, color: colors.yellow, tabIndex: 3),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          const Expanded(child: _StrengthOverview()),
+        ],
       ),
     );
   }
 }
 
-class _OverviewTab extends StatelessWidget {
-  const _OverviewTab();
+class _StrengthOverview extends StatelessWidget {
+  const _StrengthOverview();
 
   @override
   Widget build(BuildContext context) {
@@ -121,20 +77,22 @@ class _OverviewTab extends StatelessWidget {
         const SizedBox(height: 16),
         const _BodyWeightCard(),
         const SizedBox(height: 16),
+        const BodyMeasurementsCard(),
+        const SizedBox(height: 16),
         const _PowerliftingScoreCard(),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: _LiftStatTile(liftKey: 'bench', label: t.labelBenchPress, color: colors.teal, tabIndex: 1),
+              child: _LiftStatTile(liftKey: 'bench', label: t.labelBenchPress, color: colors.teal),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _LiftStatTile(liftKey: 'deadlift', label: t.labelDeadlift, color: colors.purple, tabIndex: 2),
+              child: _LiftStatTile(liftKey: 'deadlift', label: t.labelDeadlift, color: colors.purple),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _LiftStatTile(liftKey: 'squat', label: t.labelSquat, color: colors.yellow, tabIndex: 3),
+              child: _LiftStatTile(liftKey: 'squat', label: t.labelSquat, color: colors.yellow),
             ),
           ],
         ),
@@ -150,8 +108,8 @@ class _OverviewTab extends StatelessWidget {
 /// The three PRs as a spider chart on one shared kg scale (rings labelled
 /// in kg, each PR at its corner), plus one place to enter all three.
 /// Saving goes through [BigLiftsProvider.savePr] -- exactly what each
-/// lift's own tab does with its PR field -- so the tiles, the tabs and this
-/// chart always agree.
+/// lift's own screen does with its PR field -- so the tiles, those screens
+/// and this chart always agree.
 class _PrRadarCard extends StatelessWidget {
   const _PrRadarCard();
 
@@ -228,16 +186,14 @@ class _PrRadarCard extends StatelessWidget {
 }
 
 /// A compact "how's this lift doing" tile for the Overview grid — tapping
-/// it jumps straight to that lift's own tab via the shared
-/// [DefaultTabController], the same way a Garmin Connect stat tile opens
+/// it opens that lift's own screen ([_LiftDetailScreen]), the same way a Garmin Connect stat tile opens
 /// its own detail screen instead of everything living on one endless page.
 class _LiftStatTile extends StatelessWidget {
-  const _LiftStatTile({required this.liftKey, required this.label, required this.color, required this.tabIndex});
+  const _LiftStatTile({required this.liftKey, required this.label, required this.color});
 
   final String liftKey;
   final String label;
   final Color color;
-  final int tabIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +212,8 @@ class _LiftStatTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadii.md),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.md),
-        onTap: () => DefaultTabController.of(context).animateTo(tabIndex),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => _LiftDetailScreen(liftKey: liftKey, label: label, color: color))),
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -310,7 +267,7 @@ class _LiftStatTile extends StatelessWidget {
 
 /// The overall rank -- the average of the three lifts' ranks -- as one big
 /// emblem, with the way to the next division underneath. Each lift's own
-/// rank sits on its tile below and in detail on its tab.
+/// rank sits on its tile below and in detail on its own screen.
 class _RankCard extends StatelessWidget {
   const _RankCard();
 
@@ -841,24 +798,23 @@ DateTime? _rangeStart(_ChartRange range) {
   }
 }
 
-/// A full tab for one lift: hero PR + strength level, a real date-based
+/// A full screen for one lift, opened from its tile on the overview: hero PR + strength level, a real date-based
 /// trend chart with a Garmin-style time-range selector (4W/3M/6M/1Y/All)
 /// instead of always just "the last 8 points", plateau detection, the
 /// PR/entry inputs, and — new — the actual logged history as a list, not
 /// just a line on a chart.
-class _LiftDetailTab extends StatefulWidget {
-  const _LiftDetailTab({required this.liftKey, required this.label, required this.color, required this.tabIndex});
+class _LiftDetailScreen extends StatefulWidget {
+  const _LiftDetailScreen({required this.liftKey, required this.label, required this.color});
 
   final String liftKey;
   final String label;
   final Color color;
-  final int tabIndex;
 
   @override
-  State<_LiftDetailTab> createState() => _LiftDetailTabState();
+  State<_LiftDetailScreen> createState() => _LiftDetailScreenState();
 }
 
-class _LiftDetailTabState extends State<_LiftDetailTab> {
+class _LiftDetailScreenState extends State<_LiftDetailScreen> {
   late final TextEditingController _prController;
   final TextEditingController _entryController = TextEditingController();
   _ChartRange _range = _ChartRange.threeMonths;
@@ -914,125 +870,139 @@ class _LiftDetailTabState extends State<_LiftDetailTab> {
         ? '${t.prValue(fmt(lift.pr))}${lift.prDate != null ? ' · ${fmtDate(lift.prDate!)}' : ''}'
         : null;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, kFloatingNavClearance),
-      children: [
-        Row(
+    return Scaffold(
+      // No title: the lift's name already heads the page, with its colour and PR.
+      appBar: AppBar(),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
-            Container(width: 10, height: 10, decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle)),
-            const SizedBox(width: 8),
-            Text(widget.label, style: Theme.of(context).textTheme.headlineMedium),
-            const Spacer(),
-            Text(
-              lift.pr > 0 ? '${fmt(lift.pr)} kg' : '—',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 24, color: widget.color),
-            ),
-          ],
-        ),
-        if (prLabel != null) ...[
-          const SizedBox(height: 2),
-          Text(prLabel, style: TextStyle(color: colors.mut, fontSize: 12.5)),
-        ],
-        if (lift.pr > 0) ...[
-          const SizedBox(height: 12),
-          if (rank != null)
             Row(
               children: [
-                RankEmblem(
-                  tier: rank.tier,
-                  division: rank.division,
-                  size: 60,
-                  semanticsLabel: rankLabel(t, rank.tier, rank.division),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(rankLabel(t, rank.tier, rank.division),
-                          style: Theme.of(context).textTheme.headlineMedium),
-                      const SizedBox(height: 8),
-                      _RankProgress(rank: rank),
-                    ],
-                  ),
+                Container(width: 10, height: 10, decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle)),
+                const SizedBox(width: 8),
+                Text(widget.label, style: Theme.of(context).textTheme.headlineMedium),
+                const Spacer(),
+                Text(
+                  lift.pr > 0 ? '${fmt(lift.pr)} kg' : '—',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 24, color: widget.color),
                 ),
               ],
-            )
-          else
-            Text(t.rankNeedBodyweight, style: TextStyle(color: colors.mut, fontSize: 12.5)),
-        ],
-        if (plateaued) ...[
-          const SizedBox(height: 10),
-          PlateauNotice(label: widget.label),
-        ],
-        const SizedBox(height: 16),
-        _ChartRangeSelector(range: _range, onChanged: (r) => setState(() => _range = r)),
-        const SizedBox(height: 12),
-        LineChartCard(
-          title: widget.label,
-          points: chartPoints,
-          emptyLabel: t.emptyNoEntries,
-          valueSuffix: ' kg',
-          color: widget.color,
-          height: 180,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _prController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: t.labelPrKg),
-              ),
             ),
-            const SizedBox(width: 8),
-            TextButton(onPressed: _savePr, child: Text(t.actionSave)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _entryController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: t.hintWeightTodayKg),
-              ),
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton(onPressed: _addEntry, child: Text(t.actionAddEntry)),
-          ],
-        ),
-        if (lift.history.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Text(t.headerHistory, style: TextStyle(color: colors.mut, fontSize: 12.5, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Column(
-                children: [
-                  for (final entry in lift.history.reversed.take(30))
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            if (prLabel != null) ...[
+              const SizedBox(height: 2),
+              Text(prLabel, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+            ],
+            if (lift.pr > 0) ...[
+              const SizedBox(height: 12),
+              if (rank != null)
+                Row(
+                  children: [
+                    RankEmblem(
+                      tier: rank.tier,
+                      division: rank.division,
+                      size: 60,
+                      semanticsLabel: rankLabel(t, rank.tier, rank.division),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            entry.isoDate != null ? fmtDate(entry.isoDate!) : entry.l,
-                            style: TextStyle(color: colors.mut),
-                          ),
-                          Text('${fmt(entry.v)} kg', style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(rankLabel(t, rank.tier, rank.division),
+                              style: Theme.of(context).textTheme.headlineMedium),
+                          const SizedBox(height: 8),
+                          _RankProgress(rank: rank),
                         ],
                       ),
                     ),
-                ],
-              ),
+                  ],
+                )
+              else
+                Text(t.rankNeedBodyweight, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+            ],
+            if (plateaued) ...[
+              const SizedBox(height: 10),
+              PlateauNotice(label: widget.label),
+            ],
+            const SizedBox(height: 16),
+            _ChartRangeSelector(range: _range, onChanged: (r) => setState(() => _range = r)),
+            const SizedBox(height: 12),
+            LineChartCard(
+              title: widget.label,
+              points: chartPoints,
+              emptyLabel: t.emptyNoEntries,
+              valueSuffix: ' kg',
+              color: widget.color,
+              height: 180,
             ),
-          ),
-        ],
-      ],
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(t.labelTrend30Days, style: TextStyle(color: colors.mut, fontSize: 12.5)),
+                const Spacer(),
+                TrendValue(stat: computeLiftTrend(lift), formatDelta: (d) => '${d.toStringAsFixed(1)}%'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _prController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(labelText: t.labelPrKg),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton(onPressed: _savePr, child: Text(t.actionSave)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _entryController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(labelText: t.hintWeightTodayKg),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(onPressed: _addEntry, child: Text(t.actionAddEntry)),
+              ],
+            ),
+            if (lift.history.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Text(t.headerHistory, style: TextStyle(color: colors.mut, fontSize: 12.5, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Column(
+                    children: [
+                      for (final entry in lift.history.reversed.take(30))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                entry.isoDate != null ? fmtDate(entry.isoDate!) : entry.l,
+                                style: TextStyle(color: colors.mut),
+                              ),
+                              Text('${fmt(entry.v)} kg', style: const TextStyle(fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

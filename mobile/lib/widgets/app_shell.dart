@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../screens/exercises_screen.dart';
-import '../screens/progress_screen.dart';
 import '../screens/strength_screen.dart';
 import '../screens/training_screen.dart';
 import '../state/active_screen_provider.dart';
@@ -10,7 +9,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import 'app_tab_bar.dart';
 
-/// Root shell: the 4 tabs stay mounted simultaneously via [PageView] so
+/// Root shell: the 3 tabs stay mounted simultaneously via [PageView] so
 /// switching tabs never loses scroll/local state -- and, unlike the
 /// [IndexedStack] this replaced, also picks up a swipe gesture for free,
 /// in addition to tapping the nav bar.
@@ -70,7 +69,6 @@ class _AppShellState extends State<AppShell> {
             children: const [
               TrainingScreen(),
               StrengthScreen(),
-              ProgressScreen(),
               ExercisesScreen(),
             ],
           ),

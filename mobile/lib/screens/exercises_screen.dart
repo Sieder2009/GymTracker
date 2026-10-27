@@ -18,6 +18,7 @@ import '../state/exercise_media_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/app_shell.dart';
+import '../widgets/calculators_menu.dart';
 import '../widgets/detailed_body_diagram.dart';
 import '../widgets/exercise_demo_gif.dart';
 import '../widgets/exercise_list_view.dart';
@@ -49,8 +50,15 @@ class ExercisesScreen extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Text(t.tabExercises,
-                style: Theme.of(context).textTheme.headlineLarge),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(t.tabExercises,
+                      style: Theme.of(context).textTheme.headlineLarge),
+                ),
+                const CalculatorsMenuButton(),
+              ],
+            ),
           ),
           Expanded(
             child: Padding(

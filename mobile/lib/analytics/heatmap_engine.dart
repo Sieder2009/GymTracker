@@ -331,7 +331,7 @@ class HeatmapLevels {
 
 /// [HeatmapLevels] for [range]. Thresholds always come from the whole range
 /// -- never just the columns a narrow layout shows -- so the same day gets
-/// the same shade on the Analytics card and in the calendar screen.
+/// the same shade on the home screen's card and in the calendar screen.
 HeatmapLevels computeHeatmapLevels(
   Map<String, HeatmapDay> days, {
   required HeatmapRange range,

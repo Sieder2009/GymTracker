@@ -5,56 +5,77 @@ import '../models/history_entry.dart';
 
 /// What a [ProgressionSuggestion] recommends for the next session.
 enum ProgressionAction {
-  /// Every numeric rep logged last session matched or beat the top of the
-  /// exercise's rep range -- add weight and restart at the bottom of the
-  /// range.
+  /// Every set logged last session reached the top of its rep target --
+  /// add weight and work up through the target again.
   increaseWeight,
 
-  /// Last session landed inside the rep range but short of the top --
-  /// double progression: hold the weight, chase one more rep.
-  increaseReps,
+  /// The default whenever the target wasn't fully reached: stay at the
+  /// weight and beat last session's reps, set by set. Being a few reps
+  /// short (8 of 10) is how double progression is supposed to look, not a
+  /// reason to go lighter.
+  holdWeight,
 
-  /// Missed the bottom of the rep range on the last two logged sessions in
-  /// a row -- suggest a deload rather than grinding at a stuck weight.
-  deload,
+  /// The last two sessions were both clearly too heavy (every set at least
+  /// [kTooHeavyRepGap] reps under the target's floor) -- go to the weight
+  /// that, by the same Epley estimate the app's 1RM uses, lands back inside
+  /// the target.
+  reduceWeight,
 }
+
+/// How far under its target's floor every set must land, two sessions in a
+/// row, before a lighter weight is suggested. Two reps short is still "keep
+/// at it"; three or more on every set means the weight doesn't fit the
+/// target.
+const int kTooHeavyRepGap = 3;
 
 /// A soft, data-driven nudge for what to try next session with an
 /// exercise -- never a command, same "nudge, not a diagnosis" tone as
-/// [PlateauNotice]. Built by [suggestNextSession].
+/// [PlateauNotice]. Carries last session's numbers too, so the notice can
+/// say why it suggests what it does. Built by [suggestNextSession].
 class ProgressionSuggestion {
   const ProgressionSuggestion({
     required this.action,
     required this.weightKg,
-    this.nextReps,
+    required this.lastWeightKg,
+    required this.lastReps,
+    required this.target,
+    this.nextReps = const [],
+    this.unilateral = false,
   });
 
   final ProgressionAction action;
 
-  /// The weight to try next session, in kg -- unchanged from the last
-  /// logged weight for [ProgressionAction.increaseReps].
+  /// The weight to use next session, in kg -- the same as [lastWeightKg]
+  /// for [ProgressionAction.holdWeight].
   final double weightKg;
 
-  /// A concrete next-session TOTAL rep count, set only on an
-  /// [ProgressionAction.increaseReps] suggestion for a unilateral exercise
-  /// (see `Exercise.unilateral`) -- always even, via [nextEvenReps], so it
-  /// can split evenly across both sides. Null otherwise (every other
-  /// action, and the bilateral increaseReps case), which keeps that case's
-  /// existing plain-text "aim for one more rep" rendering unchanged.
-  final int? nextReps;
-}
+  /// The weight logged last session, in kg.
+  final double lastWeightKg;
 
-/// Numeric rep counts only. [HistoryEntry.reps] also carries non-numeric
-/// markers ('✓'/'x'/'m') from the hand-typed log format, which carry no
-/// reliable count to judge a rep-range target against -- same "never
-/// guessed" rule `analytics_engine.dart`'s e1RM estimate follows for the
-/// same markers.
-List<int> _numericReps(List<Object> reps) => [for (final r in reps) if (r is int) r];
+  /// Last session's counted reps, set by set (markers and empty sets left
+  /// out -- see [suggestNextSession]).
+  final List<int> lastReps;
+
+  /// The rep target the advice measures against, e.g. "8-10" or "10".
+  final String target;
+
+  /// [ProgressionAction.holdWeight] only: the reps to aim for next session,
+  /// set by set -- one more than last time, never past the target's top.
+  /// Even totals for a [unilateral] exercise, so they split evenly across
+  /// both sides. Empty for the other actions.
+  final List<int> nextReps;
+
+  /// Whether the reps are totals across both sides (`Exercise.unilateral`).
+  final bool unilateral;
+}
 
 class _RepRange {
   const _RepRange(this.min, this.max);
   final int min;
   final int max;
+
+  @override
+  String toString() => min == max ? '$min' : '$min-$max';
 }
 
 /// Parses a set's target rep field -- "8-10" (range) or "8" (fixed) --
@@ -81,74 +102,113 @@ _RepRange? _parseRepRange(String r) {
 /// localized label, so this is language-independent.
 double _weightIncrement(Exercise exercise) => exercise.muscle == 'legs' ? 5.0 : 2.5;
 
-/// Rounds to the nearest 2.5kg step -- the same increment
-/// `widgets/weight_ruler.dart` snaps manual weight entry to -- so a
-/// suggestion always lands on a weight the slider can actually hit.
-double _roundToStep(double kg, {double step = 2.5}) => (kg / step).round() * step;
+/// The 2.5kg step `widgets/weight_ruler.dart` and the guided workout's
+/// stepper snap to, so a lighter weight is always one they can dial in.
+const double _weightStep = 2.5;
 
-/// True when every numeric rep logged in [entry] fell short of [range]'s
-/// floor. Null (neither hit nor miss) when the entry has no numeric reps
-/// at all -- only markers, or an undated import -- so a session that
-/// can't be judged never silently counts as a miss.
-bool? _missedFloor(HistoryEntry entry, _RepRange range) {
-  final reps = _numericReps(entry.reps);
-  if (reps.isEmpty) return null;
-  return reps.every((r) => r < range.min);
+/// [entry]'s sets that carry a real rep count, each paired with the target
+/// it's judged against: set i is measured against the plan's set i (its
+/// last set for any extra set logged beyond it), or [fallback] when that
+/// set's rep field holds no number. Markers ('✓'/'x'/'m', from the
+/// hand-typed log format) and 0 -- what an empty rep field is saved as --
+/// carry no count to judge, so they're skipped, same "never guessed" rule
+/// `analytics_engine.dart`'s e1RM estimate follows.
+List<(int, _RepRange)> _countedSets(HistoryEntry entry, Exercise exercise, _RepRange fallback) {
+  final sets = exercise.sets;
+  return [
+    for (var i = 0; i < entry.reps.length; i++)
+      if (entry.reps[i] case final int reps when reps > 0)
+        (reps, _parseRepRange(sets[i < sets.length ? i : sets.length - 1].r) ?? fallback),
+  ];
+}
+
+/// True when every counted set of [entry] landed at least [kTooHeavyRepGap]
+/// reps under its target's floor. False when nothing can be judged -- an
+/// entry with only markers never counts toward a lighter weight.
+bool _tooHeavy(HistoryEntry entry, Exercise exercise, _RepRange fallback) {
+  final counted = _countedSets(entry, exercise, fallback);
+  return counted.isNotEmpty &&
+      counted.every((s) => s.$1 <= s.$2.min - kTooHeavyRepGap);
 }
 
 /// Suggests what to try next session for [exercise], or null when there
 /// isn't enough real data to say anything: no history yet, no numeric rep
-/// target to read (free-text/AMRAP rep field), or the last logged session
-/// carries only non-numeric markers. Never a guess dressed up as a number.
+/// target in the plan (free-text/AMRAP rep fields), a bodyweight session,
+/// or a last session with no counted reps. Never a guess dressed up as a
+/// number.
 ///
-/// Double progression within the exercise's own configured rep range (its
-/// first set's target -- see [_parseRepRange]): a full clear (every
-/// logged rep at or above the top of the range) bumps the weight; a
-/// session inside the range but short of the top holds the weight and
-/// chases one more rep; two clean misses of the range's floor in a row
-/// suggest a deload instead of grinding at a stuck weight. A single missed
-/// session stays quiet rather than nagging after one off day.
+/// Double progression against each set's own target from the plan:
+/// - every set at the top of its target -> more weight
+///   ([ProgressionAction.increaseWeight]);
+/// - otherwise the same weight with one more rep per set
+///   ([ProgressionAction.holdWeight]) -- also after a bad day, and also
+///   when a set or two is a little under the target's floor;
+/// - only when the last two sessions were both clearly too heavy (see
+///   [kTooHeavyRepGap]) a lighter weight that fits the target
+///   ([ProgressionAction.reduceWeight]).
 ProgressionSuggestion? suggestNextSession(Exercise exercise) {
-  // A Timed/Cardio exercise has no numeric weight x reps to progress --
-  // today this falls out naturally (no rep-range field to parse), but this
-  // makes the exclusion an explicit contract instead of an accident of
-  // string parsing.
+  // A Timed/Cardio exercise has no numeric weight x reps to progress.
   if (exercise.logMode != ExerciseLogMode.reps) return null;
   if (exercise.history.isEmpty || exercise.sets.isEmpty) return null;
-  final range = _parseRepRange(exercise.sets.first.r);
-  if (range == null) return null;
+  _RepRange? fallback;
+  for (final s in exercise.sets) {
+    fallback = _parseRepRange(s.r);
+    if (fallback != null) break;
+  }
+  if (fallback == null) return null;
 
   final history = exercise.history;
   final last = history.last;
   if (last.weight <= 0) return null;
-  final lastNumeric = _numericReps(last.reps);
-  if (lastNumeric.isEmpty) return null;
+  final counted = _countedSets(last, exercise, fallback);
+  if (counted.isEmpty) return null;
+  final lastReps = [for (final s in counted) s.$1];
+  final target = fallback.toString();
 
-  if (lastNumeric.every((r) => r >= range.max)) {
+  if (counted.every((s) => s.$1 >= s.$2.max)) {
     return ProgressionSuggestion(
       action: ProgressionAction.increaseWeight,
       weightKg: last.weight + _weightIncrement(exercise),
+      lastWeightKg: last.weight,
+      lastReps: lastReps,
+      target: target,
+      unilateral: exercise.unilateral,
     );
   }
 
-  if (_missedFloor(last, range) == true) {
-    final missedBefore =
-        history.length >= 2 && _missedFloor(history[history.length - 2], range) == true;
-    if (!missedBefore) return null;
-    return ProgressionSuggestion(
-      action: ProgressionAction.deload,
-      weightKg: _roundToStep(last.weight * 0.9),
-    );
+  if (history.length >= 2 &&
+      _tooHeavy(last, exercise, fallback) &&
+      _tooHeavy(history[history.length - 2], exercise, fallback)) {
+    // Epley from last session's best set, solved for the target's floor,
+    // rounded down so the floor is actually reachable.
+    final best = lastReps.reduce((a, b) => a > b ? a : b);
+    final oneRepMax = last.weight * (1 + best / 30);
+    var next = (oneRepMax / (1 + fallback.min / 30) / _weightStep).floor() * _weightStep;
+    if (next >= last.weight) next = last.weight - _weightStep;
+    if (next > 0) {
+      return ProgressionSuggestion(
+        action: ProgressionAction.reduceWeight,
+        weightKg: next,
+        lastWeightKg: last.weight,
+        lastReps: lastReps,
+        target: target,
+        unilateral: exercise.unilateral,
+      );
+    }
   }
 
-  int? nextReps;
-  if (exercise.unilateral) {
-    final maxLast = lastNumeric.reduce((a, b) => a > b ? a : b);
-    nextReps = nextEvenReps(maxLast + 1);
+  int nextFor(int reps, _RepRange range) {
+    final n = reps >= range.max ? reps : reps + 1;
+    return exercise.unilateral ? nextEvenReps(n) : n;
   }
+
   return ProgressionSuggestion(
-    action: ProgressionAction.increaseReps,
+    action: ProgressionAction.holdWeight,
     weightKg: last.weight,
-    nextReps: nextReps,
+    lastWeightKg: last.weight,
+    lastReps: lastReps,
+    target: target,
+    nextReps: [for (final s in counted) nextFor(s.$1, s.$2)],
+    unilateral: exercise.unilateral,
   );
 }

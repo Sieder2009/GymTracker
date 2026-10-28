@@ -122,13 +122,16 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
   decimal separator), as a total or per side of the bar (bar weight is
   set in Settings).
 - **Progressive overload suggestions.** Every exercise with logged history
-  gets a plain-language nudge for what to try next session — double
-  progression within its configured rep range: a full clear on reps bumps
-  the weight (+2.5kg, +5kg for leg exercises), landing short of the top
-  holds the weight and chases one more rep, and two missed sessions in a
-  row suggest a deload instead of grinding at a stuck weight
-  (`analytics/progression_engine.dart`). Built only from real numeric reps
-  you logged — never a guess when a set only carries a '✓'/'x'/'m' marker.
+  gets a plain-language nudge for what to try next session, saying why —
+  double progression against each set's target from your plan: every set
+  at the top bumps the weight (+2.5kg, +5kg for leg exercises); anything
+  short of that keeps the weight and gives one more rep per set to aim for
+  ("Stay at 100 kg. Last time 8 · 7, target 10 — next time try 9 · 8.");
+  only two sessions in a row with every set at least three reps under the
+  target suggest a lighter weight, the one that fits the target by the
+  estimated 1RM (`analytics/progression_engine.dart`). Built only from
+  real rep counts you logged — never a guess from a '✓'/'x'/'m' marker or
+  an empty set.
 - **Every exercise keeps its history** in one compact card: best estimated
   1RM (Epley) and the 30-day trend, a chart of the estimated 1RM per
   session, the suggestion for next time, and the sessions as a list —

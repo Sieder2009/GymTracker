@@ -162,9 +162,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       c.dispose();
     }
     final ex = widget.exercises[i];
-    final lastSetWeight = ex.sets.isNotEmpty ? ex.sets.last.w : 0.0;
     _idx = i;
-    _weight = lastSetWeight > 0 ? lastSetWeight : ex.startW;
+    _weight = _workingWeight(ex);
     _repsControllers =
         List.generate(ex.sets.length, (_) => TextEditingController());
     _speedControllers =
@@ -196,6 +195,22 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
           TextEditingController(text: k < draft.speeds.length ? draft.speeds[k] : ''),
       ];
     }
+  }
+
+  static double _workingWeight(Exercise ex) {
+    final lastSetWeight = ex.sets.isNotEmpty ? ex.sets.last.w : 0.0;
+    return lastSetWeight > 0 ? lastSetWeight : ex.startW;
+  }
+
+  /// A corrected or deleted history entry can move the sets' working
+  /// weight (see ProgramsProvider.updateHistoryEntry) -- show the new one
+  /// here too, unless a weight of the user's own is already dialed in.
+  void _onHistoryChanged() {
+    setState(() {
+      if (_weight != _loadedWeight) return;
+      _weight = _workingWeight(_ex);
+      _loadedWeight = _weight;
+    });
   }
 
   @override
@@ -786,7 +801,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 28),
-                ExerciseAnalyticsSection(exercise: ex),
+                ExerciseAnalyticsSection(exercise: ex, onChanged: _onHistoryChanged),
                 const SizedBox(height: 28),
                 _UpNextCard(
                   next: isLastExercise ? null : widget.exercises[_idx + 1],

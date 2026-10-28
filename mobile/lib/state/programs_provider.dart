@@ -113,6 +113,32 @@ class ProgramsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Moves a whole day's exercises for good onto another day of [plan] --
+  /// e.g. all of Monday's onto Wednesday -- sets, notes and logged history
+  /// included. Only the contents travel: the [Day] objects and their labels
+  /// stay where they are, since a weekday plan's labels are its fixed
+  /// weekday names.
+  ///
+  /// The two days swap exercises and rest flags, so moving onto a rest day
+  /// leaves a rest day behind, moving onto a training day trades the two
+  /// sessions, and moving back undoes either. Each list travels whole, so
+  /// its superset links stay intact.
+  void moveDayToDay(Program plan, int fromDayIdx, int toDayIdx) {
+    if (fromDayIdx == toDayIdx) return;
+    final from = plan.days[fromDayIdx];
+    final to = plan.days[toDayIdx];
+    final exercises = from.exercises;
+    final rest = from.rest;
+    from
+      ..exercises = to.exercises
+      ..rest = to.rest;
+    to
+      ..exercises = exercises
+      ..rest = rest;
+    _persist();
+    notifyListeners();
+  }
+
   void setMuscle(List<Exercise> exercises, int exIdx, String muscle) {
     exercises[exIdx].muscle = muscle;
     _persist();
@@ -415,6 +441,67 @@ class ProgramsProvider extends ChangeNotifier {
     }
     _persist();
     notifyListeners();
+  }
+
+  /// Corrects one already-logged [entry] of [ex] -- a typo on "Speichern"
+  /// or a wrong number in the guided workout. Its date and stamped
+  /// [HistoryEntry.mode] stay as they are; the caller passes only the
+  /// fields of that mode (null [durations]/[speeds] for a Reps entry, empty
+  /// [reps] otherwise), the same shapes the save methods above write.
+  ///
+  /// Logging an entry also overwrote the sets' working weight (see
+  /// [saveExerciseLog]), so a corrected weight is carried over to the sets
+  /// too -- see [_carryWorkingWeight].
+  void updateHistoryEntry(
+    Exercise ex,
+    HistoryEntry entry, {
+    required double weight,
+    List<Object> reps = const [],
+    List<int>? durations,
+    List<double>? speeds,
+  }) {
+    if (!ex.history.any((e) => identical(e, entry))) return;
+    _carryWorkingWeight(ex, entry, weight);
+    entry
+      ..weight = weight
+      ..reps = reps
+      ..durations = durations
+      ..speeds = speeds;
+    _persist();
+    notifyListeners();
+  }
+
+  /// Removes one logged [entry] from [ex]'s history. Deleting the newest
+  /// entry hands the working weight back to the one before it -- or, for
+  /// the only entry, to the weight the plan started with ([Exercise.startW])
+  /// -- as long as the sets still carry the deleted entry's weight.
+  void removeHistoryEntry(Exercise ex, HistoryEntry entry) {
+    final i = ex.history.indexWhere((e) => identical(e, entry));
+    if (i < 0) return;
+    final previous = i > 0 ? ex.history[i - 1] : null;
+    if (previous == null) {
+      _carryWorkingWeight(ex, entry, ex.startW);
+    } else if (previous.mode == entry.mode) {
+      _carryWorkingWeight(ex, entry, previous.weight);
+    }
+    ex.history.removeAt(i);
+    _persist();
+    notifyListeners();
+  }
+
+  /// Moves the sets' working weight from [entry]'s weight to [to] -- but
+  /// only when [entry] is the newest one, was logged in the exercise's
+  /// current mode, and every set still carries exactly its weight, i.e. the
+  /// sets were written from that entry and nothing changed them since.
+  /// Sets adjusted one by one (a guided-workout pyramid) are left alone,
+  /// and Cardio has no working weight at all.
+  void _carryWorkingWeight(Exercise ex, HistoryEntry entry, double to) {
+    if (!identical(ex.history.last, entry)) return;
+    if (entry.mode != ex.logMode || ex.logMode == ExerciseLogMode.cardio) return;
+    if (ex.sets.isEmpty || ex.sets.any((s) => s.w != entry.weight)) return;
+    for (final s in ex.sets) {
+      s.w = to;
+    }
   }
 
   void renameExercise(List<Exercise> exercises, int exIdx, String newName) {

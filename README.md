@@ -97,7 +97,9 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
   from 30 — grey and small at zero. Rest days from your plan don't break
   it; a tap opens the calendar (`widgets/streak_flame.dart`).
 - Then **today's plan**: day pills to look at any weekday, "Move to
-  another day" to reschedule a session, today's exercises plus the ones
+  another day" to reschedule a session just once or to move a day's
+  exercises to another weekday for good (onto a training day, the two
+  days swap), today's exercises plus the ones
   you do on every training day — drag to reorder, link two exercises into
   a **superset**, move an exercise to another day.
 - Two parts are **optional** and off by default — turn them on under
@@ -131,7 +133,9 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
   1RM (Epley) and the 30-day trend, a chart of the estimated 1RM per
   session, the suggestion for next time, and the sessions as a list —
   date, weight, reps per set — showing the latest five until you expand
-  it (`widgets/exercise_analytics_section.dart`).
+  it (`widgets/exercise_analytics_section.dart`). Saved something wrong?
+  Tap the entry to correct its weight and sets or delete it; the working
+  weight for next time follows (`widgets/history_entry_sheet.dart`).
 - **Animated exercise demos.** 354 of the 546 exercises in the database
   show a short animation of how the movement is done: in the Exercises
   tab, in the exercise editor, during a guided workout, and as an

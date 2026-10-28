@@ -409,26 +409,73 @@
     }
   },
   "labelProgressionSuggestion": "SUGGESTED NEXT SESSION",
-  "progressionIncreaseWeight": "Full clear on your reps — try {weight} next session.",
-  "@progressionIncreaseWeight": {
+  "progressionAddWeight": "Target hit ({reps} at {weight}) — next time {nextWeight}, again aiming for {range} reps.",
+  "@progressionAddWeight": {
     "placeholders": {
+      "reps": {
+        "type": "String"
+      },
       "weight": {
+        "type": "String"
+      },
+      "nextWeight": {
+        "type": "String"
+      },
+      "range": {
         "type": "String"
       }
     }
   },
-  "progressionIncreaseReps": "Same weight next session ({weight}) — aim for one more rep.",
-  "@progressionIncreaseReps": {
+  "progressionHold": "Stay at {weight}. Last time {reps}, target {range} — next time try {nextReps}.",
+  "@progressionHold": {
     "placeholders": {
       "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      },
+      "nextReps": {
         "type": "String"
       }
     }
   },
-  "progressionDeload": "Two tough sessions in a row — consider dropping to {weight} to rebuild momentum.",
-  "@progressionDeload": {
+  "progressionHoldUnilateral": "Stay at {weight}. Last time {reps}, target {range} — next time try {nextReps} (both sides together, {perSide} per side).",
+  "@progressionHoldUnilateral": {
     "placeholders": {
       "weight": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      },
+      "nextReps": {
+        "type": "String"
+      },
+      "perSide": {
+        "type": "String"
+      }
+    }
+  },
+  "progressionReduceWeight": "Clearly below target twice ({reps} at {weight}, target {range}) — {nextWeight} gets you back into the range.",
+  "@progressionReduceWeight": {
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      },
+      "nextWeight": {
         "type": "String"
       }
     }
@@ -851,20 +898,6 @@
     }
   },
   "labelUnilateralTag": "Per side",
-  "progressionIncreaseRepsUnilateral": "Same weight next session ({weight}) — aim for {reps} reps total ({perSide} per side).",
-  "@progressionIncreaseRepsUnilateral": {
-    "placeholders": {
-      "weight": {
-        "type": "String"
-      },
-      "reps": {
-        "type": "String"
-      },
-      "perSide": {
-        "type": "String"
-      }
-    }
-  },
   "actionMoveToAnotherDay": "Move to another day",
   "titleMoveExercise": "Move \"{name}\"",
   "@titleMoveExercise": {

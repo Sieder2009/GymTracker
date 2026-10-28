@@ -25,31 +25,33 @@ class ProgressionNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
-    final weightLabel = '${fmt1(suggestion.weightKg)} kg';
+    final s = suggestion;
+    // Every sentence names last session's numbers and the target, so the
+    // advice explains itself ("8 · 7 at 100 kg, target 10 -> try 9 · 8").
+    final lastWeight = '${fmt1(s.lastWeightKg)} kg';
+    final nextWeight = '${fmt1(s.weightKg)} kg';
+    final lastReps = s.lastReps.join(' · ');
+    final nextReps = s.nextReps.join(' · ');
 
     final IconData icon;
     final Color color;
     final String body;
-    switch (suggestion.action) {
+    switch (s.action) {
       case ProgressionAction.increaseWeight:
         icon = Icons.trending_up_rounded;
         color = colors.green;
-        body = t.progressionIncreaseWeight(weightLabel);
-        break;
-      case ProgressionAction.increaseReps:
+        body = t.progressionAddWeight(lastReps, lastWeight, nextWeight, s.target);
+      case ProgressionAction.holdWeight:
         icon = Icons.repeat_rounded;
         color = colors.accent;
-        final nextReps = suggestion.nextReps;
-        body = nextReps != null
-            ? t.progressionIncreaseRepsUnilateral(
-                weightLabel, '$nextReps', fmt(repsPerSide(nextReps)))
-            : t.progressionIncreaseReps(weightLabel);
-        break;
-      case ProgressionAction.deload:
+        body = s.unilateral
+            ? t.progressionHoldUnilateral(lastWeight, lastReps, s.target, nextReps,
+                s.nextReps.map((r) => fmt(repsPerSide(r))).join(' · '))
+            : t.progressionHold(lastWeight, lastReps, s.target, nextReps);
+      case ProgressionAction.reduceWeight:
         icon = Icons.trending_down_rounded;
         color = colors.yellow;
-        body = t.progressionDeload(weightLabel);
-        break;
+        body = t.progressionReduceWeight(lastReps, lastWeight, s.target, nextWeight);
     }
 
     if (compact) {

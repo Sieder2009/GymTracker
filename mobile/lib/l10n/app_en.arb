@@ -910,7 +910,6 @@
       }
     }
   },
-  "moveDayPickTargetPrompt": "Move it to:",
   "moveDayTargetSubtitleWorkout": "Currently: {day}",
   "@moveDayTargetSubtitleWorkout": {
     "placeholders": {
@@ -930,6 +929,25 @@
     }
   },
   "toastDayOverrideCleared": "Back to your normal weekly plan",
+  "moveDayOnceHeader": "JUST THIS ONCE",
+  "moveDayPermanentHeader": "PERMANENTLY IN YOUR WEEKLY PLAN",
+  "moveDayPermanentIntro": "The exercises move to the chosen weekday for good, with their sets and history. If that day already has exercises, the two days swap.",
+  "moveDaySwapSubtitle": "{count, plural, =1{Swaps with 1 exercise} other{Swaps with {count} exercises}}",
+  "@moveDaySwapSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "toastDaysSwapped": "Swapped with {weekday}",
+  "@toastDaysSwapped": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
   "emptyRestDayRescheduled": "This workout was moved to another day.",
   "labelLogMode": "How this is logged",
   "logModeReps": "Reps",
@@ -1072,6 +1090,16 @@
     }
   },
   "historyShowLess": "Show less",
+  "titleEditHistoryEntry": "Edit entry",
+  "labelNoDate": "No date",
+  "labelWeightKgField": "Weight (kg)",
+  "hintSeconds": "Seconds",
+  "errorNeedOneSet": "Keep at least one set — or delete the entry.",
+  "deleteHistoryEntryTitle": "Delete entry?",
+  "deleteHistoryEntryBody": "This entry will be removed from the history. This can't be undone.",
+  "toastHistoryEntryUpdated": "Entry corrected",
+  "toastHistoryEntryDeleted": "Entry deleted",
+  "infoHistoryTapToEdit": "Tap an entry to correct it.",
   "trainingStreak": "{count, plural, =1{1 day in a row} other{{count} days in a row}}",
   "@trainingStreak": {
     "placeholders": {

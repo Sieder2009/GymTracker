@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 
 import '../data/constants.dart';
 import '../l10n/app_localizations.dart';
+import '../models/day.dart';
 import '../models/program.dart';
+import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../state/train_state_provider.dart';
 import '../theme/app_colors.dart';
@@ -12,6 +14,9 @@ import '../theme/app_colors.dart';
 /// "Move to another day" bottom sheet -- reschedules the Day currently
 /// showing on [viewedIso] onto a different calendar date (or clears an
 /// existing override), without ever touching the saved plan's Day list.
+/// Below that, the same day's exercises can instead move to another
+/// weekday for good, which does change the plan
+/// (`ProgramsProvider.moveDayToDay`).
 /// Same shape as `plan_picker_sheet.dart`'s `PlanPickerSheet`/`showPlanPicker`.
 class MoveDaySheet extends StatelessWidget {
   const MoveDaySheet({
@@ -83,8 +88,6 @@ class MoveDaySheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(t.titleMoveDay, style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: 6),
-            Text(t.moveDaySheetIntro, style: TextStyle(color: colors.mut)),
             const SizedBox(height: 12),
             Text(
               t.moveDayCurrentlyShowing(_labelForResolvedIdx(t, dayIdx)),
@@ -101,8 +104,10 @@ class MoveDaySheet extends StatelessWidget {
               ),
             const SizedBox(height: 16),
             if (hasContentToMove) ...[
-              Text(t.moveDayPickTargetPrompt,
+              Text(t.moveDayOnceHeader,
                   style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 4),
+              Text(t.moveDaySheetIntro, style: TextStyle(color: colors.mut, fontSize: 13)),
               const SizedBox(height: 8),
               for (final candidate in candidates)
                 _CandidateTile(
@@ -125,6 +130,32 @@ class MoveDaySheet extends StatelessWidget {
                         t.toastDayMoved(DateFormat.EEEE(localeName).format(candidate)));
                   },
                 ),
+              // The same day's exercises, moved in the plan itself instead
+              // of for one date -- see ProgramsProvider.moveDayToDay.
+              const SizedBox(height: 16),
+              Text(t.moveDayPermanentHeader,
+                  style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 4),
+              Text(t.moveDayPermanentIntro, style: TextStyle(color: colors.mut, fontSize: 13)),
+              const SizedBox(height: 8),
+              for (var i = 0; i < plan.days.length; i++)
+                _WeekdayTile(
+                  t: t,
+                  colors: colors,
+                  day: plan.days[i],
+                  name: DateFormat.EEEE(localeName).format(dateForWeekdayIndex(i)),
+                  isSource: i == dayIdx,
+                  onTap: () {
+                    final name = DateFormat.EEEE(localeName).format(dateForWeekdayIndex(i));
+                    final swapped = plan.days[i].exercises.isNotEmpty;
+                    Navigator.of(context).pop();
+                    context.read<ProgramsProvider>().moveDayToDay(plan, dayIdx, i);
+                    // Follow the exercises to their new weekday.
+                    trainState.setViewedDayIdx(i);
+                    context.read<ToastProvider>().show(
+                        swapped ? t.toastDaysSwapped(name) : t.toastDayMoved(name));
+                  },
+                ),
             ],
             if (hasOverride) ...[
               const SizedBox(height: 8),
@@ -143,6 +174,53 @@ class MoveDaySheet extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// One weekday row of the "for good" section: what that day holds now, and
+/// whether a tap moves the exercises there or swaps the two days. The
+/// source day itself is shown but disabled, like in MoveExerciseSheet.
+class _WeekdayTile extends StatelessWidget {
+  const _WeekdayTile({
+    required this.t,
+    required this.colors,
+    required this.day,
+    required this.name,
+    required this.isSource,
+    required this.onTap,
+  });
+
+  final AppLocalizations t;
+  final AppColors colors;
+  final Day day;
+  final String name;
+  final bool isSource;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = day.exercises.length;
+    final String subtitle;
+    if (isSource) {
+      subtitle = t.moveExerciseDayCount(count);
+    } else if (count > 0) {
+      subtitle = t.moveDaySwapSubtitle(count);
+    } else {
+      subtitle = day.rest ? t.labelRestDay : t.moveExerciseDayCount(0);
+    }
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        title: Text(name),
+        subtitle: Text(subtitle, style: TextStyle(color: colors.mut)),
+        trailing: isSource
+            ? Text(t.labelCurrent, style: TextStyle(color: colors.mut))
+            : Icon(count > 0 ? Icons.swap_vert_rounded : Icons.chevron_right_rounded,
+                color: colors.mut),
+        enabled: !isSource,
+        onTap: isSource ? null : onTap,
       ),
     );
   }
@@ -210,6 +288,9 @@ Future<void> showMoveDaySheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    // Two lists of a week each -- taller than the screen, so it scrolls
+    // inside the sheet rather than covering the whole screen.
+    constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.85),
     builder: (ctx) => MoveDaySheet(
       plan: plan,
       viewedIso: viewedIso,

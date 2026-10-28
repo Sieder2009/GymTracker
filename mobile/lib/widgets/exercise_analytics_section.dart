@@ -11,6 +11,7 @@ import '../models/exercise_log_mode.dart';
 import '../models/history_entry.dart';
 import '../theme/app_colors.dart';
 import 'chart_card.dart';
+import 'history_entry_sheet.dart';
 import 'plateau_notice.dart';
 import 'progression_notice.dart';
 import 'trend_value.dart';
@@ -25,13 +26,16 @@ const int _kCollapsedEntries = 5;
 /// [exercise.history]'s dated entries: best value and 30-day trend in one
 /// line, a low chart, the next-session suggestion or plateau note, and the
 /// logged sessions as a list going down (newest first, the latest five
-/// until expanded). Hidden entirely when there's no history at all, so a
-/// brand-new exercise doesn't show an empty card before the user has
-/// logged anything.
+/// until expanded) -- tap one to correct or delete it. Hidden entirely
+/// when there's no history at all, so a brand-new exercise doesn't show an
+/// empty card before the user has logged anything.
 class ExerciseAnalyticsSection extends StatefulWidget {
-  const ExerciseAnalyticsSection({super.key, required this.exercise});
+  const ExerciseAnalyticsSection({super.key, required this.exercise, this.onChanged});
 
   final Exercise exercise;
+
+  /// Called after an entry was corrected or deleted from this list.
+  final VoidCallback? onChanged;
 
   @override
   State<ExerciseAnalyticsSection> createState() => _ExerciseAnalyticsSectionState();
@@ -45,6 +49,13 @@ class _ExerciseAnalyticsSectionState extends State<ExerciseAnalyticsSection> {
     super.didUpdateWidget(oldWidget);
     // Browsing to the next exercise starts collapsed again.
     if (!identical(oldWidget.exercise, widget.exercise)) _expanded = false;
+  }
+
+  Future<void> _edit(HistoryEntry entry) async {
+    final changed = await showHistoryEntrySheet(context, exercise: widget.exercise, entry: entry);
+    if (!changed || !mounted) return;
+    setState(() {});
+    widget.onChanged?.call();
   }
 
   @override
@@ -155,7 +166,7 @@ class _ExerciseAnalyticsSectionState extends State<ExerciseAnalyticsSection> {
                 const SizedBox(height: 8),
                 for (var i = 0; i < shown.length; i++) ...[
                   if (i > 0) Divider(height: 1, color: colors.line),
-                  _HistoryRow(entry: shown[i], isLatest: i == 0),
+                  _HistoryRow(entry: shown[i], isLatest: i == 0, onTap: () => _edit(shown[i])),
                 ],
                 if (newestFirst.length > _kCollapsedEntries)
                   Center(
@@ -166,6 +177,8 @@ class _ExerciseAnalyticsSectionState extends State<ExerciseAnalyticsSection> {
                   )
                 else
                   const SizedBox(height: 6),
+                Text(t.infoHistoryTapToEdit, style: TextStyle(color: colors.mut, fontSize: 10.5)),
+                const SizedBox(height: 8),
                 if (hasMarkers) ...[
                   Text(t.infoHistoryLegend, style: TextStyle(color: colors.mut, fontSize: 10.5)),
                   const SizedBox(height: 8),
@@ -186,10 +199,11 @@ class _ExerciseAnalyticsSectionState extends State<ExerciseAnalyticsSection> {
 /// field), so switching an exercise's mode later never recolors how an
 /// older entry displays.
 class _HistoryRow extends StatelessWidget {
-  const _HistoryRow({required this.entry, required this.isLatest});
+  const _HistoryRow({required this.entry, required this.isLatest, required this.onTap});
 
   final HistoryEntry entry;
   final bool isLatest;
+  final VoidCallback onTap;
 
   String _primaryLabel(AppLocalizations t) {
     switch (entry.mode) {
@@ -224,33 +238,36 @@ class _HistoryRow extends StatelessWidget {
     final date = DateTime.tryParse(entry.date ?? '');
     final dateLabel = date == null ? '' : DateFormat.Md(Localizations.localeOf(context).toString()).format(date);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 48,
-            child: Text(dateLabel, style: TextStyle(color: colors.mut, fontSize: 12)),
-          ),
-          Text(
-            _primaryLabel(t),
-            style: TextStyle(
-              color: isLatest ? colors.accent : colors.txt,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 7),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 48,
+              child: Text(dateLabel, style: TextStyle(color: colors.mut, fontSize: 12)),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _secondaryLabel(),
-              textAlign: TextAlign.end,
-              style: TextStyle(color: colors.mut, fontSize: 12),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            Text(
+              _primaryLabel(t),
+              style: TextStyle(
+                color: isLatest ? colors.accent : colors.txt,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _secondaryLabel(),
+                textAlign: TextAlign.end,
+                style: TextStyle(color: colors.mut, fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,323 +1,211 @@
 /*
- * The Ironpeak mark -- a two-peak mountain with a barbell across it -- and
- * its motion, ported 1:1 from mobile/lib/widgets/ironpeak_logo.dart, the
- * app's single source of truth. Same path strings, same colors, same
- * timeline (pop-in, barbell drop with Android's BounceInterpolator, glint,
- * then one rep forever), so the logo on this page moves exactly like the
- * app's launch animation.
+ * The Kilo mark -- a loaded barbell -- and its motion. A 1:1 port of
+ * mobile/lib/widgets/ironpeak_logo.dart (IronpeakMark): the same path
+ * strings, the same 100x100 logo units and the same timeline (the barbell
+ * drops in with Android's bounce and squashes on impact, then does one calm
+ * rep forever), so the site moves exactly like the app's launch screen.
+ *
+ *   KiloMark.mount(el, { size, motion: 'loop' | 'intro' | 'hover' | 'none' })
+ *
+ * draws an <svg> into el. The tile and glyph colors come from CSS
+ * (--logo-tile, --logo-glyph, --logo-line), so the mark follows the page's
+ * light/dark theme like the in-app logo follows the app's.
  */
-(function (global) {
+(function (w) {
   'use strict';
 
-  var UNIT = 100;
-  var GLYPH_FRACTION = 0.7; // IronpeakMark.badgeGlyphFraction
+  var BAR =
+    'M33,47H67A1,1 0 0 1 68,48V52A1,1 0 0 1 67,53H33A1,1 0 0 1 32,52V48A1,1 0 0 1 33,47Z' +
+    'M4,46H32A1.5,1.5 0 0 1 33.5,47.5V52.5A1.5,1.5 0 0 1 32,54H4A1.5,1.5 0 0 1 2.5,52.5V47.5A1.5,1.5 0 0 1 4,46Z' +
+    'M68,46H96A1.5,1.5 0 0 1 97.5,47.5V52.5A1.5,1.5 0 0 1 96,54H68A1.5,1.5 0 0 1 66.5,52.5V47.5A1.5,1.5 0 0 1 68,46Z';
 
-  var COLORS = {
-    gradientStart: '#38D08F',
-    gradientMid: '#1FA76A',
-    gradientEnd: '#0B6644',
-    gradientMidStop: 0.55,
-    rock: '#04382A',
-    snow: '#FFFFFF',
-    iron: '#FFFFFF'
-  };
-  var BACK_PEAK_ALPHA = 0.3;
-  var FRONT_PEAK_ALPHA = 0.42;
-  var SHADOW_ALPHA = 0.25;
+  var PLATES =
+    'M32.5,42H33.5A1,1 0 0 1 34.5,43V57A1,1 0 0 1 33.5,58H32.5A1,1 0 0 1 31.5,57V43A1,1 0 0 1 32.5,42Z' +
+    'M66.5,42H67.5A1,1 0 0 1 68.5,43V57A1,1 0 0 1 67.5,58H66.5A1,1 0 0 1 65.5,57V43A1,1 0 0 1 66.5,42Z' +
+    'M24.3,21H28.8A1.5,1.5 0 0 1 30.3,22.5V77.5A1.5,1.5 0 0 1 28.8,79H24.3A1.5,1.5 0 0 1 22.8,77.5V22.5A1.5,1.5 0 0 1 24.3,21Z' +
+    'M71.2,21H75.7A1.5,1.5 0 0 1 77.2,22.5V77.5A1.5,1.5 0 0 1 75.7,79H71.2A1.5,1.5 0 0 1 69.7,77.5V22.5A1.5,1.5 0 0 1 71.2,21Z' +
+    'M15.6,21H20.1A1.5,1.5 0 0 1 21.6,22.5V77.5A1.5,1.5 0 0 1 20.1,79H15.6A1.5,1.5 0 0 1 14.1,77.5V22.5A1.5,1.5 0 0 1 15.6,21Z' +
+    'M79.9,21H84.4A1.5,1.5 0 0 1 85.9,22.5V77.5A1.5,1.5 0 0 1 84.4,79H79.9A1.5,1.5 0 0 1 78.4,77.5V22.5A1.5,1.5 0 0 1 79.9,21Z' +
+    'M9.6,31H11.7A1.2,1.2 0 0 1 12.9,32.2V67.8A1.2,1.2 0 0 1 11.7,69H9.6A1.2,1.2 0 0 1 8.4,67.8V32.2A1.2,1.2 0 0 1 9.6,31Z' +
+    'M88.3,31H90.4A1.2,1.2 0 0 1 91.6,32.2V67.8A1.2,1.2 0 0 1 90.4,69H88.3A1.2,1.2 0 0 1 87.1,67.8V32.2A1.2,1.2 0 0 1 88.3,31Z' +
+    'M5.6,42.5H6.2A1,1 0 0 1 7.2,43.5V56.5A1,1 0 0 1 6.2,57.5H5.6A1,1 0 0 1 4.6,56.5V43.5A1,1 0 0 1 5.6,42.5Z' +
+    'M93.8,42.5H94.4A1,1 0 0 1 95.4,43.5V56.5A1,1 0 0 1 94.4,57.5H93.8A1,1 0 0 1 92.8,56.5V43.5A1,1 0 0 1 93.8,42.5Z';
 
-  // --- geometry (SVG path syntax, logo units) ------------------------------
+  // Bottom middle of the big plates: the barbell squashes around it.
+  var FOOT_X = 50;
+  var FOOT_Y = 79;
 
-  var BACK_PEAK = 'M74,24L88,82L34,82Z';
-  var FRONT_PEAK = 'M42,8L66,82L14,82Z';
-  var BACK_SNOW = 'M74,24L77.4,38L74.2,34.6L71,39L67.6,34.8L64.3,38Z';
-  var FRONT_SNOW = 'M42,8L49.1,30L44.5,35L41,29.8L37.5,34L33.7,30Z';
-  var SPARK = 'M0,-6.5Q0.9,-0.9 6.5,0Q0.9,0.9 0,6.5Q-0.9,0.9 -6.5,0Q-0.9,-0.9 0,-6.5Z';
-  var SPARK_ANCHOR = [51, 13];
-  var MOUNTAIN_PIVOT = [50, 82];
+  // Glyph box as a fraction of the badge (IronpeakMark.badgeGlyphFraction).
+  var GLYPH = 0.72;
 
-  var BARBELL_REST_Y = 60;
-  var REP_HEIGHT = 14;
-  var SHADOW_OFFSET = 1.6;
+  var INTRO = 0.72;
+  var LOOP = 3.6;
+  var DROP_HEIGHT = 60;
+  var DROP = [0.08, 0.6];
+  var FADE = [0.08, 0.1];
+  var SQUASH_DEPTH = 0.06;
+  var SQUASH_DOWN = 0.07;
+  var SQUASH_UP = 0.12;
+  var IMPACT = DROP[0] + DROP[1] * (0.3535 / 1.1226);
+  var REP_HEIGHT = 6;
+  var REP_UP = [1.2, 0.55];
+  var REP_DOWN = [2.05, 0.75];
 
-  /** Compact number for path data: no trailing zeros, no "-0". */
-  function num(v) {
-    var s = v.toFixed(2);
-    if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
-    return s === '-0' ? '0' : s;
+  function seg(t, timing) {
+    return Math.min(1, Math.max(0, (t - timing[0]) / timing[1]));
   }
 
-  function rrect(x, y, w, h, r) {
-    var x2 = x + w;
-    var y2 = y + h;
-    var arc = 'A' + num(r) + ',' + num(r) + ' 0 0 1 ';
-    return 'M' + num(x + r) + ',' + num(y) +
-      'H' + num(x2 - r) + arc + num(x2) + ',' + num(y + r) +
-      'V' + num(y2 - r) + arc + num(x2 - r) + ',' + num(y2) +
-      'H' + num(x + r) + arc + num(x) + ',' + num(y2 - r) +
-      'V' + num(y + r) + arc + num(x + r) + ',' + num(y) + 'Z';
-  }
-
-  function barbell(cy) {
-    return [
-      rrect(20, cy - 2.7, 60, 5.4, 1.6), // bar
-      rrect(15.5, cy - 19, 8, 38, 3), // big plates
-      rrect(76.5, cy - 19, 8, 38, 3),
-      rrect(9, cy - 12.5, 5.5, 25, 2.4), // small plates
-      rrect(85.5, cy - 12.5, 5.5, 25, 2.4),
-      rrect(5, cy - 3.4, 4.6, 6.8, 1.6), // sleeve ends
-      rrect(90.4, cy - 3.4, 4.6, 6.8, 1.6)
-    ].join('');
-  }
-
-  var BARBELL = barbell(BARBELL_REST_Y);
-  var BARBELL_SHADOW = barbell(BARBELL_REST_Y + SHADOW_OFFSET);
-
-  // --- motion --------------------------------------------------------------
-
-  var INTRO_SECONDS = 0.64;
-  var LOOP_SECONDS = 3.0;
-  var DROP_FROM = 44;
-  var DROP_START = 0.08;
-  var DROP_SECONDS = 0.52;
-  var IMPACT_SECONDS = DROP_START + DROP_SECONDS * (0.3535 / 1.1226);
-
-  /** Flutter's Cubic curve, including its bisection solver and error bound. */
-  function cubic(a, b, c, d) {
-    function evaluate(p, q, m) {
-      return 3 * p * (1 - m) * (1 - m) * m + 3 * q * (1 - m) * m * m + m * m * m;
-    }
-    return function (t) {
-      if (t <= 0) return 0;
-      if (t >= 1) return 1;
-      var start = 0;
-      var end = 1;
-      for (;;) {
-        var mid = (start + end) / 2;
-        var estimate = evaluate(a, c, mid);
-        if (Math.abs(t - estimate) < 0.001) return evaluate(b, d, mid);
-        if (estimate < t) start = mid; else end = mid;
-      }
-    };
-  }
-
-  var fastOutSlowIn = cubic(0.4, 0.0, 0.2, 1.0);
-  var easeInOutCubic = cubic(0.645, 0.045, 0.355, 1.0);
-
-  function seg(t, start, seconds) {
-    return Math.min(1, Math.max(0, (t - start) / seconds));
-  }
-  function decel(x) { return 1 - (1 - x) * (1 - x); }
-  function accel(x) { return x * x; }
-
-  /** android.view.animation.BounceInterpolator, verbatim. */
-  function androidBounce(t) {
-    function bounce(x) { return x * x * 8; }
+  // Android's interpolators, verbatim.
+  function bounce(t) {
+    function b(x) { return x * x * 8; }
     var x = t * 1.1226;
-    if (x < 0.3535) return bounce(x);
-    if (x < 0.7408) return bounce(x - 0.54719) + 0.7;
-    if (x < 0.9644) return bounce(x - 0.8526) + 0.9;
-    return bounce(x - 1.0435) + 0.95;
+    if (x < 0.3535) return b(x);
+    if (x < 0.7408) return b(x - 0.54719) + 0.7;
+    if (x < 0.9644) return b(x - 0.8526) + 0.9;
+    return b(x - 1.0435) + 0.95;
+  }
+  function decelerate(t) { return 1 - (1 - t) * (1 - t); }
+  function accelerateDecelerate(t) { return Math.cos((t + 1) * Math.PI) / 2 + 0.5; }
+
+  // Flutter's Curves.fastOutSlowIn: cubic-bezier(0.4, 0, 0.2, 1).
+  function fastOutSlowIn(t) {
+    var x1 = 0.4, y1 = 0, x2 = 0.2, y2 = 1;
+    function at(a, b, m) { return 3 * a * (1 - m) * (1 - m) * m + 3 * b * (1 - m) * m * m + m * m * m; }
+    var lo = 0, hi = 1, mid = t;
+    for (var i = 0; i < 24; i++) {
+      mid = (lo + hi) / 2;
+      if (at(x1, x2, mid) < t) lo = mid; else hi = mid;
+    }
+    return at(y1, y2, mid);
   }
 
-  function pose(p) {
-    return {
-      mountainAlpha: p.mountainAlpha === undefined ? 1 : p.mountainAlpha,
-      mountainScale: p.mountainScale === undefined ? 1 : p.mountainScale,
-      mountainSquash: p.mountainSquash === undefined ? 1 : p.mountainSquash,
-      barbellDy: p.barbellDy || 0,
-      barbellAlpha: p.barbellAlpha === undefined ? 1 : p.barbellAlpha,
-      sparkScale: p.sparkScale || 0,
-      sparkTurn: p.sparkTurn || 0
-    };
-  }
-
-  var REST = pose({});
-
-  function intro(t) {
-    var pop = seg(t, 0, 0.24);
-    var fade = seg(t, 0, 0.18);
-    var drop = seg(t, DROP_START, DROP_SECONDS);
-
-    var squashDown = seg(t, IMPACT_SECONDS, 0.07);
-    var squashUp = seg(t, IMPACT_SECONDS + 0.07, 0.12);
-    var squash = 1 - 0.045 * decel(squashDown) * (1 - decel(squashUp));
-
-    var glintUp = seg(t, 0.26, 0.14);
-    var glintDown = seg(t, 0.40, 0.24);
-
-    return pose({
-      mountainAlpha: fastOutSlowIn(fade),
-      mountainScale: 0.86 + 0.14 * fastOutSlowIn(pop),
-      mountainSquash: squash,
-      barbellDy: -DROP_FROM * (1 - androidBounce(drop)),
-      barbellAlpha: seg(t, DROP_START, 0.08),
-      sparkScale: 1.15 * decel(glintUp) * (1 - accel(glintDown)),
-      sparkTurn: seg(t, 0.26, 0.38) * Math.PI / 2
-    });
-  }
-
-  function loop(u) {
-    var up = easeInOutCubic(seg(u, 0.55, 0.70));
-    var down = easeInOutCubic(seg(u, 1.65, 0.65));
-    var land = seg(u, 2.30, 0.30);
-    var glint = seg(u, 1.20, 0.50);
-    return pose({
-      barbellDy: -REP_HEIGHT * (up - down),
-      mountainSquash: 1 - 0.02 * Math.sin(Math.PI * land),
-      sparkScale: Math.sin(Math.PI * glint),
-      sparkTurn: glint * Math.PI / 2
-    });
-  }
-
-  /** The pose at [seconds] since the logo appeared; repeats past the intro. */
+  /** The pose at `seconds` since the logo appeared (IronpeakMark.poseAt). */
   function poseAt(seconds) {
-    if (seconds < INTRO_SECONDS) return intro(seconds);
-    return loop((seconds - INTRO_SECONDS) % LOOP_SECONDS);
-  }
-
-  // --- SVG renderer ---------------------------------------------------------
-
-  var SVG_NS = 'http://www.w3.org/2000/svg';
-  var uid = 0;
-
-  function node(name, attrs, parent) {
-    var el = document.createElementNS(SVG_NS, name);
-    for (var key in attrs) el.setAttribute(key, attrs[key]);
-    if (parent) parent.appendChild(el);
-    return el;
-  }
-
-  /**
-   * Builds the badge + glyph inside [svg] and returns render(pose).
-   * opts.badge: false draws the glyph alone on a transparent background.
-   */
-  function mount(svg, opts) {
-    opts = opts || {};
-    var badge = opts.badge !== false;
-    var fraction = opts.glyphFraction || GLYPH_FRACTION;
-    while (svg.firstChild) svg.removeChild(svg.firstChild);
-    svg.setAttribute('viewBox', '0 0 100 100');
-
-    if (badge) {
-      var id = 'ip-badge-' + (++uid);
-      var defs = node('defs', {}, svg);
-      var grad = node('linearGradient', { id: id, x1: '0', y1: '0', x2: '1', y2: '1' }, defs);
-      node('stop', { offset: '0', 'stop-color': COLORS.gradientStart }, grad);
-      node('stop', { offset: String(COLORS.gradientMidStop), 'stop-color': COLORS.gradientMid }, grad);
-      node('stop', { offset: '1', 'stop-color': COLORS.gradientEnd }, grad);
-      node('rect', { width: '100', height: '100', rx: '22', fill: 'url(#' + id + ')' }, svg);
-    }
-
-    var inset = 100 * (1 - fraction) / 2;
-    var glyph = node('g', { transform: 'translate(' + inset + ' ' + inset + ') scale(' + (fraction * 100 / UNIT) + ')' }, svg);
-
-    var mountain = node('g', {}, glyph);
-    var backPeak = node('path', { d: BACK_PEAK, fill: COLORS.rock }, mountain);
-    var frontPeak = node('path', { d: FRONT_PEAK, fill: COLORS.rock }, mountain);
-    var backSnow = node('path', { d: BACK_SNOW, fill: COLORS.snow }, mountain);
-    var frontSnow = node('path', { d: FRONT_SNOW, fill: COLORS.snow }, mountain);
-
-    var bar = node('g', {}, glyph);
-    var barShadow = node('path', { d: BARBELL_SHADOW, fill: '#000' }, bar);
-    var barBody = node('path', { d: BARBELL, fill: COLORS.iron }, bar);
-
-    var spark = node('g', {}, glyph);
-    node('path', { d: SPARK, fill: COLORS.snow }, spark);
-
-    function render(p) {
-      var px = MOUNTAIN_PIVOT[0];
-      var py = MOUNTAIN_PIVOT[1];
-      var sx = p.mountainScale;
-      var sy = p.mountainScale * p.mountainSquash;
-      mountain.setAttribute('transform',
-        'translate(' + px + ' ' + py + ') scale(' + sx + ' ' + sy + ') translate(' + (-px) + ' ' + (-py) + ')');
-      var ma = p.mountainAlpha;
-      backPeak.setAttribute('fill-opacity', BACK_PEAK_ALPHA * ma);
-      frontPeak.setAttribute('fill-opacity', FRONT_PEAK_ALPHA * ma);
-      backSnow.setAttribute('fill-opacity', 0.9 * ma);
-      frontSnow.setAttribute('fill-opacity', ma);
-
-      bar.setAttribute('transform', 'translate(0 ' + p.barbellDy + ')');
-      barShadow.setAttribute('fill-opacity', SHADOW_ALPHA * p.barbellAlpha);
-      barBody.setAttribute('fill-opacity', p.barbellAlpha);
-
-      if (p.sparkScale > 0.001) {
-        spark.setAttribute('transform', 'translate(' + SPARK_ANCHOR[0] + ' ' + SPARK_ANCHOR[1] + ') rotate(' +
-          (p.sparkTurn * 180 / Math.PI) + ') scale(' + p.sparkScale + ')');
-        spark.removeAttribute('display');
-      } else {
-        spark.setAttribute('display', 'none');
-      }
-    }
-
-    render(REST);
-    return render;
-  }
-
-  // --- canvas renderer (favicon) -------------------------------------------
-
-  var paths = null;
-  function canvasPaths() {
-    if (!paths) {
-      paths = {
-        backPeak: new Path2D(BACK_PEAK),
-        frontPeak: new Path2D(FRONT_PEAK),
-        backSnow: new Path2D(BACK_SNOW),
-        frontSnow: new Path2D(FRONT_SNOW),
-        barbell: new Path2D(BARBELL),
-        barbellShadow: new Path2D(BARBELL_SHADOW)
+    if (seconds < INTRO) {
+      var down = decelerate(seg(seconds, [IMPACT, SQUASH_DOWN]));
+      var up = decelerate(seg(seconds, [IMPACT + SQUASH_DOWN, SQUASH_UP]));
+      return {
+        dy: -DROP_HEIGHT * (1 - bounce(seg(seconds, DROP))),
+        alpha: seg(seconds, FADE),
+        squash: 1 - SQUASH_DEPTH * down * (1 - up)
       };
     }
-    return paths;
+    var u = (seconds - INTRO) % LOOP;
+    var lift = fastOutSlowIn(seg(u, REP_UP));
+    var lower = accelerateDecelerate(seg(u, REP_DOWN));
+    return { dy: -REP_HEIGHT * (lift - lower), alpha: 1, squash: 1 };
   }
 
-  /** Paints the rounded badge with the barbell lifted by [barbellDy] units. */
-  function paintCanvas(ctx, size, barbellDy) {
-    var p = canvasPaths();
-    ctx.clearRect(0, 0, size, size);
-    var grad = ctx.createLinearGradient(0, 0, size, size);
-    grad.addColorStop(0, COLORS.gradientStart);
-    grad.addColorStop(COLORS.gradientMidStop, COLORS.gradientMid);
-    grad.addColorStop(1, COLORS.gradientEnd);
-    ctx.fillStyle = grad;
-    var r = size * 0.22;
-    ctx.beginPath();
-    ctx.moveTo(r, 0);
-    ctx.arcTo(size, 0, size, size, r);
-    ctx.arcTo(size, size, 0, size, r);
-    ctx.arcTo(0, size, 0, 0, r);
-    ctx.arcTo(0, 0, size, 0, r);
-    ctx.closePath();
-    ctx.fill();
+  var NS = 'http://www.w3.org/2000/svg';
+  var uid = 0;
 
-    ctx.save();
-    var inset = size * (1 - GLYPH_FRACTION) / 2;
-    ctx.translate(inset, inset);
-    ctx.scale(size * GLYPH_FRACTION / UNIT, size * GLYPH_FRACTION / UNIT);
-    ctx.fillStyle = 'rgba(4,56,42,' + BACK_PEAK_ALPHA + ')';
-    ctx.fill(p.backPeak);
-    ctx.fillStyle = 'rgba(4,56,42,' + FRONT_PEAK_ALPHA + ')';
-    ctx.fill(p.frontPeak);
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.fill(p.backSnow);
-    ctx.fillStyle = '#fff';
-    ctx.fill(p.frontSnow);
-    ctx.translate(0, barbellDy);
-    ctx.fillStyle = 'rgba(0,0,0,' + SHADOW_ALPHA + ')';
-    ctx.fill(p.barbellShadow);
-    ctx.fillStyle = '#fff';
-    ctx.fill(p.barbell);
-    ctx.restore();
+  function el(name, attrs) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
   }
 
-  global.IronpeakMark = {
-    INTRO_SECONDS: INTRO_SECONDS,
-    LOOP_SECONDS: LOOP_SECONDS,
-    REP_HEIGHT: REP_HEIGHT,
-    SPARK: SPARK,
-    REST: REST,
-    poseAt: poseAt,
-    mount: mount,
-    paintCanvas: paintCanvas
-  };
+  /** Builds the badge and returns a function that draws a pose. */
+  function build(host) {
+    // Replaces the static fallback image the page ships for no-JS visitors.
+    while (host.firstChild) host.removeChild(host.firstChild);
+    var id = 'kilo-clip-' + (++uid);
+    var svg = el('svg', { viewBox: '0 0 100 100', 'aria-hidden': 'true', focusable: 'false', class: 'kilo-mark' });
+    var clip = el('clipPath', { id: id });
+    clip.appendChild(el('rect', { width: 100, height: 100, rx: 22 }));
+    svg.appendChild(clip);
+    svg.appendChild(el('rect', { class: 'kilo-mark__tile', width: 100, height: 100, rx: 22 }));
+    svg.appendChild(el('rect', { class: 'kilo-mark__line', x: 0.5, y: 0.5, width: 99, height: 99, rx: 21.5 }));
+    var clipped = el('g', { 'clip-path': 'url(#' + id + ')' });
+    var inset = (100 - 100 * GLYPH) / 2;
+    var place = el('g', { transform: 'translate(' + inset + ' ' + inset + ') scale(' + GLYPH + ')' });
+    var glyph = el('g', { class: 'kilo-mark__glyph' });
+    glyph.appendChild(el('path', { d: BAR }));
+    glyph.appendChild(el('path', { d: PLATES }));
+    place.appendChild(glyph);
+    clipped.appendChild(place);
+    svg.appendChild(clipped);
+    host.appendChild(svg);
+
+    return function draw(pose) {
+      var t = 'translate(0 ' + pose.dy.toFixed(3) + ')';
+      if (pose.squash !== 1) {
+        t += ' translate(' + FOOT_X + ' ' + FOOT_Y + ') scale(1 ' + pose.squash.toFixed(4) + ') translate(' + -FOOT_X + ' ' + -FOOT_Y + ')';
+      }
+      glyph.setAttribute('transform', t);
+      glyph.style.opacity = pose.alpha < 1 ? pose.alpha.toFixed(3) : '';
+    };
+  }
+
+  var calm = document.documentElement.classList.contains('calm');
+
+  /**
+   * Plays the timeline from `from` to `to` seconds (`to` = Infinity keeps
+   * looping) and calls `done` at the end. Returns a stop function.
+   */
+  function play(draw, from, to, done) {
+    var start = null;
+    var raf = 0;
+    function frame(now) {
+      if (start === null) start = now;
+      var t = from + (now - start) / 1000;
+      if (t >= to) {
+        draw(poseAt(to));
+        if (done) done();
+        return;
+      }
+      draw(poseAt(t));
+      raf = w.requestAnimationFrame(frame);
+    }
+    raf = w.requestAnimationFrame(frame);
+    return function () { w.cancelAnimationFrame(raf); };
+  }
+
+  function mount(host, opts) {
+    opts = opts || {};
+    var draw = build(host);
+    var motion = calm ? 'none' : (opts.motion || 'none');
+    draw(poseAt(motion === 'intro' || motion === 'loop' ? 0 : INTRO));
+    if (motion === 'none') return { replay: function () {} };
+
+    var stop = function () {};
+    function intro() {
+      stop();
+      stop = play(draw, 0, motion === 'loop' ? Infinity : INTRO);
+    }
+    function rep() {
+      stop();
+      stop = play(draw, INTRO, INTRO + LOOP);
+    }
+
+    if (motion === 'hover') {
+      var target = opts.trigger || host;
+      var busy = false;
+      target.addEventListener('mouseenter', function () {
+        if (busy) return;
+        busy = true;
+        stop = play(draw, INTRO, INTRO + LOOP, function () { busy = false; });
+      });
+      return { replay: rep };
+    }
+
+    if (motion === 'loop' && 'IntersectionObserver' in w) {
+      // Only animate while visible; start with the drop the first time.
+      var started = false;
+      new IntersectionObserver(function (entries) {
+        var visible = entries.some(function (e) { return e.isIntersecting; });
+        if (visible) {
+          stop = started ? play(draw, INTRO, Infinity) : play(draw, 0, Infinity);
+          started = true;
+        } else {
+          stop();
+        }
+      }).observe(host);
+    } else {
+      intro();
+    }
+    return { replay: intro };
+  }
+
+  w.KiloMark = { BAR: BAR, PLATES: PLATES, INTRO: INTRO, LOOP: LOOP, GLYPH: GLYPH, poseAt: poseAt, mount: mount };
 })(window);

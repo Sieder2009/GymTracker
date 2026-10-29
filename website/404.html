@@ -3,134 +3,100 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>404 – Ironpeak Fitness</title>
+<title>404 – Kilo</title>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#06140f">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#010409" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="https://ironpeak.siggidy.dev/assets/img/favicon.svg" type="image/svg+xml">
-<!-- GitHub Pages serves this file for every missing path, at any depth, so
-     nothing here may use relative URLs: styles are inline and links use the
-     site URL the deploy workflow fills in (main.js-free on purpose). -->
+<!-- Served for every missing path, at any depth, so nothing here may use
+     relative URLs: styles are inline and links use the site's address. -->
 <style>
   @font-face {
-    font-family: "Big Shoulders Display";
-    src: url("https://ironpeak.siggidy.dev/assets/fonts/big-shoulders-display-latin.woff2") format("woff2");
-    font-weight: 100 900;
+    font-family: "Sora";
+    src: url("https://ironpeak.siggidy.dev/assets/fonts/sora-latin.woff2") format("woff2");
+    font-weight: 100 800;
     font-display: swap;
   }
   @font-face {
-    font-family: "Archivo";
-    src: url("https://ironpeak.siggidy.dev/assets/fonts/archivo-latin.woff2") format("woff2");
+    font-family: "Inter";
+    src: url("https://ironpeak.siggidy.dev/assets/fonts/inter-latin.woff2") format("woff2");
     font-weight: 100 900;
-    font-stretch: 62% 125%;
     font-display: swap;
   }
+  :root {
+    --bg: #f5f5f7; --card: #fff; --txt: #16171b; --mut: #5f5f68; --line: #e3e3e8;
+    --accent: #2f6feb; --on-accent: #fff; --tile: #2f6feb; --glyph: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #010409; --card: #0d1117; --txt: #e6edf3; --mut: #9da7b3; --line: #30363d;
+      --accent: #3fb950; --on-accent: #0d1117; --tile: #0d1117; --glyph: #e6edf3;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #010409; --card: #0d1117; --txt: #e6edf3; --mut: #9da7b3; --line: #30363d;
+    --accent: #3fb950; --on-accent: #0d1117; --tile: #0d1117; --glyph: #e6edf3;
+  }
   *, *::before, *::after { box-sizing: border-box; }
-  html { background: #06140f; color-scheme: dark; }
   body {
-    margin: 0;
-    min-height: 100vh;
-    min-height: 100svh;
-    display: grid;
-    place-items: center;
-    padding: 32px 16px;
-    font-family: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    color: #eef5f1;
-    background:
-      radial-gradient(90% 60% at 50% 110%, rgba(56, 208, 143, 0.18), transparent 70%),
-      linear-gradient(180deg, #030806, #06140f 70%);
-    text-align: center;
+    margin: 0; min-height: 100vh; min-height: 100svh;
+    display: grid; place-items: center; padding: 32px 16px;
+    background: var(--bg); color: var(--txt);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; text-align: center;
   }
-  html[lang="de"] [data-l="en"], html[lang="en"] [data-l="de"] { display: none; }
-  main { max-width: 640px; }
-  .logo { width: 88px; height: 88px; margin: 0 auto 28px; }
-  .bar { animation: rep 3s cubic-bezier(0.645, 0.045, 0.355, 1) infinite; }
+  main { max-width: 460px; }
+  .logo { width: 96px; height: 96px; margin: 0 auto; display: block; }
+  .tile { fill: var(--tile); stroke: var(--line); stroke-width: 1; }
+  .glyph { fill: var(--glyph); animation: rep 3.6s 0.4s infinite; }
   @keyframes rep {
-    0%, 18%, 100% { transform: translateY(0); }
-    42%, 55% { transform: translateY(-14px); }
-    77% { transform: translateY(0); }
+    0%, 33% { transform: translateY(0); animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+    48%, 57% { transform: translateY(-4.3px); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+    78%, 100% { transform: translateY(0); }
   }
+  @media (prefers-reduced-motion: reduce) { .glyph { animation: none; } }
   h1 {
-    margin: 0;
-    font-family: "Big Shoulders Display", Impact, "Arial Narrow", sans-serif;
-    font-size: clamp(7rem, 34vw, 15rem);
-    font-weight: 900;
-    line-height: 0.82;
-    letter-spacing: -0.01em;
-    background: linear-gradient(180deg, #fff 35%, #a9e7cb);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    margin: 28px 0 0; font-family: "Sora", system-ui, sans-serif;
+    font-size: clamp(72px, 18vw, 128px); line-height: 1; font-weight: 800; letter-spacing: -0.05em;
   }
-  p {
-    margin: 22px auto 34px;
-    max-width: 30em;
-    font-size: 1.1rem;
-    line-height: 1.55;
-    color: #b9cbc2;
+  h1 span { color: var(--accent); }
+  p { margin: 16px 0 32px; font-size: 18px; line-height: 1.55; color: var(--mut); }
+  a {
+    display: inline-flex; align-items: center; gap: 9px; height: 50px; padding: 0 24px;
+    border-radius: 999px; background: var(--accent); color: var(--on-accent);
+    font-family: "Sora", system-ui, sans-serif; font-weight: 650; text-decoration: none;
   }
-  a.home {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    height: 54px;
-    padding: 0 26px 0 8px;
-    border-radius: 999px;
-    background: #1fa76a;
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 700;
-    font-stretch: 115%;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    text-decoration: none;
-  }
-  a.home span.i {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.2);
-  }
-  a.home:focus-visible { outline: 2px solid #38d08f; outline-offset: 3px; }
-  @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  html[lang="en"] [data-l="de"], html:not([lang="en"]) [data-l="en"] { display: none; }
 </style>
 </head>
 <body>
 <main>
   <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#38D08F"/><stop offset=".55" stop-color="#1FA76A"/><stop offset="1" stop-color="#0B6644"/>
-      </linearGradient>
-    </defs>
-    <rect width="100" height="100" rx="22" fill="url(#g)"/>
-    <g transform="translate(15 15) scale(.7)">
-      <path d="M74,24L88,82L34,82Z" fill="#04382A" fill-opacity=".3"/>
-      <path d="M42,8L66,82L14,82Z" fill="#04382A" fill-opacity=".42"/>
-      <path d="M74,24L77.4,38L74.2,34.6L71,39L67.6,34.8L64.3,38Z" fill="#fff" fill-opacity=".9"/>
-      <path d="M42,8L49.1,30L44.5,35L41,29.8L37.5,34L33.7,30Z" fill="#fff"/>
-      <g class="bar">
-        <path fill="#fff" d="M21.6,57.3H78.4A1.6,1.6 0 0 1 80,58.9V61.1A1.6,1.6 0 0 1 78.4,62.7H21.6A1.6,1.6 0 0 1 20,61.1V58.9A1.6,1.6 0 0 1 21.6,57.3ZM18.5,41H20.5A3,3 0 0 1 23.5,44V76A3,3 0 0 1 20.5,79H18.5A3,3 0 0 1 15.5,76V44A3,3 0 0 1 18.5,41ZM79.5,41H81.5A3,3 0 0 1 84.5,44V76A3,3 0 0 1 81.5,79H79.5A3,3 0 0 1 76.5,76V44A3,3 0 0 1 79.5,41ZM11.4,47.5H12.1A2.4,2.4 0 0 1 14.5,49.9V70.1A2.4,2.4 0 0 1 12.1,72.5H11.4A2.4,2.4 0 0 1 9,70.1V49.9A2.4,2.4 0 0 1 11.4,47.5ZM87.9,47.5H88.6A2.4,2.4 0 0 1 91,49.9V70.1A2.4,2.4 0 0 1 88.6,72.5H87.9A2.4,2.4 0 0 1 85.5,70.1V49.9A2.4,2.4 0 0 1 87.9,47.5ZM6.6,56.6H8A1.6,1.6 0 0 1 9.6,58.2V61.8A1.6,1.6 0 0 1 8,63.4H6.6A1.6,1.6 0 0 1 5,61.8V58.2A1.6,1.6 0 0 1 6.6,56.6ZM92,56.6H93.4A1.6,1.6 0 0 1 95,58.2V61.8A1.6,1.6 0 0 1 93.4,63.4H92A1.6,1.6 0 0 1 90.4,61.8V58.2A1.6,1.6 0 0 1 92,56.6Z"/>
+    <rect class="tile" x=".5" y=".5" width="99" height="99" rx="22"/>
+    <g transform="translate(14 14) scale(.72)">
+      <g class="glyph">
+        <path d="M33,47H67A1,1 0 0 1 68,48V52A1,1 0 0 1 67,53H33A1,1 0 0 1 32,52V48A1,1 0 0 1 33,47ZM4,46H32A1.5,1.5 0 0 1 33.5,47.5V52.5A1.5,1.5 0 0 1 32,54H4A1.5,1.5 0 0 1 2.5,52.5V47.5A1.5,1.5 0 0 1 4,46ZM68,46H96A1.5,1.5 0 0 1 97.5,47.5V52.5A1.5,1.5 0 0 1 96,54H68A1.5,1.5 0 0 1 66.5,52.5V47.5A1.5,1.5 0 0 1 68,46Z"/>
+        <path d="M32.5,42H33.5A1,1 0 0 1 34.5,43V57A1,1 0 0 1 33.5,58H32.5A1,1 0 0 1 31.5,57V43A1,1 0 0 1 32.5,42ZM66.5,42H67.5A1,1 0 0 1 68.5,43V57A1,1 0 0 1 67.5,58H66.5A1,1 0 0 1 65.5,57V43A1,1 0 0 1 66.5,42ZM24.3,21H28.8A1.5,1.5 0 0 1 30.3,22.5V77.5A1.5,1.5 0 0 1 28.8,79H24.3A1.5,1.5 0 0 1 22.8,77.5V22.5A1.5,1.5 0 0 1 24.3,21ZM71.2,21H75.7A1.5,1.5 0 0 1 77.2,22.5V77.5A1.5,1.5 0 0 1 75.7,79H71.2A1.5,1.5 0 0 1 69.7,77.5V22.5A1.5,1.5 0 0 1 71.2,21ZM15.6,21H20.1A1.5,1.5 0 0 1 21.6,22.5V77.5A1.5,1.5 0 0 1 20.1,79H15.6A1.5,1.5 0 0 1 14.1,77.5V22.5A1.5,1.5 0 0 1 15.6,21ZM79.9,21H84.4A1.5,1.5 0 0 1 85.9,22.5V77.5A1.5,1.5 0 0 1 84.4,79H79.9A1.5,1.5 0 0 1 78.4,77.5V22.5A1.5,1.5 0 0 1 79.9,21ZM9.6,31H11.7A1.2,1.2 0 0 1 12.9,32.2V67.8A1.2,1.2 0 0 1 11.7,69H9.6A1.2,1.2 0 0 1 8.4,67.8V32.2A1.2,1.2 0 0 1 9.6,31ZM88.3,31H90.4A1.2,1.2 0 0 1 91.6,32.2V67.8A1.2,1.2 0 0 1 90.4,69H88.3A1.2,1.2 0 0 1 87.1,67.8V32.2A1.2,1.2 0 0 1 88.3,31ZM5.6,42.5H6.2A1,1 0 0 1 7.2,43.5V56.5A1,1 0 0 1 6.2,57.5H5.6A1,1 0 0 1 4.6,56.5V43.5A1,1 0 0 1 5.6,42.5ZM93.8,42.5H94.4A1,1 0 0 1 95.4,43.5V56.5A1,1 0 0 1 94.4,57.5H93.8A1,1 0 0 1 92.8,56.5V43.5A1,1 0 0 1 93.8,42.5Z"/>
       </g>
     </g>
   </svg>
-  <h1>404</h1>
+  <h1>4<span>0</span>4</h1>
   <p>
-    <span data-l="de">Falscher Pfad. Hier oben gibt es nichts zu sehen – der Gipfel liegt woanders.</span>
-    <span data-l="en">Wrong trail. There's nothing up here – the summit is somewhere else.</span>
+    <span data-l="de">Diese Seite gibt es nicht. Kein Grund, den Satz abzubrechen – zurück zur Startseite.</span>
+    <span data-l="en">This page doesn't exist. No reason to drop the set – back to the start.</span>
   </p>
-  <a class="home" href="https://ironpeak.siggidy.dev/" data-home>
-    <span class="i" aria-hidden="true">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-    </span>
-    <span data-l="de">Zurück ins Tal</span><span data-l="en">Back to the valley</span>
+  <a href="https://ironpeak.siggidy.dev/" data-home>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    <span data-l="de">Zur Startseite</span><span data-l="en">Back to the start</span>
   </a>
 </main>
 <script>
   (function () {
-    var lang = 'en';
-    try { lang = localStorage.getItem('ironpeak-lang') || ''; } catch (e) {}
+    var h = document.documentElement;
+    var lang = '', theme = '';
+    try { lang = localStorage.getItem('kilo-lang') || localStorage.getItem('ironpeak-lang') || ''; theme = localStorage.getItem('kilo-theme') || ''; } catch (e) {}
     if (lang !== 'de' && lang !== 'en') {
       var list = navigator.languages || [navigator.language || ''];
       lang = 'en';
@@ -140,11 +106,12 @@
         if (code.indexOf('en') === 0) break;
       }
     }
-    document.documentElement.lang = lang;
-    document.title = lang === 'de' ? '404 – Seite nicht gefunden · Ironpeak Fitness' : '404 – Page not found · Ironpeak Fitness';
-    // Local preview: the deploy workflow hasn't filled in the site URL.
+    h.lang = lang;
+    if (theme === 'light' || theme === 'dark') h.setAttribute('data-theme', theme);
+    document.title = lang === 'de' ? '404 – Seite nicht gefunden · Kilo' : '404 – Page not found · Kilo';
+    // Local preview or a github.io project page: link to this site's root.
     var home = document.querySelector('[data-home]');
-    if (home && home.getAttribute('href').indexOf('__SITE_URL__') === 0) {
+    if (home && location.hostname !== 'ironpeak.siggidy.dev') {
       var parts = location.pathname.split('/');
       home.setAttribute('href', /\.github\.io$/.test(location.hostname) && parts[1] ? '/' + parts[1] + '/' : '/');
     }

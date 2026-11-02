@@ -109,6 +109,17 @@ top left; when an update is available it turns into a "↑ vX.Y.Z" button.
 - Workout plans by weekday or rotation. Create them by hand, import a plan
   from your own log format, or pick one of eight built-in templates
   (shown during onboarding on first launch).
+- **Plans written by an AI, without typing them in.** Settings → AI
+  training plan copies instructions for any AI chat (ChatGPT, Claude,
+  Gemini, …). They describe everything you'd enter by hand — sets, reps,
+  weights, rest, timed and cardio sets, one side at a time, supersets,
+  the muscle group and the muscles for the body diagram — plus the
+  names of all exercises in the database, so the plan gets animations
+  and statistics. The AI asks about your goal, days and equipment and
+  answers with a code block; "Paste plan from the AI" imports it as your
+  active plan (prose around it, small JSON slips and missing fields are
+  fine). Optionally the instructions include your body weight, PRs and
+  latest working weights, so the AI picks fitting starting weights.
 - **Guided workouts** with set-by-set input, a live session timer, and
   RPE *or* RIR for each set (your choice in Settings). Exercises can be
   logged by reps, **timed** (planks, holds) or as **cardio** (minutes and
@@ -406,7 +417,10 @@ Settings → Exercise animations. The file
 export in the backup menu uses your operating system's native share
 menu (for example, to save the file to iCloud Drive or Google Drive).
 This is something you choose to do — it is not an automatic cloud sync,
-and the app itself never uploads anything on its own.
+and the app itself never uploads anything on its own. The same goes for
+the AI training plan: the app only copies text to your clipboard, and
+you decide which AI chat you paste it into. Switch off "Include my data"
+to leave out your body weight, PRs and working weights.
 
 ## <img src="https://api.iconify.design/lucide:award.svg?color=%232f6feb" width="20" height="20" alt=""/> Credits
 

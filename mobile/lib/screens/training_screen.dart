@@ -30,6 +30,7 @@ import '../state/workout_history_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../widgets/add_exercise_sheet.dart';
+import '../widgets/ai_plan_sheet.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/calculators_menu.dart';
@@ -976,6 +977,17 @@ class _EmptyState extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                   onPressed: onNewPlan, child: Text(t.actionNewPlan)),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                // Settings is out of reach from here, so the whole flow
+                // opens in one sheet; the imported plan replaces this screen.
+                onPressed: () => showAiPlanSheet(context),
+                icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                label: Text(t.actionPlanWithAi),
+              ),
             ),
             const SizedBox(height: 10),
             SizedBox(

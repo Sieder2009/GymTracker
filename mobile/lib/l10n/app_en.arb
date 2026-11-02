@@ -1138,5 +1138,52 @@
     "placeholders": {
       "count": {"type": "int"}
     }
-  }
+  },
+  "headerAiPlan": "AI TRAINING PLAN",
+  "aiPlanCopyPrompt": "Copy instructions for the AI",
+  "aiPlanCopyPromptHint": "For ChatGPT, Claude, Gemini and others",
+  "aiPlanIncludeData": "Include my data",
+  "aiPlanIncludeDataHint": "Body weight, PRs and your latest weights, so the AI picks fitting starting weights",
+  "aiPlanPaste": "Paste plan from the AI",
+  "aiPlanPasteHint": "Copy the AI's answer first",
+  "aiPlanFooter": "Paste the instructions into a chat with an AI. It asks about your goal, training days and equipment, then writes your plan with sets, reps, rest times and the muscles worked. Copy its answer and tap “Paste plan from the AI” – nothing to type in by hand.",
+  "toastAiPromptCopied": "Copied – now paste it into ChatGPT, Claude or Gemini",
+  "titleAiPlan": "Create a plan with AI",
+  "aiPlanStepCopy": "1. Copy the instructions",
+  "aiPlanStepChat": "2. Paste them into a new AI chat and answer its questions",
+  "aiPlanStepPaste": "3. Paste the AI's answer here",
+  "hintAiPlanPaste": "The AI's answer with the code block",
+  "actionPaste": "Paste",
+  "aiPlanErrorEmpty": "Nothing to import yet – copy the AI's answer first.",
+  "aiPlanErrorNoPlan": "That's not a Kilo plan. Copy the AI's whole answer, including the code block.",
+  "aiPlanErrorTooManyDays": "The plan has more than 7 days. Ask the AI for exactly 7 days, Monday to Sunday.",
+  "aiPlanErrorNoExercises": "The plan has no exercises. Ask the AI to send the complete plan again.",
+  "aiPlanErrorPromptNotAnswer": "That's the instructions for the AI, not its answer. Paste them into an AI chat, then copy what it replies.",
+  "aiPlanCutOff": "The answer is cut off, so the end of the plan is missing. Kilo takes what's there; missing days become rest days.",
+  "aiPlanConfirmBody": "Add \"{name}\" as a new plan and switch to it?",
+  "@aiPlanConfirmBody": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "aiPlanTrainingDays": "{count, plural, =1{1 training day} other{{count} training days}}",
+  "@aiPlanTrainingDays": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "aiPlanExerciseCount": "{count, plural, =1{1 exercise} other{{count} exercises}}",
+  "@aiPlanExerciseCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "aiPlanUnknownExercises": "{count, plural, =1{1 exercise isn't in Kilo's library, so it has no animation.} other{{count} exercises aren't in Kilo's library, so they have no animation.}}",
+  "@aiPlanUnknownExercises": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "toastAiPlanImported": "Plan imported and active",
+  "actionPlanWithAi": "Plan with AI"
 }

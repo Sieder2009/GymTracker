@@ -12,6 +12,7 @@ import '../services/plan_share_codec.dart';
 import '../state/programs_provider.dart';
 import '../state/toast_provider.dart';
 import '../theme/app_colors.dart';
+import 'ai_plan_sheet.dart';
 
 /// Shared "choose a plan" list, used both for the forced plan-choice prompt
 /// at launch (multiple saved plans, non-dismissible) and the manual "Alle
@@ -64,10 +65,21 @@ class PlanPickerSheet extends StatelessWidget {
       context.read<ToastProvider>().show(t.toastFileReadFailed);
       return;
     }
+    // A plan shared from Kilo keeps its history, so that reader goes first.
     final imported = parseSharedPlanPayload(content);
     if (!context.mounted) return;
     if (imported == null) {
-      context.read<ToastProvider>().show(t.toastImportPlanInvalid);
+      // Otherwise maybe a plan an AI wrote, saved as a file. Its own
+      // question says what came in -- a cut-off end, unknown names -- and
+      // makes the plan the active one, so this list closes with it.
+      final aiPlan = await parseAiPlanForApp(context, content);
+      if (!context.mounted) return;
+      if (aiPlan.program == null) {
+        context.read<ToastProvider>().show(t.toastImportPlanInvalid);
+        return;
+      }
+      final added = await confirmAndAddAiPlan(context, aiPlan);
+      if (added != null && context.mounted) Navigator.of(context).pop(added);
       return;
     }
 
@@ -154,6 +166,18 @@ class PlanPickerSheet extends StatelessWidget {
                     onPressed: () => _importPlan(context),
                     icon: const Icon(Icons.file_download_outlined, size: 18),
                     label: Text(t.actionImportPlan),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final imported = await showAiPlanSheet(context);
+                      // Already added and active; closing the list with
+                      // it keeps the caller's selection in step.
+                      if (imported != null && context.mounted) {
+                        Navigator.of(context).pop(imported);
+                      }
+                    },
+                    icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                    label: Text(t.actionPlanWithAi),
                   ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/exercise_categories.dart';
 import '../data/exercise_muscle_map.dart';
 import '../l10n/app_localizations.dart';
 import '../models/exercise_template.dart';
@@ -13,15 +14,8 @@ import 'create_custom_exercise_sheet.dart';
 import 'detailed_body_diagram.dart';
 import 'muscle_filter_sheet.dart';
 
-const List<String> kExerciseCategories = [
-  'chest',
-  'back',
-  'shoulders',
-  'legs',
-  'arms',
-  'core',
-  'cardio',
-];
+// Every widget that lists categories already imports this file.
+export '../data/exercise_categories.dart';
 
 String categoryLabel(AppLocalizations t, String category) {
   switch (category) {

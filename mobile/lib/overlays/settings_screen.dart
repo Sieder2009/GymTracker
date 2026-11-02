@@ -17,6 +17,7 @@ import '../data/effort_scale.dart';
 import '../data/health_brand.dart';
 import '../l10n/app_localizations.dart';
 import '../services/launcher_icon_service.dart';
+import '../services/storage_service.dart';
 import '../services/update_service.dart';
 import '../state/appearance_provider.dart';
 import '../state/athlete_settings_provider.dart';
@@ -32,6 +33,7 @@ import '../state/update_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../theme/launcher_icons.dart';
+import '../widgets/ai_plan_sheet.dart';
 import '../widgets/backup_sheet.dart';
 import '../widgets/health_connect_feedback.dart';
 import '../widgets/ironpeak_logo.dart';
@@ -104,6 +106,8 @@ class SettingsScreen extends StatelessWidget {
             _BrandHeader(),
             SizedBox(height: 24),
             _UpdateSection(),
+            SizedBox(height: 24),
+            _AiPlanSection(),
             SizedBox(height: 24),
             _AppearanceSection(),
             SizedBox(height: 24),
@@ -553,6 +557,67 @@ class _RefreshButtonState extends State<_RefreshButton> with SingleTickerProvide
     return IconButton(
       onPressed: widget.onPressed,
       icon: RotationTransition(turns: _controller, child: const Icon(Icons.refresh_rounded, size: 20)),
+    );
+  }
+}
+
+/// A plan written by any AI chat, without typing it in: copy the
+/// instructions, chat, paste the answer back (see `ai_plan_sheet.dart`).
+/// One row per step, so each is a single tap from here.
+class _AiPlanSection extends StatefulWidget {
+  const _AiPlanSection();
+
+  @override
+  State<_AiPlanSection> createState() => _AiPlanSectionState();
+}
+
+class _AiPlanSectionState extends State<_AiPlanSection> {
+  Future<void> _paste() async {
+    await importAiPlanFromClipboard(context);
+    // The sheet that opens when the clipboard holds no plan can flip the
+    // "include my data" switch too.
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+    final storage = context.read<StorageService>();
+
+    return _SettingsGroup(
+      header: t.headerAiPlan,
+      footer: t.aiPlanFooter,
+      children: [
+        _SettingsRow(
+          icon: Icons.auto_awesome_rounded,
+          iconColor: colors.purple,
+          label: t.aiPlanCopyPrompt,
+          subtitle: t.aiPlanCopyPromptHint,
+          trailing: Icon(Icons.copy_rounded, size: 20, color: colors.mut),
+          onTap: () => copyAiPlanPrompt(context),
+        ),
+        const _RowDivider(),
+        _SettingsRow(
+          icon: Icons.person_outline_rounded,
+          iconColor: colors.secondary,
+          label: t.aiPlanIncludeData,
+          subtitle: t.aiPlanIncludeDataHint,
+          subtitleMaxLines: 3,
+          trailing: Switch.adaptive(
+            value: aiPromptIncludesMyData(storage),
+            onChanged: (v) => setState(() => setAiPromptIncludesMyData(storage, v)),
+          ),
+        ),
+        const _RowDivider(),
+        _SettingsRow(
+          icon: Icons.content_paste_rounded,
+          iconColor: colors.green,
+          label: t.aiPlanPaste,
+          subtitle: t.aiPlanPasteHint,
+          onTap: _paste,
+        ),
+      ],
     );
   }
 }

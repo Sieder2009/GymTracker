@@ -1,7 +1,7 @@
 # Ironpeak Fitness — Flutter app, lives entirely under mobile/.
 # Dart/Android/iOS/Windows build artifacts are ignored there via
 # mobile/.gitignore; this file only covers things that can show up at the
-# repo root (editor/OS cruft, Claude Code's local state).
+# repo root (editor/OS cruft).
 
 # Editor/IDE
 .vscode/
@@ -19,9 +19,6 @@ ehthumbs.db
 # Leftovers from an aborted `git apply`/merge, not something to ever commit
 *.orig
 *.rej
-
-# Claude Code
-.claude/
 
 # Local reference copies of other projects (each has its own .git)
 /1/

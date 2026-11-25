@@ -331,6 +331,11 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
     final picked = await showExercisePicker(context);
     if (picked == null || !mounted) return;
     ex.name.text = picked.name;
+    // The database's categories are exactly kExerciseCategories, so the
+    // muscle group comes along for free (same as AddExerciseSheet).
+    if (kExerciseCategories.contains(picked.category)) {
+      setState(() => ex.muscle = picked.category);
+    }
     // A custom exercise's fine-grained muscle config (if it has one) should
     // carry straight into this plan instead of starting blank again --
     // otherwise "reusable" custom exercises would only reuse the name.
@@ -361,7 +366,9 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
             Expanded(
               child: TextField(
                 controller: ex.reps,
-                decoration: InputDecoration(hintText: t.hintReps),
+                decoration: InputDecoration(
+                    labelText: t.hintReps,
+                    floatingLabelBehavior: FloatingLabelBehavior.always),
               ),
             ),
             const SizedBox(width: 6),
@@ -370,7 +377,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                 controller: ex.weight,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(hintText: t.hintWeightKg),
+                decoration: InputDecoration(
+                    labelText: t.labelWeight,
+                    suffixText: 'kg',
+                    floatingLabelBehavior: FloatingLabelBehavior.always),
               ),
             ),
           ],
@@ -382,7 +392,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
               child: TextField(
                 controller: ex.targetSeconds,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(hintText: t.hintTargetSeconds),
+                decoration: InputDecoration(
+                    labelText: t.labelHoldTime,
+                    suffixText: t.unitSec,
+                    floatingLabelBehavior: FloatingLabelBehavior.always),
               ),
             ),
             const SizedBox(width: 6),
@@ -391,7 +404,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                 controller: ex.weight,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(hintText: t.hintAddedWeightKg),
+                decoration: InputDecoration(
+                    labelText: t.labelAddedWeight,
+                    suffixText: 'kg',
+                    floatingLabelBehavior: FloatingLabelBehavior.always),
               ),
             ),
           ],
@@ -403,7 +419,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
               child: TextField(
                 controller: ex.cardioMinutes,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(hintText: t.hintCardioMinutes),
+                decoration: InputDecoration(
+                    labelText: t.labelDuration,
+                    suffixText: t.unitMin,
+                    floatingLabelBehavior: FloatingLabelBehavior.always),
               ),
             ),
             const SizedBox(width: 6),
@@ -412,7 +431,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                 controller: ex.cardioSpeed,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(hintText: t.hintCardioSpeedKmh),
+                decoration: InputDecoration(
+                    labelText: t.labelSpeed,
+                    suffixText: t.unitKmh,
+                    floatingLabelBehavior: FloatingLabelBehavior.always),
               ),
             ),
           ],
@@ -436,7 +458,7 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                 child: TextField(
                   controller: ex.name,
                   decoration: InputDecoration(
-                    hintText: t.hintExercise,
+                    labelText: t.labelExerciseName,
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.search, size: 18),
                       tooltip: t.actionPickFromList,
@@ -450,7 +472,9 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                 child: TextField(
                   controller: ex.sets,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(hintText: t.hintSets),
+                  decoration: InputDecoration(
+                      labelText: t.hintSets,
+                      floatingLabelBehavior: FloatingLabelBehavior.always),
                 ),
               ),
               IconButton(
@@ -477,7 +501,8 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
           const SizedBox(height: 6),
           TextField(
             controller: ex.note,
-            decoration: InputDecoration(hintText: t.hintExerciseNote),
+            decoration: InputDecoration(
+                labelText: t.labelNote, hintText: t.hintExerciseNote),
           ),
           Row(
             children: [
@@ -499,6 +524,9 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
             ),
           ),
           DropdownButtonFormField<String>(
+            // initialValue is only read once -- the key rebuilds the field
+            // when picking from the list fills the muscle group in.
+            key: ValueKey(ex.muscle),
             initialValue: ex.muscle,
             decoration: InputDecoration(labelText: t.labelMuscleGroup),
             items: [

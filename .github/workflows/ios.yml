@@ -28,6 +28,10 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Pinned: newer stable releases demand a newer Gradle/AGP/Kotlin
+          # than android/ uses (3.50.1 needs Gradle 9.3.1, AGP 9.1.1, KGP 2.4.10).
+          # Bump together with those, and with the local SDK.
+          flutter-version: 3.47.4
 
       # ios/ isn't committed (nothing here has ever been built locally) —
       # generated fresh each run against whatever Flutter version CI

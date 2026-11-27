@@ -1,8 +1,9 @@
 /*
  * The page's behavior: language and theme switches, nav, the launch
- * animation, scroll reveals, the app tour, the live training calendar,
- * streak flame and creatine tracker, the app-icon grid, and the release
- * lookup. No libraries; everything degrades to a readable page without it.
+ * animation, scroll reveals, the app tour (a phone you can tap through),
+ * the live training calendar, streak flame and creatine tracker, the
+ * app-icon grid, and the release lookup. No libraries; everything degrades
+ * to a readable page without it.
  */
 (function () {
   'use strict';
@@ -277,11 +278,29 @@
 
   // ========================================================== tour
 
+  // The phone in "Die App" can be used like the app: its bottom bar, the
+  // calendar card, the deadlift tile, the bench press row and the back
+  // arrows work, and the tabs and thumbs on the left follow along.
+
+  /** The screens each tab offers as thumbs; the first is the tab's root. */
   var TABS = {
     training: ['training', 'calendar'],
     strength: ['strength', 'prs', 'lift'],
     exercises: ['exercises', 'exercise']
   };
+  var SHOT_TAB = {
+    training: 'training', calendar: 'training',
+    strength: 'strength', prs: 'strength', lift: 'strength',
+    exercises: 'exercises', exercise: 'exercises'
+  };
+  /** The back stack that leads to a screen (prs is the Kraft tab scrolled). */
+  var SHOT_PATH = {
+    training: ['training'], calendar: ['training', 'calendar'],
+    strength: ['strength'], prs: ['prs'], lift: ['prs', 'lift'],
+    exercises: ['exercises'], exercise: ['exercises', 'exercise']
+  };
+  /** The tap target that opens a screen, focused again on the way back. */
+  var OPENER = { calendar: 'calendar', lift: 'deadlift', exercise: 'bench' };
   var SHOT_ALT = {
     training: { de: 'Startbildschirm: Trainingskalender, Kreatin-Tracker und der Plan für Samstag', en: "Home screen: training calendar, creatine tracker and Saturday's plan" },
     calendar: { de: 'Trainingskalender: 129 Workouts im letzten Jahr, aktuelle und beste Serie', en: 'Training calendar: 129 workouts in the last year, current and best streak' },
@@ -291,64 +310,270 @@
     exercises: { de: 'Übungen-Tab: 546 Übungen mit Muskeldiagramm, nach Kategorie filterbar', en: 'Exercises tab: 546 exercises with muscle diagrams, filterable by category' },
     exercise: { de: 'Bankdrücken: Muskelaktivierung vorne – Brust 56 %, vordere Schulter und Trizeps je 22 %', en: 'Bench press: muscle activation, front – chest 56%, front delts and triceps 22% each' }
   };
+  var HIT_TEXT = {
+    calendar: { de: 'Trainingskalender öffnen', en: 'Open the training calendar' },
+    streak: { de: 'Serie von 7 Tagen – Trainingskalender öffnen', en: '7-day streak – open the training calendar' },
+    training: { de: 'Training', en: 'Training' },
+    strength: { de: 'Kraft', en: 'Strength' },
+    exercises: { de: 'Übungen', en: 'Exercises' },
+    down: { de: 'Nach unten scrollen', en: 'Scroll down' },
+    up: { de: 'Nach oben scrollen', en: 'Scroll up' },
+    deadlift: { de: 'Kreuzheben öffnen', en: 'Open deadlift' },
+    bench: { de: 'Bankdrücken öffnen', en: 'Open bench press' },
+    back: { de: 'Zurück', en: 'Back' },
+    close: { de: 'Schließen', en: 'Close' }
+  };
+
+  // Where the app reacts on each capture, in pixels of the 780 × 1733
+  // screenshot: [x, y, width, height, corner radius]. `dark` is for the
+  // dark capture where it was taken at another scroll position. A hit
+  // either pushes a screen (`go`, as a bottom sheet with `sheet`), switches
+  // the bottom bar's `tab`, stands in for scrolling (`scroll`) or goes `back`.
+  var NAV_HITS = [
+    { key: 'training', tab: 'training', box: [44, 1514, 230, 160, 72] },
+    { key: 'strength', tab: 'strength', box: [275, 1514, 230, 160, 72] },
+    { key: 'exercises', tab: 'exercises', box: [506, 1514, 230, 160, 72] }
+  ];
+  var BACK_HIT = { key: 'back', back: true, box: [12, 110, 84, 84, 42] };
+  var HITS = {
+    training: [
+      { key: 'streak', go: 'calendar', box: [548, 126, 96, 82, 41] },
+      { key: 'calendar', go: 'calendar', box: [32, 222, 716, 374, 44] }
+    ].concat(NAV_HITS),
+    calendar: [BACK_HIT],
+    strength: [
+      { key: 'down', scroll: 'prs', chip: 'down', box: [32, 1336, 716, 172, 44] }
+    ].concat(NAV_HITS),
+    prs: [
+      { key: 'up', scroll: 'strength', chip: 'up', box: [32, 212, 716, 168, 44], dark: [32, 212, 716, 218, 44] },
+      { key: 'deadlift', go: 'lift', box: [278, 437, 224, 198, 30], dark: [278, 487, 224, 198, 30] }
+    ].concat(NAV_HITS),
+    lift: [BACK_HIT],
+    exercises: [
+      { key: 'bench', go: 'exercise', sheet: true, box: [32, 488, 716, 134, 30] }
+    ].concat(NAV_HITS),
+    exercise: [
+      { key: 'close', back: true, box: [0, 0, 780, 180, 0] }
+    ]
+  };
+
+  function screenFile(shot, mode) { return 'assets/img/screens/' + shot + '-' + mode + '-780.webp'; }
 
   function initTour() {
     var tour = $('[data-tour]');
     if (!tour) return;
     var tabs = $$('[role="tab"]', tour);
     var panels = $$('[data-panel]', tour);
-    var picture = $('[data-tour-picture]', tour);
-    var img = $('[data-tour-img]', tour);
-    var source = $('source', picture);
-    var current = 'training';
+    var thumbs = $$('.thumb', tour);
+    var screen = $('[data-phone-screen]', tour);
+    var hits = $('[data-phone-hits]', tour);
+    var live = $('[data-phone-live]', tour);
+    var layer = $('[data-tour-picture]', tour);
+    var stack = ['training'];
+    var swapToken = 0;
+    var hintTimer = 0;
+    var seen = false;
+    var warmed = {};
 
-    function setShot(shot, animate) {
-      current = shot;
-      $$('.thumb', tour).forEach(function (t) {
-        t.setAttribute('aria-pressed', t.getAttribute('data-shot') === shot ? 'true' : 'false');
-      });
-      var light = 'assets/img/screens/' + shot + '-light-780.webp';
-      var dark = 'assets/img/screens/' + shot + '-dark-780.webp';
-      var apply = function () {
-        source.setAttribute('srcset', dark);
-        img.setAttribute('src', light);
-        img.setAttribute('alt', SHOT_ALT[shot][lang()]);
-      };
-      if (!animate || calm) { apply(); return; }
-      img.classList.add('is-swapping');
-      window.setTimeout(function () {
-        apply();
-        var done = function () { img.classList.remove('is-swapping'); };
-        if (img.complete) requestAnimationFrame(done); else img.addEventListener('load', done, { once: true });
-      }, 180);
+    function current() { return stack[stack.length - 1]; }
+
+    function fill(picture, shot) {
+      $('source', picture).setAttribute('srcset', screenFile(shot, 'dark'));
+      var img = $('img', picture);
+      img.setAttribute('src', screenFile(shot, 'light'));
+      img.setAttribute('alt', SHOT_ALT[shot][lang()]);
     }
 
-    function select(name, focus) {
+    function clearLeaving() {
+      $$('picture.is-leaving', screen).forEach(function (p) { p.parentNode.removeChild(p); });
+    }
+
+    /** Shows a screen; `kind` names the transition (push, pop, sheet, unsheet, fade, down, up). */
+    function swap(shot, kind) {
+      var token = ++swapToken;
+      if (calm || !kind || !window.Promise) { clearLeaving(); fill(layer, shot); return; }
+      var probe = new Image();
+      probe.src = screenFile(shot, theme());
+      var decoded = probe.decode ? probe.decode() : Promise.resolve();
+      var waited = new Promise(function (resolve) { window.setTimeout(resolve, 350); });
+      Promise.race([decoded, waited]).catch(function () {}).then(function () {
+        if (token !== swapToken) return;
+        clearLeaving();
+        var old = layer;
+        var next = old.cloneNode(true);
+        next.removeAttribute('class');
+        $('img', next).removeAttribute('loading');
+        fill(next, shot);
+        // Going back, the old screen leaves on top of the one it uncovers.
+        var leavesOnTop = kind === 'pop' || kind === 'unsheet';
+        old.parentNode.insertBefore(next, leavesOnTop ? old : old.nextSibling);
+        layer = next;
+        var moving = leavesOnTop ? old : next;
+        old.classList.add('is-leaving');
+        moving.classList.add('is-' + kind);
+        var finish = function () {
+          if (old.parentNode) old.parentNode.removeChild(old);
+          next.classList.remove('is-' + kind);
+        };
+        moving.addEventListener('animationend', finish, { once: true });
+        window.setTimeout(finish, 700);
+      });
+    }
+
+    function renderHits() {
+      var shot = current();
+      var dark = theme() === 'dark';
+      hits.textContent = '';
+      HITS[shot].forEach(function (hit) {
+        var box = (dark && hit.dark) || hit.box;
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'hit' + (hit.chip ? ' hit--' + hit.chip : '');
+        button.setAttribute('data-hit', hit.key);
+        button.setAttribute('aria-label', HIT_TEXT[hit.key][lang()]);
+        if (hit.tab && SHOT_TAB[shot] === hit.tab) button.setAttribute('aria-current', 'page');
+        button.style.left = (box[0] / 7.8) + '%';
+        button.style.top = (box[1] / 17.33) + '%';
+        button.style.width = (box[2] / 7.8) + '%';
+        button.style.height = (box[3] / 17.33) + '%';
+        button.style.setProperty('--r', box[4]);
+        if (hit.chip) {
+          button.innerHTML = '<span class="hit__chip" aria-hidden="true"><svg><use href="#i-chevron-' + hit.chip + '"/></svg></span>';
+        }
+        button.addEventListener('click', function (e) { act(hit, e.detail === 0); });
+        hits.appendChild(button);
+      });
+    }
+
+    /** Selects the tab, panel and thumb that belong to the screen shown. */
+    function syncSide(shot) {
+      var name = SHOT_TAB[shot];
       tabs.forEach(function (tab) {
         var on = tab.getAttribute('data-tab') === name;
         tab.setAttribute('aria-selected', on ? 'true' : 'false');
         tab.tabIndex = on ? 0 : -1;
-        if (on && focus) tab.focus();
       });
-      panels.forEach(function (panel) { panel.classList.toggle('is-active', panel.getAttribute('data-panel') === name); });
-      setShot(TABS[name][0], true);
+      panels.forEach(function (panel) {
+        var on = panel.getAttribute('data-panel') === name;
+        if (on !== panel.classList.contains('is-active')) panel.classList.toggle('is-active', on);
+      });
+      thumbs.forEach(function (thumb) {
+        thumb.setAttribute('aria-pressed', thumb.getAttribute('data-shot') === shot ? 'true' : 'false');
+      });
+    }
+
+    function open(next, kind, focusKey) {
+      stack = next;
+      var shot = current();
+      swap(shot, kind);
+      syncSide(shot);
+      renderHits();
+      if (live) live.textContent = SHOT_ALT[shot][lang()];
+      if (focusKey) {
+        var target = $('[data-hit="' + focusKey + '"]', hits) || $('.hit', hits);
+        if (target) target.focus();
+      }
+      warm();
+    }
+
+    function back(byKeyboard) {
+      if (stack.length < 2) return;
+      var leaving = current();
+      open(stack.slice(0, -1), leaving === 'exercise' ? 'unsheet' : 'pop', byKeyboard && OPENER[leaving]);
+    }
+
+    function act(hit, byKeyboard) {
+      var shot = current();
+      if (hit.back) { back(byKeyboard); return; }
+      if (hit.tab) {
+        var root = TABS[hit.tab][0];
+        if (shot === root) return;
+        // The tab that is already open scrolls back to its top.
+        open([root], SHOT_TAB[shot] === hit.tab ? 'up' : 'fade', byKeyboard && hit.key);
+        return;
+      }
+      if (hit.scroll) {
+        open(stack.slice(0, -1).concat(hit.scroll), hit.chip, byKeyboard && (hit.chip === 'down' ? 'up' : 'down'));
+        return;
+      }
+      open(stack.concat(hit.go), hit.sheet ? 'sheet' : 'push', byKeyboard && (hit.sheet ? 'close' : 'back'));
+    }
+
+    /** Lights up every tap target for a moment, e.g. after a tap that missed. */
+    function hint() {
+      screen.classList.remove('is-hinting');
+      void screen.offsetWidth;
+      screen.classList.add('is-hinting');
+      window.clearTimeout(hintTimer);
+      hintTimer = window.setTimeout(function () { screen.classList.remove('is-hinting'); }, 1500);
+    }
+
+    /** Loads every screen of the theme shown, so taps don't wait for the network. */
+    function warm() {
+      var mode = theme();
+      Object.keys(SHOT_ALT).forEach(function (shot) {
+        var src = screenFile(shot, mode);
+        if (warmed[src]) return;
+        warmed[src] = true;
+        var img = new Image();
+        img.decoding = 'async';
+        img.src = src;
+      });
     }
 
     tabs.forEach(function (tab, i) {
-      tab.addEventListener('click', function () { select(tab.getAttribute('data-tab')); });
+      tab.addEventListener('click', function () {
+        var name = tab.getAttribute('data-tab');
+        if (current() !== TABS[name][0]) open([TABS[name][0]], 'fade');
+      });
       tab.addEventListener('keydown', function (e) {
         var step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
         if (!step) return;
         e.preventDefault();
-        select(tabs[(i + step + tabs.length) % tabs.length].getAttribute('data-tab'), true);
+        var next = tabs[(i + step + tabs.length) % tabs.length];
+        open([TABS[next.getAttribute('data-tab')][0]], 'fade');
+        next.focus();
       });
     });
-    $$('.thumb', tour).forEach(function (thumb) {
-      thumb.addEventListener('click', function () { setShot(thumb.getAttribute('data-shot'), true); });
+    thumbs.forEach(function (thumb) {
+      thumb.addEventListener('click', function () {
+        var shot = thumb.getAttribute('data-shot');
+        if (shot !== current()) open(SHOT_PATH[shot].slice(), 'fade');
+      });
     });
-    panels[0].classList.add('is-active');
-    setShot('training', false);
-    document.addEventListener('kilo:lang', function () { img.setAttribute('alt', SHOT_ALT[current][lang()]); });
+    screen.addEventListener('click', function (e) {
+      if (!e.target.closest('.hit')) hint();
+    });
+    screen.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape' || stack.length < 2) return;
+      e.preventDefault();
+      back(true);
+    });
+
+    syncSide('training');
+    fill(layer, 'training');
+    renderHits();
+
+    // Show once where the phone can be tapped, when it comes into view.
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting) return;
+        io.disconnect();
+        seen = true;
+        warm();
+        window.setTimeout(hint, 500);
+      }, { threshold: 0.6 });
+      io.observe(screen);
+    }
+
+    document.addEventListener('kilo:lang', function () {
+      $('img', layer).setAttribute('alt', SHOT_ALT[current()][lang()]);
+      renderHits();
+    });
+    document.addEventListener('kilo:theme', function () {
+      renderHits();
+      if (seen) warm();
+    });
   }
 
   // ========================================================== training calendar

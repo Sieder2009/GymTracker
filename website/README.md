@@ -19,7 +19,7 @@ npx serve website            # or: python -m http.server -d website
 | Section | What it shows |
 |---|---|
 | Hero | The headline, the home screen in a phone, rank/streak/PR cards, live release chip |
-| Die App | The app's three tabs (Training, Kraft, Übungen) as a tab bar; each tab switches the phone between its real screenshots |
+| Die App | The app's three tabs (Training, Kraft, Übungen) as a tab bar, and a phone you can use like the app: its bottom bar, the calendar card, scrolling the Kraft tab, the deadlift tile, the bench press row and the back arrows all work |
 | Training | A GitHub-style training calendar, the streak flame (slider), the creatine tracker (tap it) and "what's next time?" |
 | Ränge | All seven rank badges and a rank calculator |
 | Ausprobieren | Plate calculator (target weight or tap plates) and the muscle map |
@@ -41,6 +41,14 @@ Details worth knowing:
   timeline (the barbell drops in with Android's bounce, squashes on impact,
   then does one calm rep). It plays as a short launch screen on the first
   visit per tab, on hover in the nav, and on loop in the download section.
+- **The phone in "Die App" can be used.** Its tap targets are buttons laid
+  over the screenshots, in pixels of the 780 × 1733 capture (`HITS` in
+  `main.js`, with a `dark` box where the dark capture is scrolled
+  differently — `prs` is 50 px lower). **Retaking a screenshot means
+  checking those boxes.** It keeps a back stack (back arrows, the sheet's
+  scrim, Escape), keeps the tabs and thumbs on the left in step, preloads
+  the other screens once it is in view, and lights up every target when a
+  tap misses.
 - **Screenshots follow the theme.** Every screenshot is a `<picture>` with a
   dark `<source>`; `main.js` points its `media` at the theme that is shown.
 - **Live release info.** The page asks the GitHub API for the latest
@@ -129,7 +137,7 @@ index.html            the page (both languages, inline icon sprite)
 404.html              self-contained "page not found"
 robots.txt, sitemap.xml
 assets/css/site.css   all styles and the light/dark tokens
-assets/js/main.js     language, theme, nav, launch, tour, calendar, flame, creatine, icons, releases
+assets/js/main.js     language, theme, nav, launch, the navigable phone, calendar, flame, creatine, icons, releases
 assets/js/demos.js    rank, plates, next session, muscle map
 assets/js/logo.js     the Kilo mark and its motion (port of the app's)
 assets/js/body-atlas.js   generated body figure (MIT, see header)

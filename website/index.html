@@ -87,6 +87,7 @@
   <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
   <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
   <symbol id="i-database-backup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 12a9 3 0 0 0 5 2.69"/><path d="M21 9.3V5"/><path d="M3 5v14a9 3 0 0 0 6.47 2.88"/><path d="M12 12v4h4"/><path d="M13 20a5 5 0 0 0 9-3 4.5 4.5 0 0 0-4.5-4.5c-1.33 0-2.54.54-3.41 1.41L12 16"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
@@ -107,6 +108,7 @@
   <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
   <symbol id="i-person-standing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></symbol>
   <symbol id="i-pill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
   <symbol id="i-refresh-cw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
@@ -325,19 +327,25 @@
               <button type="button" class="thumb" data-shot="exercise" aria-pressed="false"><span><span data-l="de">Bankdrücken</span><span data-l="en">Bench press</span></span></button>
             </div>
           </div>
-          <p class="tour__note"><span data-l="de">Echte Aufnahmen aus der App, hier auf Deutsch – sie spricht zehn Sprachen. Hell oder dunkel folgt dem Schalter oben.</span><span data-l="en">Real captures from the app, shown in German – it speaks ten languages. Light or dark follows the switch at the top.</span></p>
+          <p class="tour__note"><span data-l="de">Echte Aufnahmen aus der App, hier auf Deutsch – sie spricht zehn Sprachen. <span class="js-only">Im Handy kannst du dich selbst bewegen: unten die Tabs, der Kalender auf dem Startbildschirm, Kreuzheben bei den PRs, Bankdrücken in der Liste. </span>Hell oder dunkel folgt dem Schalter oben.</span><span data-l="en">Real captures from the app, shown in German – it speaks ten languages. <span class="js-only">You can find your own way around the phone: the tabs at the bottom, the calendar on the home screen, deadlift among the PRs, bench press in the list. </span>Light or dark follows the switch at the top.</span></p>
         </div>
 
         <div class="tour__device">
-          <div class="phone">
-            <div class="phone__screen">
+          <div class="phone phone--live">
+            <div class="phone__screen" data-phone-screen>
               <picture data-tour-picture>
                 <source media="(prefers-color-scheme: dark)" srcset="assets/img/screens/training-dark-780.webp" data-dark-source>
                 <img src="assets/img/screens/training-light-780.webp" width="780" height="1733" loading="lazy" decoding="async"
                   alt="Startbildschirm der App" data-tour-img>
               </picture>
+              <div class="phone__hits" data-phone-hits></div>
             </div>
           </div>
+          <p class="tour__hint">
+            <svg aria-hidden="true"><use href="#i-pointer"/></svg>
+            <span data-l="de">Tippe aufs Handy – es reagiert wie die App.</span><span data-l="en">Tap the phone – it responds like the app.</span>
+          </p>
+          <p class="sr-only" aria-live="polite" data-phone-live></p>
         </div>
       </div>
     </div>

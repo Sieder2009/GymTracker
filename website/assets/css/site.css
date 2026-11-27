@@ -451,8 +451,7 @@ html:not([lang="en"]) [data-l="en"] { display: none !important; }
   position: relative; overflow: hidden; border-radius: 42px; aspect-ratio: 780 / 1733;
   background: var(--bg);
 }
-.phone__screen img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.25s; }
-.phone__screen img.is-swapping { opacity: 0; }
+.phone__screen img { width: 100%; height: 100%; object-fit: cover; }
 .phone--hero { width: min(340px, 74vw); }
 .js .phone--hero { animation: rise 0.9s var(--ease) both; animation-delay: var(--hero-delay, 0s); }
 
@@ -562,6 +561,69 @@ html:not([lang="en"]) [data-l="en"] { display: none !important; }
   background: radial-gradient(closest-side, var(--accent-soft), transparent); pointer-events: none;
 }
 .tour__note { margin: 28px 0 0; font-size: 13.5px; color: var(--mut2); }
+.tour__hint {
+  position: relative; display: inline-flex; align-items: center; gap: 8px;
+  margin: 22px 0 0; padding: 8px 15px 8px 12px; border-radius: 999px;
+  background: var(--card); box-shadow: var(--shadow);
+  font-size: 13.5px; font-weight: 600; color: var(--mut);
+}
+.tour__hint svg { width: 18px; height: 18px; stroke-width: 2; color: var(--accent-ink); }
+.no-js .tour__hint, .no-js .phone__hits, .no-js .js-only { display: none; }
+
+/* The tour's phone works like the app: screens are stacked pictures, and
+   the tap targets sit on top in the screenshot's own coordinates. */
+.phone--live .phone__screen { container-type: inline-size; }
+.phone--live .phone__screen > picture { position: absolute; inset: 0; display: block; }
+.phone__hits { position: absolute; inset: 0; z-index: 2; }
+.hit {
+  position: absolute; padding: 0; border: 0; background: none; cursor: pointer;
+  border-radius: calc(var(--r, 0) * 100cqw / 780);
+  -webkit-tap-highlight-color: transparent;
+}
+.hit::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 75%, transparent);
+  opacity: 0; transition: opacity 0.2s;
+}
+@media (hover: hover) { .hit:hover::after { opacity: 0.75; } }
+.hit:active::after { opacity: 1; transition: none; }
+.hit:focus-visible { outline: none; }
+.hit:focus-visible::after { opacity: 1; box-shadow: inset 0 0 0 3px var(--accent); }
+.is-hinting .hit::after { animation: hit-ping 1.4s var(--ease) both; }
+.calm .is-hinting .hit::after { animation: none; opacity: 1; }
+@keyframes hit-ping { 0%, 100% { opacity: 0; } 20%, 65% { opacity: 1; } }
+
+.hit__chip {
+  position: absolute; left: 50%; display: grid; place-items: center;
+  width: 36px; height: 36px; margin-left: -18px; border-radius: 50%;
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: var(--shadow), inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--accent-ink);
+}
+.hit__chip svg { width: 20px; height: 20px; stroke-width: 2.4; }
+/* Both sit in empty space: beside the card title below, in the header above. */
+.hit--down .hit__chip { top: 4px; }
+.hit--up .hit__chip { top: -22px; }
+.js:not(.calm) .hit--down .hit__chip { animation: chip-bob 2.4s ease-in-out infinite; }
+.js:not(.calm) .hit--up .hit__chip { animation: chip-bob 2.4s ease-in-out infinite reverse; }
+@keyframes chip-bob { 50% { transform: translateY(4px); } }
+
+.phone__screen > picture.is-push { animation: screen-in-side 0.32s var(--ease); }
+.phone__screen > picture.is-pop { animation: screen-out-side 0.26s ease-in forwards; }
+.phone__screen > picture.is-sheet { animation: screen-in-sheet 0.36s var(--ease); }
+.phone__screen > picture.is-unsheet { animation: screen-out-sheet 0.26s ease-in forwards; }
+.phone__screen > picture.is-fade { animation: screen-fade 0.24s ease-out; }
+.phone__screen > picture.is-down { animation: screen-from-below 0.3s var(--ease); }
+.phone__screen > picture.is-up { animation: screen-from-above 0.3s var(--ease); }
+@keyframes screen-in-side { from { opacity: 0; transform: translateX(22%); } }
+@keyframes screen-out-side { to { opacity: 0; transform: translateX(22%); } }
+@keyframes screen-in-sheet { from { opacity: 0; transform: translateY(45%); } }
+@keyframes screen-out-sheet { to { opacity: 0; transform: translateY(45%); } }
+@keyframes screen-fade { from { opacity: 0; } }
+@keyframes screen-from-below { from { opacity: 0; transform: translateY(7%); } }
+@keyframes screen-from-above { from { opacity: 0; transform: translateY(-7%); } }
 
 .tabbar {
   display: inline-flex; gap: 4px; padding: 6px; border-radius: 999px;
